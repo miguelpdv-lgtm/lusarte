@@ -1,0 +1,263 @@
+@import "tailwindcss";
+
+/* ─── Tokens de marca Lusarte ─── */
+@theme {
+  /* Paleta oficial (brand/originales/LusarteEditable.pdf, artboard 3) */
+  --color-crema: #efebe0;
+  --color-crema-claro: #f7f4ec;
+  --color-carbon: #383939;
+  --color-carbon-suave: #5b5c5b;
+  --color-arena: #bca990;
+  --color-oliva: #aaa96c;
+  --color-cielo: #8aa9c1;
+  --color-lavanda: #dcc5e0;
+  /* Acentos de los stickers: usar con moderación */
+  --color-miel: #f0cd88;
+  --color-estrella: #f5eca0;
+  --color-whatsapp: #25d366;
+
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-hand: var(--font-patrick), ui-rounded, cursive;
+
+  --radius-card: 1.75rem;
+
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-float-slow: float 9s ease-in-out infinite;
+  --animate-spin-slow: rotar 28s linear infinite;
+  --animate-marquee: marquee 40s linear infinite;
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--r, 0deg));
+    }
+    50% {
+      transform: translateY(-10px) rotate(calc(var(--r, 0deg) + 3deg));
+    }
+  }
+
+  @keyframes rotar {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes marquee {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Header sticky + su onda: los anclajes no quedan tapados */
+    scroll-padding-top: 8rem;
+  }
+
+  body {
+    @apply bg-crema font-sans text-carbon antialiased;
+  }
+
+  ::selection {
+    @apply bg-lavanda text-carbon;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-carbon;
+  }
+}
+
+/* Etiqueta estilo tagline: itálica, mayúsculas, tracking amplio */
+@utility eyebrow {
+  @apply text-xs font-semibold tracking-[0.22em] uppercase italic;
+}
+
+/* ─── Lenguaje "toon" del manual: contorno carbón + sombra dura, como los stickers ─── */
+@utility toon {
+  border: 3px solid var(--color-carbon);
+}
+
+@utility toon-shadow {
+  box-shadow: 5px 5px 0 0 var(--color-carbon);
+}
+
+@utility toon-press {
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+  box-shadow: 4px 4px 0 0 var(--color-carbon);
+
+  &:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 var(--color-carbon);
+  }
+
+  &:active {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 0 var(--color-carbon);
+  }
+}
+
+/* Marco de sticker: borde crema troquelado + contorno carbón + sombra dura */
+@utility sticker-frame {
+  border: 6px solid var(--color-crema);
+  box-shadow:
+    0 0 0 3px var(--color-carbon),
+    7px 7px 0 3px var(--color-carbon);
+}
+
+/* Bordes ondulados (derivados de la vela ondulada del manual) */
+@utility wave-bottom {
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - 33px) no-repeat,
+    url("/brand/onda-abajo.svg") bottom / 150px 34px repeat-x;
+}
+
+@utility wave-top {
+  mask:
+    url("/brand/onda-arriba.svg") top / 150px 34px repeat-x,
+    linear-gradient(#000 0 0) bottom / 100% calc(100% - 33px) no-repeat;
+}
+
+@utility wave-y {
+  mask:
+    url("/brand/onda-arriba.svg") top / 150px 34px repeat-x,
+    linear-gradient(#000 0 0) center / 100% calc(100% - 66px) no-repeat,
+    url("/brand/onda-abajo.svg") bottom / 150px 34px repeat-x;
+}
+
+/* Recolorea un SVG de /public/brand con el color de texto actual */
+@utility brand-mask {
+  background-color: currentColor;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
+
+/* Patrón de íconos de marca, repetido y recoloreable */
+@utility pattern {
+  background-color: currentColor;
+  mask-image: url("/brand/patron.svg");
+  mask-size: 960px auto;
+  mask-repeat: repeat;
+}
+
+/* ─── Intro: la página arranca a oscuras y se enciende desde "Iluminando tu vida" ─── */
+@property --luz {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@layer components {
+  .intro-luz {
+    /* Centro aproximado del lettering (el componente lo mide y lo ajusta al hidratar) */
+    --x: 50%;
+    --y: calc(153px + (100vw - 48px) * 0.1745);
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    background: radial-gradient(
+      circle at var(--x) var(--y),
+      transparent var(--luz),
+      #1a1b1b calc(var(--luz) + 110px)
+    );
+    /* Sin JS arranca sola; con JS se reinicia al medir el lettering (.listo) */
+    animation: encender 1.3s cubic-bezier(0.6, 0, 0.3, 1) 0.6s both;
+  }
+
+  .intro-luz.listo {
+    animation-name: encender-ya;
+    animation-delay: 0.1s;
+  }
+
+  @media (width >= 40rem) {
+    .intro-luz {
+      --y: calc(195px + min(720px, 100vw - 64px) * 0.1745);
+    }
+  }
+
+  @media (width >= 80rem) {
+    .intro-luz {
+      --y: 38svh;
+    }
+  }
+
+  .intro-brillo {
+    animation: brillar 2s ease-out 0.3s backwards;
+  }
+}
+
+@keyframes encender {
+  0% {
+    --luz: -110px;
+  }
+  30% {
+    --luz: 150px;
+  }
+  88% {
+    --luz: 160vmax;
+    opacity: 1;
+  }
+  100% {
+    --luz: 160vmax;
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes encender-ya {
+  0% {
+    --luz: -110px;
+  }
+  30% {
+    --luz: 150px;
+  }
+  88% {
+    --luz: 160vmax;
+    opacity: 1;
+  }
+  100% {
+    --luz: 160vmax;
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes brillar {
+  0% {
+    filter: brightness(1.5) drop-shadow(0 0 0 var(--color-miel));
+  }
+  30% {
+    filter: brightness(1.35) drop-shadow(0 0 20px var(--color-miel));
+  }
+  100% {
+    filter: drop-shadow(3px 3px 0 var(--color-crema-claro));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-luz {
+    display: none;
+  }
+
+  .intro-brillo {
+    animation: none;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

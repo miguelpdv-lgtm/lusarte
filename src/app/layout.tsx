@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, DM_Sans, Patrick_Hand } from "next/font/google";
-import { Footer } from "@/components/layout/Footer";
-import { Header } from "@/components/layout/Header";
 import { site } from "@/lib/site";
 import "./globals.css";
 
@@ -46,20 +44,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es-CO" className={`${bricolage.variable} ${dmSans.variable} ${patrickHand.variable}`}>
-      <body className="flex min-h-dvh flex-col">
-        <a
-          href="#contenido"
-          className="sr-only z-50 rounded-full bg-carbon px-4 py-2 text-crema focus:not-sr-only focus:fixed focus:top-4 focus:left-4"
-        >
-          Saltar al contenido
-        </a>
-        <Header />
-        <main id="contenido" className="flex-1">
-          {children}
-        </main>
-        <Footer />
-      </body>
+    <html lang="es-CO" data-scroll-behavior="smooth" className={`${bricolage.variable} ${dmSans.variable} ${patrickHand.variable}`}>
+      <body className="flex min-h-dvh flex-col">{children}</body>
     </html>
   );
 }

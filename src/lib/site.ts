@@ -1,14 +1,16 @@
 import { categoryHref, insumos, navidad, velas } from "@/data/catalog";
 
-// TODO(clienta): reemplazar los datos de contacto marcados como pendientes.
+// Contacto tomado del catálogo de la clienta (bit.ly/Lusartecatalogo).
+// TODO(clienta): confirmar el correo (lusarte.net aún no tiene buzón) y el link de Facebook.
 export const site = {
   name: "Lusarte",
   tagline: "Iluminando tu vida",
   url: "https://lusarte.net",
   description:
     "Insumos para hacer velas —ceras, parafinas, fragancias, moldes y recipientes— y velas artesanales hechas a mano. Envíos a toda Colombia y pagos seguros.",
-  whatsapp: "573000000000", // pendiente: número real, formato internacional sin "+"
-  instagram: "lusarte", // pendiente: usuario real
+  whatsapp: "573024296320", // formato internacional sin "+"
+  phone: "302 429 6320",
+  instagram: "lus_arte",
   email: "hola@lusarte.net",
 } as const;
 

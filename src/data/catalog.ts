@@ -1,5 +1,5 @@
 // Taxonomía real de la tienda (a partir de las categorías de la clienta).
-// En la Fase 2 esto vive en la base de datos; los slugs se mantienen.
+// Las categorías se quedan en el código (el panel no las edita); los productos guardan su slug.
 //
 // Consolidación de la lista original:
 //   CERAS, PARAFINAS Y ADITIVOS        → Ceras y aditivos
@@ -110,3 +110,7 @@ export const navidad = {
 
 export const categoryHref = (c: Category) => `/tienda/${c.slug}`;
 export const subcategoryHref = (c: Category, s: Subcategory) => `/tienda/${c.slug}/${s.slug}`;
+
+export const findCategory = (slug: string) => categories.find((c) => c.slug === slug);
+export const findSubcategory = (category: string, sub: string | null) =>
+  sub ? findCategory(category)?.subcategories.find((s) => s.slug === sub) : undefined;

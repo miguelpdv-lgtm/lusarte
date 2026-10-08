@@ -1,0 +1,335 @@
+[
+  {
+    "name": "Vela Peonía",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela con delicioso aroma que puedes personalizar con los tonos que desees y agregarle un mensaje para regalar.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 10000
+      },
+      {
+        "name": "Docena",
+        "price": 114000
+      }
+    ]
+  },
+  {
+    "name": "Vela tapa de corcho 85 ml",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela de 85 ml con delicioso aroma. Puedes incluirle un mensaje para regalar y personalizarla con los colores que desees.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 15000
+      },
+      {
+        "name": "Docena",
+        "price": 168000
+      }
+    ]
+  },
+  {
+    "name": "Vela tapa de vidrio",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela con delicioso aroma que puedes personalizar con los tonos que desees y agregarle un mensaje para regalar.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 14000
+      },
+      {
+        "name": "Docena",
+        "price": 156000
+      }
+    ]
+  },
+  {
+    "name": "Vela Virgencita Rosario",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela de virgencita con delicioso aroma. Puedes personalizarla con los tonos que desees y agregarle un mensaje para regalar.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 9000
+      },
+      {
+        "name": "Docena",
+        "price": 96000
+      }
+    ]
+  },
+  {
+    "name": "Velas burbuja mini",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela con delicioso aroma que puedes personalizar con los tonos que desees y agregarle un mensaje para regalar.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 7000
+      },
+      {
+        "name": "Docena",
+        "price": 72000
+      }
+    ]
+  },
+  {
+    "name": "Vela huellitas",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela con delicioso aroma que puedes personalizar con los tonos que desees y agregarle un mensaje para regalar. Incluye caja.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 6000
+      },
+      {
+        "name": "Docena",
+        "price": 60000
+      }
+    ]
+  },
+  {
+    "name": "Vela oso pebetero",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela con delicioso aroma que puedes personalizar con los tonos que desees y agregarle un mensaje para regalar. Incluye caja y nombre en vinilo.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 8000
+      },
+      {
+        "name": "Docena",
+        "price": 84000
+      }
+    ]
+  },
+  {
+    "name": "Vela mini 30 ml",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela de 30 ml con delicioso aroma que puedes personalizar con los tonos que desees y agregarle un mensaje para regalar. Incluye caja.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 7000
+      },
+      {
+        "name": "Docena",
+        "price": 78000
+      }
+    ]
+  },
+  {
+    "name": "Vela oso",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela con delicioso aroma que puedes personalizar con los tonos que desees y agregarle un mensaje para regalar.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 7000
+      },
+      {
+        "name": "Docena",
+        "price": 72000
+      }
+    ]
+  },
+  {
+    "name": "Vela burbuja mini luxury",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela con delicioso aroma que puedes personalizar con los tonos que desees y agregarle un mensaje para regalar.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 7000
+      },
+      {
+        "name": "Docena",
+        "price": 72000
+      }
+    ]
+  },
+  {
+    "name": "Vela conejo tierno",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela con delicioso aroma que puedes personalizar con el tono que desees. Incluye caja.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 9000
+      },
+      {
+        "name": "Docena",
+        "price": 96000
+      }
+    ]
+  },
+  {
+    "name": "Vela ángel aureola",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela con delicioso aroma que puedes personalizar con el tono que desees. Incluye caja y una tarjeta.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 9000
+      },
+      {
+        "name": "Docena",
+        "price": 96000
+      }
+    ]
+  },
+  {
+    "name": "Vela Primera Comunión",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela en pebetero metálico con delicioso aroma. Incluye tarjeta.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 4000
+      },
+      {
+        "name": "Docena",
+        "price": 42000
+      }
+    ]
+  },
+  {
+    "name": "Vela margarita",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela en malla con delicioso aroma. Incluye tarjeta.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 5000
+      },
+      {
+        "name": "Docena",
+        "price": 54000
+      }
+    ]
+  },
+  {
+    "name": "Vela vasito",
+    "category": "velas-y-ambientadores",
+    "description": "Vela en envase de policarbonato con flor incrustada (puede cambiarse por otra figura) y delicioso aroma. Incluye caja y sticker en vinilo o transparente.",
+    "personalization": "Color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 8000
+      },
+      {
+        "name": "Docena",
+        "price": 84000
+      }
+    ],
+    "featured": true,
+    "badge": "Personalizable",
+    "images": [
+      {
+        "src": "assets/vela-vasito.png",
+        "alt": "Vela vasito con una rosa lila incrustada, junto a sus cajas con moño"
+      }
+    ]
+  },
+  {
+    "name": "Vela flor en domo",
+    "category": "velas-y-ambientadores",
+    "description": "Hermosa vela en domo con flor de margarita u hortensia y delicioso aroma. Incluye tarjeta.",
+    "personalization": "Flor (margarita u hortensia), color y mensaje",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 8000
+      },
+      {
+        "name": "Docena",
+        "price": 84000
+      }
+    ]
+  },
+  {
+    "name": "Ambientador sólido",
+    "category": "velas-y-ambientadores",
+    "description": "Ambientador sólido de cera de soja con delicioso aroma, ideal para closets y cajones.",
+    "options": [
+      {
+        "name": "Unidad",
+        "price": 10000
+      }
+    ]
+  },
+  {
+    "name": "Ambientador de lino 120 ml",
+    "category": "velas-y-ambientadores",
+    "description": "Ambientador para espacios y linos, en presentación de 120 ml.\nSi llevas más de 6 unidades, cada una queda en $14.000 (escríbenos por WhatsApp).",
+    "options": [
+      {
+        "name": "Fresh Living",
+        "price": 17000
+      },
+      {
+        "name": "Rose Garden",
+        "price": 17000
+      }
+    ]
+  },
+  {
+    "name": "Wax melts 100 g",
+    "category": "velas-y-ambientadores",
+    "description": "Wax melts de cera de soja con delicioso aroma, para usar en pebeteros. Presentación de 100 g.",
+    "personalization": "Aroma",
+    "options": [
+      {
+        "name": "1 unidad",
+        "price": 18000
+      },
+      {
+        "name": "2 unidades",
+        "price": 32000
+      }
+    ]
+  },
+  {
+    "name": "Kit pebetero + wax melts",
+    "category": "velas-y-ambientadores",
+    "description": "Dale un delicioso aroma a tus espacios con este kit: incluye un pebetero, 3 velas tea light y wax melts de 100 g.",
+    "options": [
+      {
+        "name": "Kit",
+        "price": 50000
+      }
+    ]
+  },
+  {
+    "name": "Ambientador para carro",
+    "category": "velas-y-ambientadores",
+    "description": "Ambientador de carro en dos aromas:\n- Frappé rojo: notas de sandía y frambuesas frescas.\n- Cielo fresco: notas frescas, elegantes y sofisticadas.\nFragancia de 10 ml. Desde 6 unidades: kit a $18.000 y fragancia a $8.000 cada uno (escríbenos por WhatsApp).",
+    "personalization": "Aroma (Frappé rojo o Cielo fresco)",
+    "options": [
+      {
+        "name": "Kit dispositivo + fragancia",
+        "price": 24000
+      },
+      {
+        "name": "Repuesto de fragancia 10 ml",
+        "price": 12000
+      }
+    ]
+  }
+]

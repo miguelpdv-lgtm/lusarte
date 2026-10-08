@@ -2,7 +2,7 @@ import Image from "next/image";
 import type { CSSProperties } from "react";
 import { PlusIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { faqs } from "@/data/sample";
+import { faqs } from "@/data/faqs";
 import { whatsappUrl } from "@/lib/site";
 
 export function Faq() {

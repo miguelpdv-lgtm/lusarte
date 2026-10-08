@@ -1,0 +1,79 @@
+[
+  {
+    "name": "Cera de vaso",
+    "category": "ceras-y-aditivos",
+    "description": "Cera de vaso compuesta por 70% cera de palma y 30% parafina, ideal para velas en recipientes.\nPunto de fusión: 50 a 56 °C.",
+    "featured": true,
+    "options": [{ "name": "1 kg", "price": 21000 }],
+    "images": [{ "src": "assets/cera-de-vaso1kg.png", "alt": "Bolsa de cera de vaso de 1 kg con etiqueta Lusarte" }]
+  },
+  {
+    "name": "Parafina china granulada",
+    "category": "ceras-y-aditivos",
+    "description": "Parafina china full refinada granulada.\nPunto de fusión: 56 a 58 °C.\nUsos: velas, velones, ceras para pisos, betunes, formaletas y más. Si la complementas con nuestra cera de vaso obtendrás velas con mejores acabados.",
+    "options": [
+      { "name": "1 kg", "price": 15000 },
+      { "name": "20 kg", "price": 340000 }
+    ]
+  },
+  {
+    "name": "Cera de soja BPF",
+    "category": "ceras-y-aditivos",
+    "description": "Grasa vegetal elaborada a partir de soja, en escamas. Ideal para velas de masaje y aromáticas.\nPunto de fusión: 38 a 42 °C.",
+    "options": [
+      { "name": "1 kg", "price": 28000 },
+      { "name": "25 kg", "price": 650000 }
+    ]
+  },
+  {
+    "name": "Cera de soja APF",
+    "category": "ceras-y-aditivos",
+    "description": "Cera 100% de soja natural, en perlas.\nPunto de fusión: 60 a 70 °C.",
+    "options": [
+      { "name": "1 kg", "price": 30000 },
+      { "name": "25 kg", "price": 625000 }
+    ]
+  },
+  {
+    "name": "Parafina en gel",
+    "category": "ceras-y-aditivos",
+    "description": "Permite hacer velas transparentes.\nPunto de fusión: 83 a 88 °C.",
+    "options": [
+      { "name": "1 lb", "price": 19000, "compareAtPrice": 22000 },
+      { "name": "1 kg", "price": 33000 }
+    ]
+  },
+  {
+    "name": "Aditivo ácido esteárico",
+    "category": "ceras-y-aditivos",
+    "description": "Ayuda a endurecer la cera, prolonga su duración, mejora la absorción del colorante y el aspecto opaco, y facilita el desmolde. Se puede usar con ceras vegetales y parafina.",
+    "options": [{ "name": "1 kg", "price": 15000 }]
+  },
+  {
+    "name": "Parafina microcristalina brasilera (moldeable)",
+    "category": "ceras-y-aditivos",
+    "description": "Con un elevado punto de fusión y baja viscosidad, es perfecta para velas con acabado liso y duradero; además mejora la textura y la estabilidad de otras formulaciones. Se puede moldear, así que puedes hacer creaciones únicas.",
+    "options": [{ "name": "1 kg", "price": 30000 }]
+  },
+  {
+    "name": "Aditivo cera de palma",
+    "category": "ceras-y-aditivos",
+    "description": "Da mayor consistencia a ceras blandas (como la de soya) y facilita un desmolde limpio en velas de molde. Ayuda a que la vela queme de manera uniforme y lenta sin generar humos tóxicos, e intensifica los colorantes agregados a la mezcla.\nPunto de fusión: 100 °C.",
+    "options": [
+      { "name": "500 g", "price": 12000 },
+      { "name": "1 kg", "price": 22000 }
+    ]
+  },
+  {
+    "name": "Cera de molde",
+    "category": "ceras-y-aditivos",
+    "description": "Cera de alta blancura y alto punto de fusión, ideal para velas en molde.\nPunto de fusión: 100 °C.",
+    "options": [{ "name": "1 kg", "price": 28000 }]
+  },
+  {
+    "name": "Cera de coco",
+    "category": "ceras-y-aditivos",
+    "description": "Cera de coco 100% natural, de alta blancura y bajo punto de fusión. Ideal para velas aromáticas o de masaje.\nPunto de fusión: 40 a 42 °C.",
+    "options": [{ "name": "1 kg", "price": 31000 }]
+  }
+]

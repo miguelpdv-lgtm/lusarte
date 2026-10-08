@@ -1,0 +1,1147 @@
+[
+  {
+    "name": "Fragancia Coffee Toffee",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Déjate envolver por el abrazo profundo y adictivo de Coffee Toffee: la calidez de una taza recién servida, el antojo dulce del caramelo y el confort de los pequeños placeres cotidianos.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 11000,
+        "soldOut": true
+      },
+      {
+        "name": "60 ml",
+        "price": 22000,
+        "soldOut": true
+      },
+      {
+        "name": "125 ml",
+        "price": 42000,
+        "soldOut": true
+      },
+      {
+        "name": "250 ml",
+        "price": 78000,
+        "soldOut": true
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Bosque Fresco",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Salida: eucalipto puro, pino fresco, hojas verdes.\nCorazón: romero, lavanda silvestre, un toque de menta.\nFondo: musgo húmedo, cedro blanco, tierra mojada.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10000,
+        "soldOut": true
+      },
+      {
+        "name": "60 ml",
+        "price": 20000
+      },
+      {
+        "name": "125 ml",
+        "price": 38000
+      },
+      {
+        "name": "250 ml",
+        "price": 72000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Coctel de Piña",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Antes llamada Piña Colada. Notas cremosas y frutales, vibrantes y envolventes, sin llegar a ser empalagosas. Ideal para colecciones de verano, velas para terrazas o celebraciones que evoquen el sol y la brisa marina.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 11000
+      },
+      {
+        "name": "60 ml",
+        "price": 22000
+      },
+      {
+        "name": "125 ml",
+        "price": 40000
+      },
+      {
+        "name": "250 ml",
+        "price": 75000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Verbena Cítrica",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Antes llamada Verbena y Bergamota. Ideal para velas que acompañan rituales de descanso, spa o meditación. Su estilo unisex y moderno la hace muy versátil, perfecta para colecciones wellness y productos aromaterapéuticos.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10000
+      },
+      {
+        "name": "60 ml",
+        "price": 20000
+      },
+      {
+        "name": "125 ml",
+        "price": 39000,
+        "soldOut": true
+      },
+      {
+        "name": "250 ml",
+        "price": 72000,
+        "soldOut": true
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Leñador",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Conecta con la tierra y lo ancestral. Su nota principal de palo santo envuelve el ambiente con un aroma amaderado, cálido y ligeramente ahumado que evoca fogatas, bosques y rituales de introspección.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500
+      },
+      {
+        "name": "60 ml",
+        "price": 21000,
+        "soldOut": true
+      },
+      {
+        "name": "125 ml",
+        "price": 32000,
+        "soldOut": true
+      },
+      {
+        "name": "250 ml",
+        "price": 60000,
+        "soldOut": true
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Jardín de Toronjas",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Salida: toronja (pomelo), limón dulce, ralladura de lima.\nCorazón: flor de azahar, hojas verdes cítricas.\nFondo: azúcar cristalina, almizcle limpio.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500
+      },
+      {
+        "name": "60 ml",
+        "price": 21000
+      },
+      {
+        "name": "125 ml",
+        "price": 39000
+      },
+      {
+        "name": "250 ml",
+        "price": 72000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Baby Arrurú",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Antes llamada Baby Fresh. Suave y envolvente: delicadas notas florales sobre un fondo atalcado reconfortante. Perfecta para baby showers, regalos de nacimiento o para llenar tu espacio de una sensación limpia y apacible.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500
+      },
+      {
+        "name": "60 ml",
+        "price": 21000
+      },
+      {
+        "name": "125 ml",
+        "price": 40000
+      },
+      {
+        "name": "250 ml",
+        "price": 75000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Sweet Peach",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Sensual, femenina, jugosa y tierna. Transmite dulzura natural, calidez suave y momentos de verano. Perfecta para líneas románticas, golosas, juveniles o con un toque retro chic.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500
+      },
+      {
+        "name": "60 ml",
+        "price": 21000
+      },
+      {
+        "name": "125 ml",
+        "price": 39000
+      },
+      {
+        "name": "250 ml",
+        "price": 72000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Forever Love",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Un abrazo de dulzura y romanticismo: notas jugosas de frutos rojos que se entrelazan con un corazón floral de rosas y peonías, como caminar entre pétalos suaves al atardecer.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 12000
+      },
+      {
+        "name": "60 ml",
+        "price": 24000
+      },
+      {
+        "name": "125 ml",
+        "price": 44000
+      },
+      {
+        "name": "250 ml",
+        "price": 84000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Fruto Salvaje",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Libertad, frescura y sensualidad natural. Perfecta para velas con personalidad alegre y vibrante: un paseo entre frutas maduras bajo la sombra de un bosque.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 9500
+      },
+      {
+        "name": "60 ml",
+        "price": 19000
+      },
+      {
+        "name": "125 ml",
+        "price": 32000
+      },
+      {
+        "name": "250 ml",
+        "price": 60000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Pepino Fusión",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Luminosa y envolvente: la frescura cristalina del pepino con la dulzura jugosa de la fresa y la sandía. Una brisa ligera en un día cálido que calma los sentidos.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500
+      },
+      {
+        "name": "60 ml",
+        "price": 21000
+      },
+      {
+        "name": "125 ml",
+        "price": 40000
+      },
+      {
+        "name": "250 ml",
+        "price": 75000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Lavanda Francesa",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Salida herbal y fresca de lavanda francesa y lavandín, corazón de freesia floral y fondo de almizcles y sándalo cremoso. Invita al descanso y la relajación profunda.\nCompatible con parafina.",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 13500
+      },
+      {
+        "name": "60 ml",
+        "price": 27000
+      },
+      {
+        "name": "125 ml",
+        "price": 48000
+      },
+      {
+        "name": "250 ml",
+        "price": 94000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Dulce Tentación",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Una vibra de fresa recién mordida con un fondo cálido que la hace redonda y sofisticada. Ideal para velas de amor propio, autorregalo o momentos de dulzura consciente.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500
+      },
+      {
+        "name": "60 ml",
+        "price": 21000
+      },
+      {
+        "name": "125 ml",
+        "price": 40000
+      },
+      {
+        "name": "250 ml",
+        "price": 78000
+      }
+    ],
+    "featured": true,
+    "badge": "Premium",
+    "images": [
+      {
+        "src": "assets/fragancia-dulce.png",
+        "alt": "Fragancia Dulce Tentación de La Gata Golosa, con fresas y pétalos de rosa"
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Canela",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Mucho más que canela de cocina: tiene una dimensión perfumada ideal para momentos íntimos, estaciones frías, rituales de calma o colecciones sensuales y espirituales.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10000
+      },
+      {
+        "name": "60 ml",
+        "price": 20000
+      },
+      {
+        "name": "125 ml",
+        "price": 35000
+      },
+      {
+        "name": "250 ml",
+        "price": 65000,
+        "soldOut": true
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Lulazo",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "La versión más refinada de nuestra fruta tropical estrella: fresca, jugosa y exquisita, para llenar tus velas y wax de un aroma que vuelve extraordinario lo cotidiano.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500
+      },
+      {
+        "name": "60 ml",
+        "price": 21000
+      },
+      {
+        "name": "125 ml",
+        "price": 40000
+      },
+      {
+        "name": "250 ml",
+        "price": 78000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Coco Amor",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Sensualidad tropical, dulzura profunda y caricia envolvente. En velas crea una atmósfera cálida, seductora y ligeramente adictiva; ideal para rituales de autocuidado y colecciones femeninas.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 11500
+      },
+      {
+        "name": "60 ml",
+        "price": 23000
+      },
+      {
+        "name": "125 ml",
+        "price": 43000
+      },
+      {
+        "name": "250 ml",
+        "price": 83000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Naranja Radiante",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Vitalidad absoluta, alegría chispeante y frescura solar. Su intensidad de fruta dulce la hace perfecta para cocinas, estudios creativos, baños o para empezar el día con actitud.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 11500
+      },
+      {
+        "name": "60 ml",
+        "price": 23000
+      },
+      {
+        "name": "125 ml",
+        "price": 44000
+      },
+      {
+        "name": "250 ml",
+        "price": 82000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Chantilly",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Antes llamada Cookies & Cream. Un baile entre crema batida sedosa y vainilla de ensueño, con un misterioso toque ácido que despierta los sentidos.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500,
+        "soldOut": true
+      },
+      {
+        "name": "60 ml",
+        "price": 21000
+      },
+      {
+        "name": "125 ml",
+        "price": 40000
+      },
+      {
+        "name": "250 ml",
+        "price": 76000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Acqua di Rossi",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Romanticismo floral con un toque moderno y sensual. Transmite feminidad, serenidad y elegancia; ideal para rituales de amor propio, gratitud o reconexión emocional.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 11000
+      },
+      {
+        "name": "60 ml",
+        "price": 22000
+      },
+      {
+        "name": "125 ml",
+        "price": 40000,
+        "soldOut": true
+      },
+      {
+        "name": "250 ml",
+        "price": 75000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Flor de Loto",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Paz profunda, pureza y equilibrio emocional. Fresca sin ser fría, floral sin ser empalagosa: ideal para espacios de meditación, descanso, yoga o spa.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 11000
+      },
+      {
+        "name": "60 ml",
+        "price": 22000,
+        "soldOut": true
+      },
+      {
+        "name": "125 ml",
+        "price": 42000
+      },
+      {
+        "name": "250 ml",
+        "price": 78000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Boombastic Girl",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Una atmósfera chispeante, alegre e intensa que invita a la diversión. Ideal para espacios sociales, reuniones con amigas o como un regalo lleno de personalidad.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 13500
+      },
+      {
+        "name": "60 ml",
+        "price": 27000
+      },
+      {
+        "name": "125 ml",
+        "price": 50000
+      },
+      {
+        "name": "250 ml",
+        "price": 95000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Mujer Magnética",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Oriental floral, intensa y seductora: atrae con su esencia envolvente y sofisticada. Ideal para la noche y momentos íntimos.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 11000
+      },
+      {
+        "name": "60 ml",
+        "price": 22000
+      },
+      {
+        "name": "125 ml",
+        "price": 44000
+      },
+      {
+        "name": "250 ml",
+        "price": 82000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Crema de Limón",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Salida cítrica brillante de limón y naranja, corazón cremoso que evoca una carlota de limón y fondo avainillado que suaviza el aroma, sin sensación de limpiador.\nCompatible con parafina.",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 12000
+      },
+      {
+        "name": "60 ml",
+        "price": 24000
+      },
+      {
+        "name": "125 ml",
+        "price": 44000
+      },
+      {
+        "name": "250 ml",
+        "price": 82000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Limonada Cerezada",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Frutal y vibrante: salida cítrica refrescante con el toque jugoso de la cereza, y un corazón de frutos rojos con un matiz floral suave. Perfecta para velas y wax melts.\nCompatible con parafina.",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 11000
+      },
+      {
+        "name": "60 ml",
+        "price": 22000
+      },
+      {
+        "name": "125 ml",
+        "price": 44000
+      },
+      {
+        "name": "250 ml",
+        "price": 82000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Mariner",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Fresca, ligera, tropical y liberadora, como abrir ventanas frente al mar. Ideal para días calurosos y colecciones veraniegas o neutras.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500
+      },
+      {
+        "name": "60 ml",
+        "price": 21000
+      },
+      {
+        "name": "125 ml",
+        "price": 40000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia El Patrón",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Fuerte, segura y con carácter: un perfil profundo y cálido, con notas intensas y masculinas, que llena el espacio con una presencia imponente.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 11000
+      },
+      {
+        "name": "60 ml",
+        "price": 22000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Dulce Carnaval",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Frutal tropical lleno de alegría: piña, mango y fresa que evolucionan hacia frutos rojos y papaya, sobre un fondo de vainilla y almizcle. Perfecta para salas, cocinas y reuniones familiares.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 13500
+      },
+      {
+        "name": "60 ml",
+        "price": 27000,
+        "soldOut": true
+      },
+      {
+        "name": "125 ml",
+        "price": 52000,
+        "soldOut": true
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Yogurt de Fresa",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Fresa madura y dulce con la suavidad de un yogurt cremoso, sobre un fondo de vainilla suave, crema dulce y almizcle ligero. Cálida, nostálgica y acogedora.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 13500
+      },
+      {
+        "name": "60 ml",
+        "price": 27000
+      },
+      {
+        "name": "125 ml",
+        "price": 50000
+      },
+      {
+        "name": "250 ml",
+        "price": 94000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Mocaccino",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "El cremoso café se une al dulce chocolate, como un moccaccino recién preparado. Intensa, acogedora y sofisticada.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 11000
+      },
+      {
+        "name": "60 ml",
+        "price": 22000
+      },
+      {
+        "name": "125 ml",
+        "price": 42000
+      },
+      {
+        "name": "250 ml",
+        "price": 78000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Baileys",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Inspirada en el licor de crema irlandesa: notas licorosas y whisky suave con crema dulce, corazón de vainilla y café, y un fondo gourmand de caramelo, chocolate y madera dulce.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 14000
+      },
+      {
+        "name": "60 ml",
+        "price": 28000
+      },
+      {
+        "name": "125 ml",
+        "price": 50000
+      },
+      {
+        "name": "250 ml",
+        "price": 95000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Berry Fizz",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Inspirada en los cócteles italianos de frutos rojos y morados: mora y uva efervescentes, corazón de fresa y frambuesa, y un fondo elegante de uva.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500,
+        "soldOut": true
+      },
+      {
+        "name": "60 ml",
+        "price": 21000
+      },
+      {
+        "name": "125 ml",
+        "price": 35000,
+        "soldOut": true
+      },
+      {
+        "name": "250 ml",
+        "price": 68000,
+        "soldOut": true
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Sangría Velvet",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "La esencia de una sangría dulce y especiada al anochecer: frutas oscuras, especias cálidas y vainilla cremosa. Sensual y sofisticada, ideal para velas de temporada.\nCompatible con parafina.",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500
+      },
+      {
+        "name": "60 ml",
+        "price": 21000
+      },
+      {
+        "name": "125 ml",
+        "price": 35000
+      },
+      {
+        "name": "250 ml",
+        "price": 68000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Pink Soda",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Inspirada en las sodas italianas de frutos rojos: frambuesa, fresa y lichi burbujeantes, con un toque delicado de jazmín.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 11000
+      },
+      {
+        "name": "60 ml",
+        "price": 22000
+      },
+      {
+        "name": "125 ml",
+        "price": 40000,
+        "soldOut": true
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Chinola",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Refrescante, vibrante, frutal y adictiva: maracuyá con cítricos y frutas tropicales. En velas se percibe como una explosión veraniega, jugosa y ligera.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 12500
+      },
+      {
+        "name": "60 ml",
+        "price": 23000
+      },
+      {
+        "name": "125 ml",
+        "price": 43000
+      },
+      {
+        "name": "250 ml",
+        "price": 82000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Velvet Blush",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Un viaje sensorial por un jardín prohibido: las notas vibrantes del melocotón rojo se combinan con la elegancia de la fresia.",
+    "warning": "No compatible con parafina",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 12500
+      },
+      {
+        "name": "60 ml",
+        "price": 25000
+      },
+      {
+        "name": "125 ml",
+        "price": 47000
+      },
+      {
+        "name": "250 ml",
+        "price": 80000,
+        "soldOut": true
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Natilla Colombiana",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Abre con leche y dulce de leche, con un toque de canela que trae el calor de las recetas navideñas clásicas, envuelto en vainilla y azúcar. Colección Aromas del Mundo en Navidad.",
+    "warning": "No compatible con parafina",
+    "navidad": true,
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 15000
+      },
+      {
+        "name": "60 ml",
+        "price": 28000
+      },
+      {
+        "name": "120 ml",
+        "price": 53000
+      },
+      {
+        "name": "250 ml",
+        "price": 110000,
+        "soldOut": true
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Pistacho Xmas Mousse",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Crema de pistacho y pistacho tostado: una salida intensa, cremosa e irresistible, con notas lácteas, vainilla y coco. Colección Aromas del Mundo en Navidad.",
+    "warning": "No compatible con parafina",
+    "navidad": true,
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 15000
+      },
+      {
+        "name": "60 ml",
+        "price": 28000,
+        "soldOut": true
+      },
+      {
+        "name": "120 ml",
+        "price": 53000
+      },
+      {
+        "name": "250 ml",
+        "price": 110000,
+        "soldOut": true
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Macadamia Christmas",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Macadamia tostada y chocolate blanco con caramelo, flor de coco y vainilla: una Navidad cremosa y tropical. Colección Aromas del Mundo en Navidad.",
+    "warning": "No compatible con parafina",
+    "navidad": true,
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 15000
+      },
+      {
+        "name": "60 ml",
+        "price": 28000
+      },
+      {
+        "name": "120 ml",
+        "price": 53000
+      },
+      {
+        "name": "250 ml",
+        "price": 110000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Panettone",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Un abrazo cálido y reconfortante con notas de pera, naranja y manzana confitada, crema, clavo, caramelo y haba tonka. Colección Aromas del Mundo en Navidad.",
+    "warning": "No compatible con parafina",
+    "navidad": true,
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 13000
+      },
+      {
+        "name": "60 ml",
+        "price": 24000
+      },
+      {
+        "name": "120 ml",
+        "price": 45000
+      },
+      {
+        "name": "250 ml",
+        "price": 88000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Vino Espumoso",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Frutal, ligeramente dulce y con un elegante carácter fermentado que recuerda al vino de manzana. Colección Aromas del Mundo en Navidad.",
+    "warning": "No compatible con parafina",
+    "navidad": true,
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 12500
+      },
+      {
+        "name": "60 ml",
+        "price": 23000
+      },
+      {
+        "name": "120 ml",
+        "price": 43000
+      },
+      {
+        "name": "250 ml",
+        "price": 82000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia White Fondue de Noël",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Un delicioso chocolate blanco cremoso, con crema batida y flor de vainilla, que seduce sin ser empalagoso. Colección Aromas del Mundo en Navidad.",
+    "warning": "No compatible con parafina",
+    "navidad": true,
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 12500
+      },
+      {
+        "name": "60 ml",
+        "price": 23000
+      },
+      {
+        "name": "120 ml",
+        "price": 43000
+      },
+      {
+        "name": "250 ml",
+        "price": 82000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Holiday Punch",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Rompe con los aromas navideños pesados: luminosa, chispeante y refrescante, con una explosión de cítricos, menta fresca y candy cane. Colección Aromas del Mundo en Navidad.",
+    "warning": "No compatible con parafina",
+    "navidad": true,
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 12500
+      },
+      {
+        "name": "60 ml",
+        "price": 23000
+      },
+      {
+        "name": "120 ml",
+        "price": 43000
+      },
+      {
+        "name": "250 ml",
+        "price": 82000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Muérdago de Santa",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Fresca, luminosa y con ese toque dulce que encanta a grandes y chicos. Colección Navidad.",
+    "warning": "No compatible con parafina",
+    "navidad": true,
+    "options": [
+      {
+        "name": "60 ml",
+        "price": 18000,
+        "compareAtPrice": 20000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Chocolate Caliente con Masmelos",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Cálido, cremoso y reconfortante como la primera taza de chocolate en una tarde fría: cacao derretido y masmelos tostados. Colección Navidad.",
+    "warning": "No compatible con parafina",
+    "navidad": true,
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 9000,
+        "compareAtPrice": 10000
+      },
+      {
+        "name": "60 ml",
+        "price": 18000,
+        "compareAtPrice": 20000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Chispa Invernal",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Luminosa, fresca y sutilmente etérea, como la primera ráfaga de aire frío de diciembre: notas limpias, toques cristalinos y un fondo herbal o amaderado suave. Colección Navidad.",
+    "warning": "No compatible con parafina",
+    "navidad": true,
+    "options": [
+      {
+        "name": "120 ml",
+        "price": 27000,
+        "compareAtPrice": 30000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Pudín de Naranja",
+    "category": "fragancias",
+    "subcategory": "premium-gata-golosa",
+    "description": "Cremoso, cítrico y envolvente: la dulzura de un postre casero con ralladura de naranja, vainilla y caramelo. Colección Navidad.",
+    "warning": "No compatible con parafina",
+    "navidad": true,
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8100,
+        "compareAtPrice": 9000
+      },
+      {
+        "name": "60 ml",
+        "price": 16200,
+        "compareAtPrice": 18000
+      },
+      {
+        "name": "120 ml",
+        "price": 29700,
+        "compareAtPrice": 33000
+      },
+      {
+        "name": "250 ml",
+        "price": 57600,
+        "compareAtPrice": 64000
+      }
+    ]
+  }
+]

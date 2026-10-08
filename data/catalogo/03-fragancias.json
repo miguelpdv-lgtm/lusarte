@@ -1,0 +1,423 @@
+[
+  {
+    "name": "Fragancia Manzana Canela",
+    "category": "fragancias",
+    "description": "Notas altas: fresa salvaje, cáscara de limón. Medias: cáscara de manzana verde, canela molida. Bajas: coco rallado, vainilla azucarada.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 9500
+      },
+      {
+        "name": "60 ml",
+        "price": 18000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Chocolate",
+    "category": "fragancias",
+    "description": "Notas altas: mantequilla derretida, chocolate belga. Medias: cacao en polvo, azúcar granulada. Bajas: vainilla, coco rallado.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500
+      },
+      {
+        "name": "60 ml",
+        "price": 20000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Hojas de Otoño",
+    "category": "fragancias",
+    "description": "Notas altas: mandarina, jengibre rosa, cidra. Medias: limoncillo, moras rojas, flor blanca, geranio. Bajas: vainilla, almizcle afrutado.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 0,
+        "soldOut": true
+      },
+      {
+        "name": "60 ml",
+        "price": 0,
+        "soldOut": true
+      }
+    ],
+    "visible": false
+  },
+  {
+    "name": "Fragancia Jengibre Melocotón",
+    "category": "fragancias",
+    "description": "Notas altas: lima, flor de jengibre, melocotón jugoso, manzana roja. Medias: ylang ylang, mermelada de bayas. Bajas: almizcle afrutado, haba tonka, corteza de canela.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 9500
+      },
+      {
+        "name": "60 ml",
+        "price": 18000
+      },
+      {
+        "name": "125 ml",
+        "price": 36000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Vainilla Dulce",
+    "category": "fragancias",
+    "description": "Notas altas: mantequilla batida, leche de coco. Medias: coco rallado, corteza de canela. Bajas: vainilla bourbon, azúcar demerara.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10000
+      },
+      {
+        "name": "60 ml",
+        "price": 19000
+      },
+      {
+        "name": "125 ml",
+        "price": 37000
+      },
+      {
+        "name": "250 ml",
+        "price": 70000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Sandía",
+    "category": "fragancias",
+    "description": "Fragancia con delicioso aroma a sandía.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Rosa",
+    "category": "fragancias",
+    "description": "Notas altas: geranio rosado, grosella roja, granada, jengibre espumoso. Medias: melocotón, ámbar gris, haba tonka, pétalo de rosa. Bajas: vainilla, almizcle, ámbar.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10000
+      },
+      {
+        "name": "60 ml",
+        "price": 19000
+      },
+      {
+        "name": "125 ml",
+        "price": 38000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Dulce de Leche",
+    "category": "fragancias",
+    "description": "Notas altas: bergamota, leche de coco, cereza. Medias: almendra molida, orquídea de vainilla, heliotropo. Bajas: galleta, sándalo, azúcar moreno.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "60 ml",
+        "price": 17000
+      }
+    ],
+    "navidad": true
+  },
+  {
+    "name": "Fragancia Eucaliptus",
+    "category": "fragancias",
+    "description": "Notas altas: eucalipto. Medias: pino, notas frescas. Bajas: alcanfor.\nMultipropósito: velas, difusores de varitas, humidificadores, productos de spa y ambientadores.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      },
+      {
+        "name": "125 ml",
+        "price": 24000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Bergamota Fresh",
+    "category": "fragancias",
+    "description": "Notas altas: flores de bergamota. Medias: bergamota. Bajas: piel de naranja.\nMultipropósito: velas, difusores de varitas, humidificadores, productos de spa y ambientadores.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      },
+      {
+        "name": "125 ml",
+        "price": 24000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Crema de Whisky",
+    "category": "fragancias",
+    "description": "Notas de salida: whisky, vainilla. Medias: vainilla, almendra. Fondo: especiado dulce. Nota general: whisky cálido.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 7500
+      },
+      {
+        "name": "60 ml",
+        "price": 12000
+      },
+      {
+        "name": "125 ml",
+        "price": 20000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Jazmín",
+    "category": "fragancias",
+    "description": "Notas de salida: flores de jazmín. Medias: fresco balsámico. Fondo: jazmín dulce. Nota general: jazmín floral.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      },
+      {
+        "name": "125 ml",
+        "price": 24000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Palo Santo",
+    "category": "fragancias",
+    "description": "Notas de salida: incienso, lilas. Medias: sándalo floral. Fondo: vainilla amaderada. Nota general: madera dulce.\nIntensidad: media a alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Bambú",
+    "category": "fragancias",
+    "description": "Notas de salida: herbal, jazmín. Medias: acuoso fresco. Fondo: bergamota floral. Nota general: floral fresco acuoso.\nIntensidad: media a alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      },
+      {
+        "name": "125 ml",
+        "price": 24000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Café",
+    "category": "fragancias",
+    "description": "Notas de salida: café tostado. Medias: crema dulce. Fondo: avellana, vainilla. Nota general: café.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      },
+      {
+        "name": "125 ml",
+        "price": 24000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Vainilla",
+    "category": "fragancias",
+    "description": "Notas de salida: vainilla bourbon. Medias: coco, crema dulce. Fondo: caramelo. Nota general: vainilla dulce.\nIntensidad: media a alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      },
+      {
+        "name": "125 ml",
+        "price": 24000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Frutos Rojos",
+    "category": "fragancias",
+    "description": "Notas de salida: cereza, frambuesa. Medias: melocotón, especias cálidas. Fondo: clavo, almizcle. Nota general: frutal fresco.\nIntensidad: media a alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      },
+      {
+        "name": "125 ml",
+        "price": 24000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Maracumango",
+    "category": "fragancias",
+    "description": "Notas de salida: maracuyá dulce. Medias: mango tropical. Fondo: frutal aterciopelado. Nota general: frutal tropical.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Maracuyá",
+    "category": "fragancias",
+    "description": "Notas de salida: maracuyá, pomelo. Medias: ácido refrescante. Fondo: frutas dulces. Nota general: frutal cítrico.\nIntensidad: media a alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 7500
+      },
+      {
+        "name": "60 ml",
+        "price": 12000
+      },
+      {
+        "name": "125 ml",
+        "price": 20000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Limón Sandía",
+    "category": "fragancias",
+    "description": "Notas de salida: limón cítrico. Medias: sandía dulce. Fondo: melón dulce. Nota general: cítrico frutal.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 7500
+      },
+      {
+        "name": "60 ml",
+        "price": 12000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Copo de Algodón",
+    "category": "fragancias",
+    "description": "Notas de salida: clavel, jazmín. Medias: flores de algodón cosmético. Fondo: musk, vainilla. Nota general: polvoroso floral.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      },
+      {
+        "name": "125 ml",
+        "price": 24000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Fresa",
+    "category": "fragancias",
+    "description": "Deliciosa fragancia con notas de fresas frescas.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 7000
+      },
+      {
+        "name": "125 ml",
+        "price": 20000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Vainilla Francesa",
+    "category": "fragancias",
+    "description": "Notas de salida: vainilla cremosa. Medias: mantequilla dulce. Fondo: caramelo frutal. Nota general: vainilla y mantequilla dulce.\nIntensidad: media a alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 8000
+      },
+      {
+        "name": "60 ml",
+        "price": 14000
+      }
+    ]
+  },
+  {
+    "name": "Fragancia Bastón Navideño",
+    "category": "fragancias",
+    "description": "Notas altas: naranja, cítricos, pimienta. Medias: canela, iris, clavo de olor. Bajas: nuez moscada, vainilla, almizcle.\nIntensidad: alta.\nUso recomendado: entre el 6% y el 8% (los porcentajes son recomendaciones).",
+    "options": [
+      {
+        "name": "30 ml",
+        "price": 10500
+      },
+      {
+        "name": "60 ml",
+        "price": 20000
+      },
+      {
+        "name": "125 ml",
+        "price": 40000
+      }
+    ],
+    "navidad": true
+  }
+]

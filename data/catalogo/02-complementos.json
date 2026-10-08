@@ -1,0 +1,325 @@
+[
+  {
+    "name": "Colorantes en anilina a la grasa",
+    "category": "complementos",
+    "description": "Anilinas a la grasa para darle color a tus velas. Tonos: amarillo, azul, rojo, verde, morado, café, negro, amarillo neón, naranja neón y azul neón. Precio por unidad.",
+    "personalization": "Color",
+    "options": [{ "name": "Unidad", "price": 6000 }]
+  },
+  {
+    "name": "Aceite cristal",
+    "category": "complementos",
+    "description": "Ideal para diluir los colorantes neón, desmoldar y limpiar moldes u ollas.",
+    "options": [
+      { "name": "60 ml", "price": 3000 },
+      { "name": "500 ml", "price": 14000 }
+    ]
+  },
+  {
+    "name": "Colorantes líquidos",
+    "category": "complementos",
+    "description": "Colorantes líquidos para darle un color único a tus velas. Presentación de 30 ml.\nHay tonos tradicionales, neón y de Navidad: pregunta por los colores disponibles o escribe el que quieres al comprar.",
+    "personalization": "Color",
+    "options": [
+      { "name": "Color tradicional · 30 ml", "price": 12000 },
+      { "name": "Color Navidad · 30 ml", "price": 14000 }
+    ]
+  },
+  {
+    "name": "Colorantes fotocromáticos · Colección Reflejo Solar",
+    "category": "complementos",
+    "description": "Colorantes líquidos que cambian de color con la luz del sol, para darle un toque único a tus velas.\nColores disponibles: fucsia, amarillo, azul y morado. Presentación de 30 ml, precio por unidad.",
+    "personalization": "Color",
+    "options": [{ "name": "30 ml", "price": 18500 }]
+  },
+  {
+    "name": "Pigmento plateado",
+    "category": "complementos",
+    "description": "Pigmento para decorar las velas por fuera. No es recomendable mezclarlo con la cera.",
+    "options": [{ "name": "10 g", "price": 7000 }]
+  },
+  {
+    "name": "Pigmento dorado",
+    "category": "complementos",
+    "description": "Pigmento para decorar las velas por fuera. No es recomendable mezclarlo con la cera.",
+    "options": [{ "name": "10 g", "price": 8000 }]
+  },
+  {
+    "name": "Mica blanco perla",
+    "category": "complementos",
+    "description": "Pigmento para decorar las velas. No es recomendable mezclarlo con la cera, salvo en wax melts.",
+    "options": [{ "name": "Unidad", "price": 7000 }]
+  },
+  {
+    "name": "Micas de colores",
+    "category": "complementos",
+    "description": "Pigmento para decorar las velas. No es recomendable mezclarlo con la cera, salvo en wax melts.\nColores disponibles: plateada, rosa, bronce, dorada, cobre, verde, magenta y naranja.",
+    "personalization": "Color",
+    "options": [{ "name": "Unidad", "price": 6000 }]
+  },
+  {
+    "name": "Cepalín dorado 3 mm",
+    "category": "complementos",
+    "description": "Cinta adhesiva dorada para decorar velas o recipientes. Cada rollo trae aproximadamente 30 m.",
+    "options": [{ "name": "Rollo", "price": 6500 }]
+  },
+  {
+    "name": "Hojilla de oro",
+    "category": "complementos",
+    "description": "Caja con 25 hojas metalizadas doradas de 14 × 14 cm, ideales para decorar velas.",
+    "options": [{ "name": "Caja x 25", "price": 15000 }]
+  },
+  {
+    "name": "Hojilla de plata",
+    "category": "complementos",
+    "description": "Caja con 25 hojas metalizadas plateadas de 14 × 14 cm, ideales para decorar velas.",
+    "options": [{ "name": "Caja x 25", "price": 15000 }]
+  },
+  {
+    "name": "Pistola de calor",
+    "category": "complementos",
+    "description": "Modo de uso: déjala calentar 1 minuto después de encenderla y acércala máximo a 1 cm de la superficie. Deja enfriar la zona antes de manipularla y apágala al terminar para evitar el sobrecalentamiento.",
+    "options": [{ "name": "Unidad", "price": 78000 }]
+  },
+  {
+    "name": "Aditivo Vybar",
+    "category": "complementos",
+    "description": "Aditivo para ceras parafinadas con punto de fusión igual o mayor a 58 °C.\n- Potencia y fija mejor el olor de las fragancias.\n- Elimina defectos como grietas y burbujas.\n- Facilita el desmolde al enfriar más rápido.\n- Da velas más duras y duraderas.\n- Reduce el sangrado por exudación del aceite y mantiene el veteado.\nRecomendación: por kilo de parafina usa máximo el 2%.",
+    "options": [
+      { "name": "20 g", "price": 3000 },
+      { "name": "100 g", "price": 12000 }
+    ]
+  },
+  {
+    "name": "Epolene",
+    "category": "complementos",
+    "description": "Ayuda a dar un color más blanco a la cera o parafina. Se recomienda usar el 1% del peso total de la cera o parafina.",
+    "visible": false,
+    "options": [{ "name": "Unidad", "price": 0, "soldOut": true }]
+  },
+  {
+    "name": "Potencializador de aromas",
+    "category": "complementos",
+    "description": "Ayuda a fortalecer el aroma de la fragancia.\nModo de uso: 7 gotas por cada onza de esencia. Agita la esencia después de agregarlo y déjala reposar 72 horas.",
+    "options": [{ "name": "30 ml", "price": 5500 }]
+  },
+  {
+    "name": "Centrador de mecha de madera x 5",
+    "category": "complementos",
+    "description": "Centra la mecha para un acabado perfecto y para que la vela queme pareja. Precio por paquete de 5.",
+    "options": [{ "name": "Paquete x 5", "price": 3000 }]
+  },
+  {
+    "name": "Gramera digital 10 kg",
+    "category": "complementos",
+    "description": "Capacidad hasta 10 kg, función de tara y apagado automático. Funciona con 2 pilas AA.",
+    "options": [{ "name": "Unidad", "price": 20000 }]
+  },
+  {
+    "name": "Termómetro digital",
+    "category": "complementos",
+    "description": "Fácil de usar para tomar la temperatura de la cera o parafina al hacer tus velas. También sirve para alimentos.",
+    "options": [{ "name": "Unidad", "price": 20000 }]
+  },
+  {
+    "name": "Goteros plásticos",
+    "category": "complementos",
+    "description": "Para medir la fragancia o aplicar cera en moldes pequeños. Fáciles de usar y de limpiar. Precio por unidad.",
+    "options": [{ "name": "Unidad", "price": 2500 }]
+  },
+  {
+    "name": "Jarra de aluminio",
+    "category": "complementos",
+    "description": "Jarra de aluminio de fácil agarre, ideal para derretir cera o parafina. Para hacer velas lo mejor es tener un recipiente solo para eso.",
+    "options": [
+      { "name": "1 litro", "price": 16500 },
+      { "name": "2 litros", "price": 21000 }
+    ]
+  },
+  {
+    "name": "Manga pastelera de silicona",
+    "category": "complementos",
+    "description": "Manga de silicona de 30 cm para hacer velas tipo postre.",
+    "options": [
+      { "name": "Sola", "price": 8000 },
+      { "name": "Con acople y 8 boquillas", "price": 22000 }
+    ]
+  },
+  {
+    "name": "Espátula de silicona",
+    "category": "complementos",
+    "description": "Resistente al calor (hasta 500 °F) y flexible, cómoda de agarrar y fácil de limpiar. Mide unos 11 cm. Sirve para revolver la mezcla de cera y sacar la cera que queda pegada en la olla.",
+    "options": [{ "name": "Unidad", "price": 10000, "compareAtPrice": 14000 }]
+  },
+  {
+    "name": "Pabilo encerado por metro",
+    "category": "complementos",
+    "description": "Pabilo encerado 100% algodón. Precio por metro, según el diámetro de la vela.",
+    "options": [
+      { "name": "Vela de 4 cm", "price": 2000 },
+      { "name": "Vela de 5 cm", "price": 2000 },
+      { "name": "Vela de 6 cm", "price": 2000, "soldOut": true },
+      { "name": "Vela de 7,5 cm", "price": 2000 }
+    ]
+  },
+  {
+    "name": "Stickers para pabilo x 10",
+    "category": "complementos",
+    "description": "Para pegar el pabilo al envase y que no se corra al agregar la cera. Precio por 10 unidades.",
+    "options": [{ "name": "Paquete x 10", "price": 2500 }]
+  },
+  {
+    "name": "Portamecha para pabilo de madera x 10",
+    "category": "complementos",
+    "description": "De acero inoxidable, sujeta firmemente las mechas de madera. Paquete de 10.",
+    "options": [{ "name": "Paquete x 10", "price": 6000 }]
+  },
+  {
+    "name": "Portamechas metálicos 10 g",
+    "category": "complementos",
+    "description": "La base metálica que sostiene el pabilo, para fijarlo en recipientes o en velas de molde. 10 g son aproximadamente 35 portamechas.",
+    "options": [{ "name": "10 g", "price": 2000 }]
+  },
+  {
+    "name": "Varitas de ratán natural x 6",
+    "category": "complementos",
+    "description": "Paquete de 6 varitas de ratán de 20 cm para difusores: hacen que la fragancia se sienta con más intensidad.",
+    "options": [{ "name": "Paquete x 6", "price": 2000 }]
+  },
+  {
+    "name": "Aceite de coco",
+    "category": "complementos",
+    "description": "Humecta la piel, contiene vitamina E y previene la resequedad.",
+    "options": [{ "name": "30 ml", "price": 6500 }]
+  },
+  {
+    "name": "Colorante blanco (dióxido de titanio)",
+    "category": "complementos",
+    "description": "Le da más blancura a la cera o parafina.",
+    "options": [{ "name": "10 g", "price": 8000, "compareAtPrice": 12000 }]
+  },
+  {
+    "name": "Alcohol 96%",
+    "category": "complementos",
+    "description": "Complemento para hacer ambientadores de varitas y jabones.",
+    "options": [{ "name": "100 ml", "price": 3000 }]
+  },
+  {
+    "name": "Solubilizante MMB",
+    "category": "complementos",
+    "description": "Solubilizante de fragancias para hacer ambientadores de varitas.",
+    "options": [{ "name": "100 ml", "price": 15000 }]
+  },
+  {
+    "name": "Craquelador",
+    "category": "complementos",
+    "description": "Craquela pinturas a base de agua como vinilos y acrílicos.",
+    "options": [{ "name": "60 ml", "price": 4500 }]
+  },
+  {
+    "name": "Pegante mordiente",
+    "category": "complementos",
+    "description": "Para pegar hojilla y foil sobre cerámica, madera, MDF, cartón, yeso, papel y más. Aplica una capa delgada, deja secar unos 10 minutos y pega la hojilla o el foil con un pincel seco.",
+    "options": [{ "name": "60 ml", "price": 6000 }]
+  },
+  {
+    "name": "Pintura acrílica",
+    "category": "complementos",
+    "description": "Pintura a base de agua con emulsiones acrílicas, para decorar velas y recipientes. Frasco de 30 ml.",
+    "options": [
+      { "name": "Negro", "price": 3000 },
+      { "name": "Rojo vivo", "price": 3000 },
+      { "name": "Azul bebé", "price": 3000 },
+      { "name": "Amarillo sol", "price": 3000 },
+      { "name": "Verde manzana", "price": 3000 },
+      { "name": "Marrón peluche", "price": 3000 },
+      { "name": "Rosa francés", "price": 3000 },
+      { "name": "Dorada", "price": 7000 },
+      { "name": "Oro 24K puro", "price": 7000 },
+      { "name": "Plata", "price": 8000 }
+    ]
+  },
+  {
+    "name": "Pincel redondo",
+    "category": "complementos",
+    "description": "Cerdas suaves y flexibles agrupadas en punta redonda: aplicación uniforme y controlada, desde trazos finos y detalles hasta áreas más amplias.",
+    "options": [
+      { "name": "L/0", "price": 4500 },
+      { "name": "L 0/2", "price": 4500 },
+      { "name": "L 0/3", "price": 4500 }
+    ]
+  },
+  {
+    "name": "Velas tea light x 10",
+    "category": "complementos",
+    "description": "Paquete de 10 velas tea light, ideales para pebeteros.",
+    "options": [{ "name": "Paquete x 10", "price": 6500 }]
+  },
+  {
+    "name": "Pebetero de cerámica",
+    "category": "complementos",
+    "description": "Pebetero de cerámica color blanco.",
+    "options": [{ "name": "Unidad", "price": 22000 }]
+  },
+  {
+    "name": "Pabilo de 18 cm (docena)",
+    "category": "complementos",
+    "description": "Pabilos importados 100% algodón, encerados, para velas de 4,5 cm de diámetro y 18 cm de alto. Incluyen portapabilo. Precio por docena.",
+    "options": [{ "name": "Docena", "price": 4000 }]
+  },
+  {
+    "name": "Barniz para velas",
+    "category": "complementos",
+    "description": "Da un acabado brillante a tus velas.",
+    "options": [{ "name": "125 ml", "price": 16000 }]
+  },
+  {
+    "name": "Punzón",
+    "category": "complementos",
+    "description": "Para poner el pabilo en los moldes que haya que perforar.",
+    "options": [{ "name": "Unidad", "price": 12000 }]
+  },
+  {
+    "name": "Termómetro infrarrojo digital",
+    "category": "complementos",
+    "description": "Mide de -50 °C a 500 °C (-58 °F a 932 °F), con selector °C/°F. Funciona con 2 pilas AAA.",
+    "options": [{ "name": "Unidad", "price": 55000 }]
+  },
+  {
+    "name": "Esferas acrílicas de 8 cm",
+    "category": "complementos",
+    "description": "Esfera acrílica de 8 cm para poner fotografías o decorar con escarcha y vinilo adhesivo.",
+    "navidad": true,
+    "options": [
+      { "name": "Unidad", "price": 3200 },
+      { "name": "Paquete x 10", "price": 30000 }
+    ]
+  },
+  {
+    "name": "Pabilo de madera",
+    "category": "complementos",
+    "description": "Pabilo de madera, viene el par.\nTalla M: 15 × 1 cm, para velas de 6 cm de diámetro.\nTalla L: 15 × 1,5 cm, para velas de 11 cm de diámetro.",
+    "options": [
+      { "name": "Talla M (par)", "price": 2400 },
+      { "name": "Talla L (par)", "price": 2600 }
+    ]
+  },
+  {
+    "name": "Escarcha láser holográfica",
+    "category": "complementos",
+    "description": "Escarcha holográfica que brilla en múltiples tonos metalizados, como un arcoíris.",
+    "options": [
+      { "name": "25 g", "price": 4500 },
+      { "name": "100 g", "price": 16000 }
+    ]
+  },
+  {
+    "name": "Escarcha crystal láser",
+    "category": "complementos",
+    "description": "Escarcha holográfica de diversos tamaños que brilla en múltiples tonos metalizados, como un arcoíris.",
+    "options": [
+      { "name": "25 g", "price": 4500 },
+      { "name": "100 g", "price": 16000 }
+    ]
+  }
+]

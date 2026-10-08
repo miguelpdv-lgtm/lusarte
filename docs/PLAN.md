@@ -1,30 +1,332 @@
-# Lusarte Web — Audit y plan de acción
+# Lusarte Web — Plan de acción de la tienda virtual
 
-> Fecha: 2026-09-28 · Estado: planificación
+> Actualizado: 2026-10-08 · Estado: **Fases 1, 4 y 5 hechas en local**; la fase 3 queda a medias hasta que exista el hosting (GoDaddy, se compra el 2026-10-08).
 >
-> **Decisiones fijas:** dominio `lusarte.net` · pagos con **Wompi** (Colombia, COP) · hosting **Hostinger** con base de datos MySQL incluida en el plan.
+> **Decisiones fijas:** dominio `lusarte.net` · pagos con **Wompi** (Colombia, COP) · Next.js + MySQL, portable entre hostings (hosting por comprar; mientras tanto, previews en Vercel) · correos con **Resend**.
 
-## 1. Alcance
+Lusarte es ante todo una **tienda virtual**: todo el sitio existe para que alguien encuentre un producto, lo pague en línea y lo reciba en su casa. La landing y las páginas informativas acompañan, pero la prioridad es el recorrido catálogo → carrito → pago → despacho.
 
-Base del paquete **Profesional** + extras de **Premium** + Resend.
+## 0. Estado y lo que falta
 
-| Incluido | Origen |
+| Fase | Estado |
 |---|---|
-| Diseño con identidad de marca, catálogo de velas e insumos, botón de WhatsApp, responsive, alta en Google | Esencial |
-| Tienda con carrito y pagos en línea | Profesional |
-| Categorías y filtros | Profesional |
-| Panel para que la clienta edite productos, precios y stock | Profesional |
-| SEO completo + Google Business Profile | Profesional |
-| **SEO avanzado + analítica de visitas** | Premium |
-| **Emails transaccionales con Resend** (confirmación de pedido, aviso de pedido nuevo, cambios de estado, contacto) | Extra (cubre "Avisos automáticos de pedidos" de Premium) |
+| 1. Landing | ✅ Hecha y publicada en el preview de Vercel |
+| 2. Decisiones y cuentas | 🟡 Hosting definido (GoDaddy), falta comprarlo; faltan Wompi, Resend, DNS y el valor del envío |
+| 3. Base técnica | 🟡 Hecha en local (MySQL portable, esquema, migraciones, carga del catálogo). **Falta el deploy en GoDaddy con su MySQL** |
+| 4. Panel: productos e imágenes | ✅ Hecho en local y probado (login, lista con filtros, crear/editar/eliminar, presentaciones, inventario, fotos) |
+| 5. Tienda pública | ✅ Hecha en local y probada en celular y escritorio (tienda, categorías, búsqueda, filtros, ficha, páginas de ayuda y legales, 404) |
+| 6 a 10 | ⬜ Pendientes |
 
-**Fuera de alcance (por ahora):** blog de tutoriales y sección de cursos/talleres. La arquitectura queda preparada para agregarlos después (rutas `/blog` y `/talleres` reservadas, esquema extensible).
+**⚠️ Lo que falta para seguir** (en orden):
+
+1. **Comprar GoDaddy** y validar el checklist del Anexo A. Hasta entonces **no conviene hacer push a `main`**: Vercel no tiene base de datos y las páginas de la tienda fallarían en el preview.
+2. **Valor de la tarifa fija de envío** (§10.2 #1): bloquea la fase 6.
+3. **Cuenta de Wompi** con llaves de sandbox: bloquea la fase 6.
+4. **Fotos de producto**: la tienda ya muestra el ícono de la categoría cuando falta la foto, pero solo 4 de los 326 productos tienen foto. La clienta puede subirlas desde el panel, o pedirle que exporte las de Canva en buena calidad.
+5. **Revisar el catálogo cargado** en el panel: los 🚫 de Canva que se transcribieron, los 19 productos ocultos por estar agotados y sin precio, y las presentaciones agotadas sin precio que se omitieron.
+6. **Correo de la clienta** para su usuario del panel (`npm run admin:create`).
+7. **Textos provisionales**: nosotros, preguntas frecuentes, envíos, términos y privacidad están marcados como borrador en la página. Faltan razón social, NIT, ciudad, correo y link de Facebook.
+
+## 1. Alcance: paquete Profesional
+
+| Ítem del paquete | Cómo se cumple |
+|---|---|
+| Todo lo Esencial: diseño con la marca, catálogo, botón de WhatsApp, adaptada a celular, SEO básico y alta en Google | Landing hecha; catálogo y WhatsApp en cada ficha de producto |
+| Tienda con carrito y pagos en línea | Carrito, checkout como invitado y pago con Wompi (tarjeta, PSE, Nequi, Bancolombia) |
+| Categorías y filtros | 6 categorías con subcategorías + colección Navidad; filtros y búsqueda |
+| Tú misma editas productos y precios | **Panel sencillo: productos e imágenes, y nada más** (ver §3) |
+| SEO completo + Google Business Profile | Ver §8 |
+
+**Agregado a pedido de la clienta:**
+- **Despacho con número de guía** desde el panel, que envía al cliente un correo con los datos del envío.
+- **Correos de venta**: confirmación para el cliente y aviso de venta nueva para Lusarte.
+
+**Fuera de alcance:** blog y talleres (Premium), cuentas de cliente, cupones, reseñas, editar categorías o ajustes desde el panel, cotización de envío en línea o integración con transportadoras y facturación electrónica DIAN. El plan anterior incluía SEO avanzado y analítica (extras Premium); con este alcance quedan como opcionales al final (Fase 9).
 
 ---
 
-## 2. Audit de assets
+## 2. Mapa del sitio
 
-### 2.1 Inventario
+### 2.1 Tienda (público)
+
+| Ruta | Página | Qué tiene |
+|---|---|---|
+| `/` | Inicio | Hero "Enciéndela", categorías, Navidad, destacados, historia, guía, FAQ. **Hecha**; los destacados pasan a salir de la base de datos |
+| `/tienda` | Todo el catálogo | Grilla con filtros (categoría, subcategoría, precio, solo disponibles), orden (destacados, precio, más nuevos), búsqueda `?q=` y paginación |
+| `/tienda/[categoria]` | Categoría | Texto propio para SEO, chips de subcategorías, grilla con los mismos filtros |
+| `/tienda/[categoria]/[sub]` | Subcategoría | Igual que categoría (p. ej. `/tienda/fragancias/premium-gata-golosa`) |
+| `/coleccion/navidad` | Colección de temporada | Productos marcados como Navidad, con su propio encabezado |
+| `/producto/[slug]` | Ficha de producto | Galería, precio, selector de presentación (precio y disponibilidad cambian con ella), "agotado", cantidad limitada a las unidades disponibles, **Agregar al carrito**, "Preguntar por WhatsApp", descripción, envíos en una línea, relacionados, migas de pan |
+| `/carrito` | Carrito | Productos con su presentación, cantidades, subtotal, envío (tarifa fija nacional), total, botón al checkout. Al agregar un producto se abre además un **mini carrito lateral** |
+| `/checkout` | Pago | Datos de contacto, dirección (departamento, ciudad, dirección, indicaciones), resumen, aceptación de términos y tratamiento de datos → Wompi |
+| `/pedido/[codigo]` | Estado del pedido | Confirmación tras pagar y seguimiento: pago, despacho, transportadora y guía. Se abre con el link del correo (lleva un token) |
+| `/nosotros` | Historia de la marca | Texto, fotos de proceso |
+| `/contacto` | Contacto | WhatsApp, correo, Instagram, ciudad y horarios (sin formulario) |
+| `/preguntas-frecuentes` | FAQ | Las mismas preguntas de la landing, ampliadas |
+| `/envios-y-devoluciones` | Política de envíos | Tarifa fija nacional, tiempos de despacho, cambios y devoluciones |
+| `/terminos` · `/privacidad` | Legales | Términos, retracto y reversión del pago (Ley 1480), tratamiento de datos (Ley 1581) |
+| 404 | No encontrada | Con sticker y enlaces a la tienda |
+| `sitemap.xml` · `robots.txt` | SEO | Generados con productos y categorías |
+
+La búsqueda del header lleva a `/tienda?q=…`. El header y el footer **ya enlazan** a casi todas estas rutas; hoy dan 404 en el preview.
+
+### 2.2 Panel (privado)
+
+| Ruta | Qué tiene |
+|---|---|
+| `/admin/ingresar` | Login con correo y contraseña |
+| `/admin` | Inicio: pedidos por despachar y accesos rápidos |
+| `/admin/productos` | Listado con foto, nombre, precio y estado; buscador |
+| `/admin/productos/nuevo` · `/admin/productos/[id]` | Formulario del producto con sus imágenes |
+| `/admin/pedidos` | Pedidos pagados: pestañas **Por despachar** / **Despachados** / Todos |
+| `/admin/pedidos/[codigo]` | Detalle del pedido y botón **Despachar** |
+
+Interno: `/api/wompi/webhook` (eventos de pago). La subida de imágenes y los formularios del panel usan Server Actions.
+
+---
+
+## 3. Panel de administración (sencillo)
+
+Lo mínimo para operar la tienda. Un solo usuario (la clienta).
+
+### 3.1 Productos
+- **Campos:** nombre (el slug se genera solo y no cambia después, para no romper links), categoría y subcategoría (de la lista fija), descripción (un salto de línea es un párrafo; las líneas con "- " son una lista), advertencia corta ("No compatible con parafina") y etiqueta ("Personalizable").
+- **Personalización:** interruptor "Se puede personalizar" + la pregunta para el cliente ("Color y mensaje", "Color", "Aroma"). En la ficha aparece un campo de texto con esa pregunta.
+- **Presentaciones:** cada producto tiene una o más (p. ej. fragancia de 30 ml y 60 ml; cera de 1 kg y 5 kg), cada una con nombre, precio, **precio anterior** opcional (el catálogo actual usa mucho "ANTES $10.000 / AHORA $8.000"; la tienda lo muestra tachado) e inventario propio. El precio por docena que hoy va en la descripción pasa a ser una presentación más ("Docena"). Si el producto tiene una sola, la ficha no muestra selector y el formulario la ve como un precio normal.
+- **Inventario (las dos opciones a la vez),** por presentación:
+  - **Unidades** (opcional): se descuentan solas con cada venta pagada y, al llegar a 0, la presentación se muestra agotada. En el listado aparece "pocas unidades" cuando quedan 3 o menos.
+  - **Sin unidades** (campo vacío): no se lleva conteo; sirve para productos por encargo o personalizados.
+  - **Interruptor Agotado:** manda siempre; apaga la venta aunque queden unidades.
+- **Interruptores del producto:** visible en la tienda, destacado en el inicio, colección Navidad. El producto se ve agotado cuando todas sus presentaciones lo están.
+- **Imágenes:** subir varias (arrastrando), reordenarlas (la primera es la principal) y escribir el texto alternativo, que es obligatorio. Al subir se optimizan solas (WebP, máximo 1600 px).
+- **Eliminar = ocultar**, para no romper pedidos viejos que usan ese producto.
+
+### 3.2 Pedidos y despacho
+- **Listado** de pedidos pagados, con los que faltan por despachar primero.
+- **Detalle:** cliente, teléfono, correo, dirección, productos, total y referencia de Wompi. Botones para copiar la dirección y escribir al cliente por WhatsApp.
+- **Despachar:** formulario con **transportadora** (texto libre: puede ser cualquiera y se decide al despachar; se autocompletan las ya usadas), **número de guía**, **link de rastreo** opcional y nota opcional → confirmar. El pedido pasa a *Despachado*, se guarda la fecha y **se envía el correo de envío al cliente**. El panel muestra si el correo salió; si falló, hay un botón **Reenviar**. La guía se puede corregir y el correo se puede reenviar.
+
+**No está en el panel:** categorías, la tarifa de envío, ajustes, usuarios ni reportes. Eso vive en el código o en variables de entorno y lo cambia el desarrollador.
+
+---
+
+## 4. Flujo de compra y despacho
+
+1. **Carrito:** vive en el navegador (localStorage). Guarda productos y cantidades; los precios siempre se leen de la base de datos.
+2. **Checkout:** valida los datos, **recalcula los precios en el servidor**, suma la **tarifa fija nacional** de envío, **verifica que haya unidades** en las presentaciones con inventario y crea el pedido en estado `pendiente_pago`, con un código legible (`LUS-000123`) y un token para el link de seguimiento.
+3. **Pago:** se abre el widget de Wompi con la firma de integridad generada en el servidor.
+4. **Webhook de Wompi:** si el pago es `APPROVED`, el pedido pasa a `pagado`, **se descuentan las unidades** (en una transacción) y salen los correos de venta (cliente y Lusarte). Si es `DECLINED`, `VOIDED` o `ERROR`, el pedido pasa a `rechazado` y sale el correo de pago no completado. Todo es idempotente: si Wompi repite el evento, no se duplican estados ni correos.
+   - Si dos personas pagan la última unidad casi al tiempo, el inventario queda en negativo: el pedido se marca **"revisar inventario"** y el correo de venta nueva lo avisa, para que la clienta reponga o le escriba al cliente. Un pago aprobado nunca se rechaza por esto.
+5. **Confirmación:** `/pedido/[codigo]` muestra el estado. Si el webhook aún no llegó, consulta la transacción directamente en la API de Wompi.
+6. **Despacho:** la clienta despacha desde el panel; el pedido pasa a `despachado` y sale el correo con la guía.
+
+```
+pendiente_pago ──► pagado ──► despachado
+       └─────────► rechazado
+```
+
+### 4.1 Wompi
+- **Widget / Web Checkout** con **firma de integridad** (SHA-256 de referencia + monto en centavos + moneda + secreto de integridad), generada en el servidor.
+- **Webhook de eventos** (`transaction.updated`) en `/api/wompi/webhook`, validando el checksum del evento con el secreto de eventos; procesamiento idempotente por referencia.
+- Página de confirmación que consulta el estado de la transacción en la API de Wompi (respaldo si el webhook tarda).
+- Estados: `PENDING` → `APPROVED` / `DECLINED` / `VOIDED` / `ERROR`. El pedido pasa a `pagado` solo con `APPROVED`.
+- Pruebas completas en **sandbox** (tarjetas y PSE de prueba) antes de pasar a llaves de producción.
+
+---
+
+## 5. Correos (Resend)
+
+| # | Correo | Para | Cuándo | Contenido |
+|---|---|---|---|---|
+| 1 | **Confirmación de compra** | Cliente | Pago aprobado | Código del pedido, productos, total, costo de envío, dirección, tiempo estimado de despacho, link a `/pedido/[codigo]`, WhatsApp |
+| 2 | **Nueva venta** | Lusarte (`ADMIN_EMAIL`, admite varios) | Pago aprobado | Cliente con teléfono y correo, dirección, productos, total, referencia de Wompi, botón **Despachar** que abre el pedido en el panel |
+| 3 | **Tu pedido va en camino** | Cliente | La clienta despacha | Transportadora, **número de guía**, link de rastreo (si se puso), dirección de entrega, productos, nota |
+| 4 | **Pago no completado** | Cliente | Pago rechazado | Qué pasó, link para volver a intentarlo y WhatsApp |
+
+- Plantillas con React Email y la marca (paleta, stickers, logo), con versión en texto plano.
+- Cada envío queda registrado (`email_log`): evita duplicados, deja ver en el panel si salió y permite reenviar.
+- Si el correo falla, el pago y el pedido no se afectan: queda marcado para reenviar.
+- Como la transportadora puede ser cualquiera, el link de rastreo lo pega la clienta al despachar. Si no lo pone, el correo lleva la transportadora y el número de guía.
+- Remitente `pedidos@lusarte.net`. Verificar `lusarte.net` en Resend agregando en la zona DNS de Hostinger: DKIM (`resend._domainkey`), y MX + SPF en el subdominio `send`. Esto **no choca** con los buzones de correo de Hostinger (el MX raíz sigue siendo de Hostinger), así que Lusarte puede recibir respuestas en su correo normal. Agregar también un registro DMARC.
+
+---
+
+## 6. Datos
+
+| Tabla | Campos principales |
+|---|---|
+| `products` | slug, nombre, categoría, subcategoría, descripción, advertencia, etiqueta, personalización (pregunta o vacío), visible, destacado, navidad, orden, fechas |
+| `product_options` | producto, nombre ("30 ml", "Docena"), precio, precio anterior, **unidades** (vacío = sin conteo), agotado, orden. Todo producto tiene al menos una |
+| `product_images` | producto, archivo, alt, orden |
+| `orders` | código, token, nombre, correo, teléfono, cédula (opcional), departamento, ciudad, dirección, indicaciones, subtotal, envío, total, estado, referencia y transacción de Wompi, `paid_at`, transportadora, número de guía, link de rastreo, nota de despacho, `shipped_at`, alerta "revisar inventario" |
+| `order_items` | pedido, producto, presentación, **nombre y precio copiados al momento de la compra**, cantidad |
+| `email_log` | pedido, tipo de correo, destinatario, estado, id de Resend, fecha |
+| `admin_users` | correo, contraseña (scrypt), versión de sesión (cambiar la clave cierra las sesiones abiertas) |
+
+Las categorías y subcategorías siguen en el código (`src/data/catalog.ts`), porque el panel no las edita; los slugs se mantienen. Los precios se guardan como enteros en COP.
+
+---
+
+## 7. Stack
+
+| Capa | Tecnología | Por qué |
+|---|---|---|
+| Framework | **Next.js 16** (App Router, Server Components, Server Actions), `output: "standalone"` | Páginas estáticas/ISR para SEO; el mismo build corre en cualquier hosting Node |
+| Estilos | **Tailwind CSS v4** con los tokens de marca de `globals.css` | Ya en uso en la landing |
+| Base de datos | **MySQL** vía `DATABASE_URL` | Incluida en los hostings candidatos |
+| ORM | **Drizzle ORM** + `mysql2` | Tipado, migraciones versionadas en el repo |
+| Auth (solo panel) | Propia: cookie firmada (HMAC) + contraseña con scrypt + freno a la fuerza bruta | Un solo usuario: no justifica una librería ni tablas de sesiones. Se crea o cambia con `npm run admin:create` |
+| Imágenes | `sharp` al subir + carpeta persistente configurable (`UPLOADS_DIR`); plan B Cloudinary | Depende de qué hosting persista archivos (ver 7.1) |
+| Pagos | **Wompi** Widget + webhook | Pasarela local en COP |
+| Correo | **Resend** (API HTTP, nunca SMTP) + React Email | Funciona igual en cualquier hosting |
+| Validación | Zod en checkout y panel | Un solo esquema para cliente y servidor |
+
+### 7.1 Hosting — requisitos y riesgos a verificar (si es Hostinger; lo equivalente aplica a los otros)
+
+1. **El plan debe soportar Node.js.** Solo los planes **Business** y **Cloud** corren apps Next.js; los planes Single/Premium de hosting compartido no. Verificar en hPanel antes de comprar (sección "Web Apps" / "Node.js").
+2. **Recursos limitados** (CPU/RAM fijos): el build se hace en el deploy; se prioriza páginas estáticas/ISR y se evita trabajo pesado en cada request.
+3. **Persistencia de archivos subidos:** un redeploy puede reemplazar la carpeta de la app. Las imágenes del panel se guardan en una carpeta fuera del directorio de build. Se prueba en la Fase 3; si no es confiable, el plan B es Cloudinary (gratis en este volumen).
+4. **Sin cron nativo en la app:** la reconciliación de pagos se hace con el webhook de Wompi + consulta del estado de la transacción en la página de confirmación. Si hace falta, se usa el Cron Job de hPanel llamando a una ruta protegida.
+5. **Variables de entorno** (llaves Wompi, Resend, DB, secreto de auth) se configuran en hPanel, nunca en el repo.
+6. **Backups:** activar los backups diarios del plan e incluir la base de datos.
+
+---
+
+## 8. SEO completo + Google Business Profile
+
+- Metadata por página (title, description, canonical a `https://lusarte.net` sin `www`, 301 desde `www`), `lang="es-CO"`, Open Graph `es_CO`.
+- **JSON-LD:** `Organization`, `Store`, `WebSite` + `SearchAction`, `Product` + `Offer` (precio, disponibilidad), `BreadcrumbList` y `FAQPage`.
+- `sitemap.xml` dinámico y `robots.txt`; quitar el `noindex` actual solo en el lanzamiento.
+- Imágenes OG por producto y categoría con `next/og`.
+- Categorías y subcategorías con texto propio, para posicionar "insumos para hacer velas", "cera de soya", "fragancias para velas", etc.
+- URLs limpias en español, migas de pan y enlaces internos entre categorías y productos relacionados.
+- Alt obligatorio en el panel.
+- Core Web Vitals: LCP < 2.5 s, CLS < 0.1, INP < 200 ms.
+- **Google Search Console** (verificación + sitemap) y **Google Business Profile** con la ficha, el link a la tienda, fotos y horarios.
+
+---
+
+## 9. Plan de acción por fases
+
+Cada fase se publica en el preview para que la clienta la revise antes de seguir.
+
+### Fase 1 — Landing ✅
+Diseño con la marca, hero "Enciéndela" (2026-10-07), secciones y responsive. Los destacados ya salen de la base de datos.
+
+### Fase 2 — Decisiones y cuentas 🟡 *(en paralelo, la mayoría depende de la clienta)*
+- **Hosting: GoDaddy** (decidido el 2026-10-07). ⚠️ Falta comprarlo y validar el checklist del Anexo A.
+- Cuenta de Wompi con llaves de sandbox; acceso a la zona DNS de `lusarte.net`; cuenta de Resend.
+- Respuestas a las decisiones pendientes (§10.2), sobre todo el valor de la tarifa de envío.
+- **Catálogo real: ya existe en Canva** ([bit.ly/Lusartecatalogo](https://bit.ly/Lusartecatalogo)). Son 11 sub-catálogos, uno por categoría, con 265 páginas y unos 350 productos. El texto ya está extraído en `docs/catalogo-canva/`. Falta pedirle a la clienta:
+  - **las fotos originales**: las del Canva son buenas, pero solo se pueden sacar en baja resolución desde el link público. Lo ideal es que exporte las fotos o comparta el diseño con permiso de edición;
+  - **las unidades disponibles** de los productos que quiera controlar.
+
+**Listo cuando:** hay hosting con MySQL funcionando y las decisiones de §10.2 están respondidas.
+
+### Fase 3 — Base técnica 🟡
+- ✅ Drizzle + MySQL 8.4: esquema de §6 (productos, presentaciones, fotos, usuario del panel) y migración inicial en `drizzle/`. Los pedidos se agregan en la fase 6.
+- ✅ **Catálogo de Canva transcrito** a `data/catalogo/*.json`: 326 productos y 583 presentaciones, con precios, precio anterior, docenas y agotados. Las páginas dudosas se verificaron contra las capturas, incluidos los 🚫 de agotado de Gata Golosa. `npm run db:seed` lo carga sin pisar lo que se edite en el panel.
+- ✅ Fotos: se reducen a WebP de máximo 1600 px y se guardan en `UPLOADS_DIR`; se sirven por `/media/<archivo>` con caché larga.
+- ✅ Variables en `.env.example`; guía de desarrollo local en `docs/DESARROLLO.md` (MySQL portable, sin instalador).
+- ✅ Build de producción (`output: "standalone"`) sin errores.
+- ⚠️ **Falta:** deploy de prueba en GoDaddy con su MySQL: migrar, cargar el catálogo, crear el usuario de la clienta y confirmar que `UPLOADS_DIR` (dentro de `/public/assets/`) sobrevive a un redeploy.
+
+**Listo cuando:** la landing lee los destacados de la base de datos en el hosting real.
+
+### Fase 4 — Panel: productos e imágenes ✅ (en local)
+- Login con freno a la fuerza bruta (5 intentos cada 15 min); todas las páginas y acciones verifican la sesión.
+- Inicio con conteos que llevan a la lista filtrada (ocultos, agotados, pocas unidades, sin foto).
+- Lista con buscador, filtro por categoría y por estado.
+- Formulario: datos, presentaciones (precio, precio anterior, unidades, agotado, orden), fotos (subida inmediata, reducidas en el celular antes de enviarlas, orden, texto alternativo), visible/destacado/Navidad/personalizable, eliminar con confirmación. Avisa si hay cambios sin guardar.
+- Al guardar, la tienda se actualiza al instante (caché invalidada).
+- ⚠️ **Falta:** probarlo la clienta en su celular, una vez esté en GoDaddy.
+
+**Listo cuando:** la clienta crea un producto con fotos desde el celular y aparece en la tienda. Desde aquí **la clienta puede ir cargando el catálogo real** mientras se construye el resto.
+
+### Fase 5 — Tienda pública ✅ (en local)
+- `/tienda`, categorías, subcategorías, colección Navidad: búsqueda (sin tildes), filtro de precio, solo disponibles, orden y paginación de 24. Los filtros viven en la URL, así que se pueden compartir.
+- Ficha: galería, selector de presentación con precio anterior tachado, "¡Quedan N!" cuando quedan 3 o menos, cantidad limitada por el inventario, campo de personalización y relacionados.
+- SEO ya incluido: metadata y canonical por página, JSON-LD de `Product`, `BreadcrumbList` y `FAQPage`.
+- Páginas: nosotros, contacto, preguntas frecuentes, envíos y devoluciones, términos, privacidad y 404. Las que llevan texto provisional lo dicen en la página.
+- ⚠️ **Temporal hasta la fase 6:** el botón de compra de la ficha es "Pedir por WhatsApp" (con producto, presentación, cantidad y personalización en el mensaje), y `/carrito` invita a pedir por WhatsApp.
+
+**Listo cuando:** ningún enlace del sitio da 404 y se puede navegar todo el catálogo en celular.
+
+### Fase 6 — Carrito, checkout y pagos
+- Mini carrito y `/carrito` con la tarifa fija nacional; cantidades limitadas por el inventario.
+- `/checkout` con validación; creación del pedido con precios recalculados en el servidor.
+- Wompi: firma de integridad, webhook verificado e idempotente, descuento de unidades al aprobarse el pago, `/pedido/[codigo]` con respaldo por API.
+- Pruebas completas en sandbox: tarjeta aprobada, rechazada y PSE.
+
+**Listo cuando:** una compra de prueba deja el pedido en `pagado` aunque el cliente cierre la pestaña antes de volver.
+
+### Fase 7 — Correos de venta
+- Plantillas 1, 2 y 4 con la marca; registro en `email_log`.
+- DNS de Resend (DKIM, SPF, DMARC) verificado en `lusarte.net`.
+
+**Listo cuando:** cada compra de prueba genera exactamente un correo al cliente y uno a Lusarte, y no llegan a spam en Gmail ni Outlook.
+
+### Fase 8 — Pedidos y despacho
+- `/admin/pedidos` y detalle del pedido.
+- Formulario **Despachar** (transportadora libre + guía + link de rastreo opcional + nota) → estado `despachado` → correo 3, con reenvío y corrección de guía.
+- Seguimiento visible en `/pedido/[codigo]`.
+
+**Listo cuando:** la clienta despacha un pedido de prueba desde el celular y el cliente recibe la transportadora, la guía y el link de rastreo.
+
+### Fase 9 — SEO completo y Google Business Profile
+- Todo lo de §8.
+- *Opcional (Premium):* GA4 con eventos de e-commerce, Merchant Center y Clarity.
+
+### Fase 10 — QA y lanzamiento
+- Textos legales finales, revisados por la clienta.
+- Llaves de producción de Wompi y una compra real de bajo monto, con reembolso.
+- Pruebas en iPhone y Android; Lighthouse ≥ 95 en Performance, SEO y Accesibilidad.
+- `lusarte.net` apuntando al hosting, SSL, `www` → raíz, quitar `noindex`, backups activos.
+- **Guía corta para la clienta:** cómo subir un producto y cómo despachar un pedido.
+
+---
+
+## 10. Decisiones
+
+### 10.1 Tomadas (2026-10-07)
+
+| Tema | Decisión |
+|---|---|
+| Envío | **Tarifa fija nacional**, sumada en el carrito y el checkout. El valor vive en una variable de entorno (`SHIPPING_FLAT_COP`), así que se cambia sin tocar código |
+| Presentaciones | **Sí.** Cada producto tiene una o más, cada una con su precio |
+| Inventario | **Las dos opciones:** unidades opcionales por presentación (se descuentan solas) + interruptor de agotado manual |
+| Transportadora | **Cualquiera**, escrita al momento del despacho; el link de rastreo es opcional |
+| Hosting | **GoDaddy** Web Hosting Económico (se compra el 2026-10-08) |
+| Personalización | **Sí**, en los productos marcados: el cliente escribe lo que quiere (color, mensaje, aroma) y llega con el pedido |
+
+### 10.2 Pendientes
+
+| # | Pregunta | Afecta | Propuesta si no hay respuesta |
+|---|---|---|---|
+| 1 | **¿Cuánto es la tarifa fija de envío?** ¿Hay envío gratis desde algún monto o recogida local? | Checkout, correo 1, política de envíos | Solo la tarifa fija, sin envío gratis |
+| 2 | **¿Qué correos reciben el aviso de venta?** | Correo 2 | El correo de la clienta |
+| 3 | **¿Pide cédula o NIT al comprar?** | Checkout | Opcional |
+| 4 | **¿Necesita factura electrónica DIAN?** | Fuera de alcance; si aplica, se hace por fuera de la tienda | Confirmar con su contador |
+| 5 | **Correo de la clienta para el panel** | Crear su usuario | Se configura después (pedido por el usuario) |
+
+---
+
+## Anexo A. Hosting: candidatos y portabilidad
+
+Decidido: **Node.js**. Candidatos:
+- **Hostinger Business Web Hosting** (recomendado): Node.js con hasta 5 web apps, MySQL, correo, backups diarios. Single/Premium **no** sirven.
+- **GoDaddy Web Hosting Económico** (COP 7.499/mes el 1er año → COP 36.999/mes al renovar): incluye **1 app Node.js publicada** con MySQL gestionado + 2 apps de preview (privadas, se borran a los 30 días). GA desde 2026-08-12 (el FAQ aún dice beta). Compatible con el stack: salida HTTPS para Wompi/Resend, sin SMTP (usamos la API de Resend), archivos persistentes solo en `/public/assets/`. Límites de CPU/RAM sin publicar. **Validar en los 30 días de reembolso** (checklist abajo).
+  - Checklist de validación: build de Next.js en su plataforma · conexión a su MySQL · llamada HTTPS saliente a Wompi sandbox y a Resend · subir un archivo a `/public/assets/`, redeploy y confirmar que sigue ahí y se sirve · tiempo de respuesta desde Colombia · dominio `lusarte.net` + HTTPS · confirmar si el correo y el SSL "1 año" son gratis solo el primer año.
+  - Staging: con una sola app publicada, la app de producción hace de staging (`noindex` + clave simple) hasta el lanzamiento.
+- **Namecheap VPS Pulsar**: más barato a largo plazo, pero autogestionado.
+
+**Regla de portabilidad:** el código debe correr igual en cualquiera de los tres: Next.js `standalone`, escuchar en `process.env.PORT` sobre `0.0.0.0`, MySQL vía `DATABASE_URL`, emails por la API HTTP de Resend (nunca SMTP), uploads en una ruta configurable por variable de entorno, dependencias de runtime en `dependencies`.
+
+---
+
+## Anexo B. Audit de assets
+
+### B.1 Inventario
 
 | Archivo | Qué es | Estado para web | Acción |
 |---|---|---|---|
@@ -42,7 +344,7 @@ Base del paquete **Profesional** + extras de **Premium** + Resend.
 - 6 stickers ilustrados a color con borde blanco (tijeras, estrella sonriente, fósforo, vela ondulada, apagavelas) → decoración, estados vacíos, 404, emails.
 - Franja con la paleta oficial.
 
-### 2.2 Paleta de marca (extraída del `.ai`)
+### B.2 Paleta de marca (extraída del `.ai`)
 
 | Token | Hex | Uso propuesto |
 |---|---|---|
@@ -57,7 +359,7 @@ Base del paquete **Profesional** + extras de **Premium** + Resend.
 
 Notas de accesibilidad: arena, oliva, cielo y lavanda **no tienen contraste suficiente** para texto sobre crema; se usan como superficies o decoración, con texto siempre en `carbon`.
 
-### 2.3 Tipografía
+### B.3 Tipografía
 
 No hay fuentes en los archivos (logo y tagline están en curvas). El tagline es una sans geométrica itálica en mayúsculas con tracking amplio. Propuesta a validar en Fase 1:
 - **Títulos:** sans con carácter y ligeramente redondeada (candidatas: Bricolage Grotesque, Outfit).
@@ -65,7 +367,7 @@ No hay fuentes en los archivos (logo y tagline están en curvas). El tagline es 
 - **Detalle de marca:** itálica mayúscula con tracking amplio, imitando el tagline, para eyebrows y etiquetas.
 - El logo y el lettering del póster se usan siempre como SVG, nunca como fuente.
 
-### 2.4 Lo que falta (bloquea fases posteriores, no la Fase 1)
+### B.4 Lo que falta (bloquea fases posteriores, no la Fase 1)
 
 | Falta | Bloquea | Prioridad |
 |---|---|---|
@@ -78,171 +380,3 @@ No hay fuentes en los archivos (logo y tagline están en curvas). El tagline es 
 | Cuenta de Wompi (comercio verificado) con llaves de sandbox y producción | Fase 3 | 🟠 Media |
 | Política de envíos, cambios y devoluciones, términos, tratamiento de datos | Checkout, lanzamiento | 🟠 Media |
 | Testimonios / reseñas | Landing (sección opcional) | 🟢 Baja |
-
----
-
-## 3. Stack y arquitectura
-
-| Capa | Tecnología | Por qué |
-|---|---|---|
-| Framework | **Next.js 16** (App Router, TypeScript, Server Components), `output: "standalone"` | SSG/ISR para SEO, rutas dinámicas por producto; build liviano para Node en Hostinger |
-| Estilos | **Tailwind CSS v4** + shadcn/ui (tokens de marca) | Sistema de diseño consistente, rápido |
-| Hosting | **Hostinger — Web App Node.js** (plan Business o Cloud) | Deploy desde GitHub, precio fijo, dominio y DNS en el mismo panel |
-| Base de datos | **MySQL / MariaDB de Hostinger** (incluida en el plan) | Catálogo, pedidos, sesiones del admin |
-| ORM | **Drizzle ORM** + `mysql2` | Tipado, migraciones versionadas en el repo, liviano |
-| Auth (solo admin) | **Better Auth** (email + contraseña, tablas en MySQL) | Login de la clienta al panel sin servicios externos |
-| Imágenes | Carpeta persistente en el hosting + `next/image` (sharp) | Subida desde el panel, AVIF/WebP automático (ver riesgo 3.3) |
-| Pagos | **Wompi** — Web Checkout / Widget: tarjetas, PSE, Nequi, Botón Bancolombia | Pasarela local en COP |
-| Email | **Resend** + React Email, dominio `lusarte.net` | Plantillas con la marca |
-| Analítica | GA4 + Google Search Console (+ Microsoft Clarity opcional) | Visitas, conversiones, búsquedas, mapas de calor |
-| Entornos | `lusarte.net` (producción) · `dev.lusarte.net` (staging, segunda web app) | Revisión de la clienta antes de publicar |
-
-### 3.1 Mapa del sitio
-
-```
-/                              Landing
-/tienda                        Catálogo completo + filtros
-/tienda/[categoria]            Velas, Insumos, … (landing SEO por categoría)
-/producto/[slug]               Ficha de producto
-/carrito
-/checkout
-/pedido/[id]                   Confirmación / estado
-/nosotros
-/contacto
-/preguntas-frecuentes
-/envios-y-devoluciones
-/terminos · /privacidad
-/admin                         Panel (protegido)
-  /admin/productos · /admin/categorias · /admin/pedidos · /admin/ajustes
-```
-
-### 3.2 Modelo de datos (borrador)
-
-- `categories` (slug, nombre, descripción SEO, imagen, orden)
-- `products` (slug, nombre, descripción, categoría, precio base, activo, destacado, campos SEO)
-- `product_variants` (producto, nombre p. ej. aroma/tamaño, precio, stock, SKU, peso)
-- `product_images` (producto, url, alt, orden)
-- `orders` (código, datos de cliente, dirección, total, envío, estado, referencia de pago)
-- `order_items` (pedido, variante, cantidad, precio al momento)
-- `settings` (WhatsApp, costo de envío, mensajes, redes)
-
-Checkout como invitado (sin cuentas de cliente). El carrito vive en el cliente (localStorage) y se valida contra la base de datos al pagar. Precios guardados como enteros en COP (sin decimales).
-
-### 3.3 Hostinger — requisitos y riesgos a verificar
-
-1. **El plan debe soportar Node.js.** Solo los planes **Business** y **Cloud** corren apps Next.js; los planes Single/Premium de hosting compartido no. Verificar en hPanel antes de la Fase 1 (sección "Web Apps" / "Node.js").
-2. **Recursos limitados** (CPU/RAM fijos): el build se hace en el deploy; se prioriza páginas estáticas/ISR y se evita trabajo pesado en cada request.
-3. **Persistencia de archivos subidos:** un redeploy puede reemplazar la carpeta de la app. Las imágenes del panel se guardan en una carpeta fuera del directorio de build. Se prueba en la Fase 1; si no es confiable, el plan B es Cloudinary (gratis en este volumen).
-4. **Sin cron nativo en la app:** la reconciliación de pagos se hace con el webhook de Wompi + consulta del estado de la transacción en la página de confirmación. Si hace falta, se usa el Cron Job de hPanel llamando a una ruta protegida.
-5. **Variables de entorno** (llaves Wompi, Resend, DB, secreto de auth) se configuran en hPanel, nunca en el repo.
-6. **Backups:** activar los backups diarios del plan e incluir la base de datos.
-
----
-
-## 4. SEO avanzado
-
-- Metadata por página (title, description, canonical a `https://lusarte.net`, sin `www`, con redirección 301 desde `www`), `lang="es-CO"`, `og:locale` `es_CO`.
-- **Datos estructurados JSON-LD:** `Organization`, `LocalBusiness`/`Store`, `WebSite` + `SearchAction`, `Product` + `Offer` + `AggregateRating` (cuando haya reseñas), `BreadcrumbList`, `FAQPage`.
-- `sitemap.xml` dinámico (productos y categorías) + `robots.txt`.
-- Imágenes OG dinámicas por producto y categoría (`next/og`) con la marca.
-- Core Web Vitals: LCP < 2.5 s, CLS < 0.1, INP < 200 ms (fuentes con `next/font`, SVG inline, imágenes optimizadas).
-- URLs limpias en español, breadcrumbs, enlazado interno entre categorías y productos.
-- Páginas de categoría con texto propio (no solo grilla) para posicionar "velas artesanales", "insumos para hacer velas", etc.
-- Alt text obligatorio en el panel al subir imágenes.
-- **Google Search Console** (verificación + sitemap), **Google Business Profile**, **feed de Google Merchant Center** (productos gratis en Google Shopping).
-- **Analítica:** GA4 con eventos de e-commerce (`view_item`, `add_to_cart`, `begin_checkout`, `purchase`) y clic en WhatsApp; banner de consentimiento de cookies (Ley 1581).
-- Rendimiento en Hostinger: HTTP/2, compresión, caché de estáticos (`/_next/static` inmutable), CDN de Hostinger si el plan lo incluye.
-
-## 5. Resend — emails
-
-| Email | Para | Disparador |
-|---|---|---|
-| Confirmación de pedido | Cliente | Webhook de pago aprobado |
-| Pedido nuevo | Lusarte | Webhook de pago aprobado |
-| Pedido enviado (con guía) | Cliente | Cambio de estado en el panel |
-| Pago rechazado / pendiente | Cliente | Webhook de pago |
-| Mensaje de contacto | Lusarte (reply-to al cliente) | Formulario de contacto |
-| Alerta de stock bajo | Lusarte | Al descontar stock |
-
-Remitente `pedidos@lusarte.net`. Verificar `lusarte.net` en Resend agregando en la zona DNS de Hostinger: DKIM (`resend._domainkey`), y MX + SPF en el subdominio `send`. Esto **no choca** con los buzones de correo de Hostinger (el MX raíz sigue siendo de Hostinger), así que Lusarte puede recibir respuestas en su correo normal. Agregar también un registro DMARC.
-
-## 5.1 Wompi — integración
-
-- **Widget / Web Checkout** con **firma de integridad** (SHA-256 de referencia + monto en centavos + moneda + secreto de integridad), generada en el servidor.
-- **Webhook de eventos** (`transaction.updated`) en `/api/wompi/webhook`, validando el checksum del evento con el secreto de eventos; procesamiento idempotente por referencia.
-- Página de confirmación que consulta el estado de la transacción en la API de Wompi (respaldo si el webhook tarda).
-- Estados: `PENDING` → `APPROVED` / `DECLINED` / `VOIDED` / `ERROR`. El stock se descuenta solo en `APPROVED`.
-- Pruebas completas en **sandbox** (tarjetas y PSE de prueba) antes de pasar a llaves de producción.
-
----
-
-## 6. Plan de acción
-
-### Fase 1 — Diseño de la landing ← **en revisión**
-
-> **Estado (2026-09-28):** landing construida en Next.js 16 + Tailwind v4, solo frontend con datos de ejemplo (`src/data/sample.ts`). Assets exportados a `public/brand/` (logos inline en `src/components/brand/Logo.tsx`, patrón e íconos SVG recoloreables, stickers WebP). Originales movidos a `brand/originales/`. Pendiente: aprobación del diseño, deploy de staging.
-1. Preparación de assets: recortar logos, exportar a SVG los logos, patrón (un solo SVG recoloreable), sellos y los 6 stickers a color del artboard 3; favicon y app icons desde el logo apilado.
-2. Sistema de diseño: tokens de color, tipografía, espaciados, radios, botones, tarjetas de producto, badges.
-3. Setup mínimo de Next.js + Tailwind para construir la landing como código real (no mockup desechable). Repo en GitHub conectado a una web app de staging en Hostinger (`dev.lusarte.net`), validando desde el día 1 que el build y el deploy funcionan en el plan.
-4. Secciones de la landing:
-   - **Header:** logo, navegación (Tienda, Velas, Insumos, Nosotros, Contacto), carrito.
-   - **Hero:** lettering "Iluminando tu vida" del póster sobre crema + stickers flotando, CTA "Ver tienda".
-   - **Categorías:** Velas / Insumos (tarjetas con los colores de marca).
-   - **Productos destacados:** grilla con tarjeta de producto (datos de ejemplo).
-   - **Hecho a mano:** historia corta de la marca + foto.
-   - **Beneficios:** hecho a mano · envíos · pago seguro · atención por WhatsApp.
-   - **Preguntas frecuentes** (acordeón, con `FAQPage`).
-   - **CTA final** + botón flotante de WhatsApp.
-   - **Footer:** sello circular, contacto, redes, links legales.
-5. Responsive (móvil primero), animaciones sutiles (sello girando, stickers con parallax suave), accesibilidad AA.
-6. Deploy en `dev.lusarte.net` para revisión con la clienta.
-
-**Entregable:** landing navegable en `dev.lusarte.net`. **Checkpoint:** aprobación del diseño antes de seguir.
-
-### Fase 2 — Base técnica y catálogo
-- Base MySQL en Hostinger: esquema con Drizzle, migraciones, datos semilla; carpeta persistente de imágenes.
-- `/tienda`, `/tienda/[categoria]` con filtros (categoría, precio, aroma/tipo, disponibilidad) y orden.
-- `/producto/[slug]` con galería, variantes, stock y productos relacionados.
-- Landing conectada a datos reales (destacados).
-
-### Fase 3 — Carrito, checkout y pagos
-- Carrito persistente, cálculo de envío, checkout como invitado.
-- Integración con Wompi (ver 5.1): firma de integridad, webhook verificado, descuento de stock idempotente; pruebas en sandbox.
-- Página de confirmación y estado de pedido.
-
-### Fase 4 — Emails con Resend
-- Plantillas React Email con la marca (stickers, paleta).
-- Conectar a webhooks y cambios de estado; formulario de contacto.
-
-### Fase 5 — Panel de administración
-- Login de la clienta.
-- CRUD de productos, variantes, imágenes (con alt obligatorio), categorías, precios y stock.
-- Gestión de pedidos: listado, detalle, cambio de estado (dispara email), número de guía.
-- Ajustes: WhatsApp, costo de envío, redes.
-
-### Fase 6 — SEO avanzado y analítica
-- JSON-LD completo, sitemap, OG dinámicas, textos de categorías.
-- GA4 con eventos de e-commerce, Search Console, Merchant Center, Google Business Profile.
-- Auditoría Lighthouse (objetivo ≥ 95 en Performance, SEO y Accesibilidad).
-
-### Fase 7 — QA y lanzamiento
-- Páginas legales para Colombia: tratamiento de datos (Ley 1581 de 2012), términos y condiciones, derecho de retracto y reversión del pago (Ley 1480 de 2011), política de envíos y devoluciones.
-- Llaves de producción de Wompi, pruebas de compra reales de bajo monto, pruebas en móviles.
-- Apuntar `lusarte.net` a la web app de producción, SSL, redirección `www` → raíz, DNS de Resend, backups activos, 404 con sticker.
-- Capacitación a la clienta en el panel (guía corta).
-
----
-
-## 7. Preguntas abiertas
-
-1. **Hosting (por comprar)** — Decidido: **Node.js**. Candidatos:
-   - **Hostinger Business Web Hosting** (recomendado): Node.js con hasta 5 web apps, MySQL, correo, backups diarios. Single/Premium **no** sirven.
-   - **GoDaddy Web Hosting Económico** (COP 7.499/mes el 1er año → COP 36.999/mes al renovar): incluye **1 app Node.js publicada** con MySQL gestionado + 2 apps de preview (privadas, se borran a los 30 días). GA desde 2026-08-12 (el FAQ aún dice beta). Compatible con el stack: salida HTTPS para Wompi/Resend, sin SMTP (usamos la API de Resend), archivos persistentes solo en `/public/assets/`. Límites de CPU/RAM sin publicar. **Validar en los 30 días de reembolso** (checklist abajo).
-     - Checklist de validación: build de Next.js en su plataforma · conexión a su MySQL · llamada HTTPS saliente a Wompi sandbox y a Resend · subir un archivo a `/public/assets/`, redeploy y confirmar que sigue ahí y se sirve · tiempo de respuesta desde Colombia · dominio `lusarte.net` + HTTPS · confirmar si el correo y el SSL "1 año" son gratis solo el primer año.
-     - Staging: con una sola app publicada, la app de producción hace de staging (`noindex` + clave simple) hasta el lanzamiento.
-   - **Namecheap VPS Pulsar**: más barato a largo plazo, pero autogestionado.
-
-   **Regla de portabilidad:** el código debe correr igual en cualquiera de los tres: Next.js `standalone`, escuchar en `process.env.PORT` sobre `0.0.0.0`, MySQL vía `DATABASE_URL`, emails por la API HTTP de Resend (nunca SMTP), uploads en una ruta configurable por variable de entorno, dependencias de runtime en `dependencies`.
-2. **Categorías reales** — ¿solo "Velas" e "Insumos" o hay subcategorías (moldes, ceras, mechas, esencias, recipientes, kits)?
-3. **Envíos** — ¿tarifa fija, por ciudad, envío gratis desde un monto, recogida local?
-4. **Fotos** — ¿existen fotos de producto o hay que planear una sesión?

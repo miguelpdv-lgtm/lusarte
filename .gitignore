@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -45,3 +46,6 @@ next-env.d.ts
 
 # archivos fuente editables de la marca (.ai/.pdf/PNG originales): no se publican en el repo
 /brand/originales/
+
+# base de datos y archivos locales de desarrollo (MySQL portable, uploads)
+/.local/

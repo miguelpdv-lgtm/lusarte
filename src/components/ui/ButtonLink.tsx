@@ -5,6 +5,7 @@ const variants = {
   primary: "bg-estrella text-carbon",
   light: "bg-crema text-carbon",
   dark: "bg-carbon text-crema",
+  ghost: "bg-transparent text-current",
 } as const;
 
 type Props = ComponentProps<typeof Link> & {

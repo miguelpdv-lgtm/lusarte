@@ -7,7 +7,7 @@ import { setupProblems } from "@/lib/setup-check";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Ingresar al panel" };
+export const metadata: Metadata = { title: "Ingresar al panel", robots: { index: false, follow: false } };
 
 export default async function IngresarPage() {
   const problems = await setupProblems();

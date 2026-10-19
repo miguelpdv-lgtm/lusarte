@@ -9,7 +9,7 @@ type Props = {
   children: ReactNode;
 };
 
-/** Página de texto (nosotros, ayuda, legales) con el estilo de la marca. */
+/** Página de texto (ayuda, políticas, legales) con el estilo de la marca. */
 export function InfoPage({ title, intro, draft = false, children }: Props) {
   return (
     <>

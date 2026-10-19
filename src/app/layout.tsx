@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, DM_Sans, Patrick_Hand } from "next/font/google";
+import { seoIndexing } from "@/lib/seo";
 import { site } from "@/lib/site";
 import "./globals.css";
 
@@ -20,23 +21,25 @@ const patrickHand = Patrick_Hand({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  title: {
-    default: "Lusarte · Velas artesanales e insumos para hacer velas",
-    template: "%s · Lusarte",
-  },
-  description: site.description,
-  alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    locale: "es_CO",
-    siteName: site.name,
-  },
-  // TODO(lanzamiento): quitar cuando el sitio salga en lusarte.net con datos reales.
-  // Mientras tanto, los despliegues de prueba (Vercel) no se indexan en Google.
-  robots: { index: false, follow: false },
-};
+// Cada página define su canonical; aquí solo lo común. La indexación se abre al lanzar (src/lib/seo.ts).
+export function generateMetadata(): Metadata {
+  const index = seoIndexing();
+  const verification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+  return {
+    metadataBase: new URL(site.url),
+    title: {
+      default: "Lusarte · Insumos para hacer velas y velas artesanales",
+      template: "%s · Lusarte",
+    },
+    description: site.description,
+    applicationName: site.name,
+    keywords: ["insumos para velas", "cera de soya", "parafina", "fragancias para velas", "moldes para velas", "velas artesanales", "Barranquilla", "Colombia"],
+    openGraph: { type: "website", locale: "es_CO", siteName: site.name },
+    twitter: { card: "summary_large_image" },
+    robots: index ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } } : { index: false, follow: false },
+    ...(verification ? { verification: { google: verification } } : {}),
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#efebe0",

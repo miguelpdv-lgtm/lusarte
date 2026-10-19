@@ -19,7 +19,6 @@ const columns = [
       { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
       { label: "Envíos, cambios y garantías", href: "/envios-y-devoluciones" },
       { label: "Contacto", href: "/contacto" },
-      { label: "Nosotros", href: "/nosotros" },
     ],
   },
   {

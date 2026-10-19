@@ -5,7 +5,7 @@ import { Logo } from "@/components/brand/Logo";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { requireAdmin } from "@/lib/auth/session";
 
-export const metadata: Metadata = { title: { default: "Panel", template: "%s · Panel Lusarte" } };
+export const metadata: Metadata = { title: { default: "Panel", template: "%s · Panel Lusarte" }, robots: { index: false, follow: false } };
 
 export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
   const admin = await requireAdmin();

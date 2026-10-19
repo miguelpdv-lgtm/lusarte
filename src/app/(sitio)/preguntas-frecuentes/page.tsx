@@ -16,7 +16,7 @@ export default function FaqPage() {
     mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
   };
   return (
-    <InfoPage title="Preguntas frecuentes" draft>
+    <InfoPage title="Preguntas frecuentes">
       {faqs.map((f) => (
         <section key={f.q}>
           <h2>{f.q}</h2>

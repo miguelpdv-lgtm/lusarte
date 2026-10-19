@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // La página Nosotros se eliminó (2026-10-19): los enlaces viejos van al inicio
+  async redirects() {
+    return [{ source: "/nosotros", destination: "/", permanent: true }];
+  },
   // El comprobante en PDF lee las fuentes y el logo del disco: que viajen con las funciones del servidor
   outputFileTracingIncludes: {
     "/**": ["./src/assets/fonts/**", "./public/email/**", "./drizzle/**"],

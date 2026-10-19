@@ -8,6 +8,7 @@ import QRCode from "qrcode";
 import { db, schema } from "@/lib/db";
 import { formatCOP } from "@/lib/format";
 import type { OrderWithItems } from "@/lib/shop/orders";
+import { business } from "@/lib/legal";
 import { site } from "@/lib/site";
 import { formatDay } from "@/lib/shop/calendar";
 import { siteUrl } from "./layout";
@@ -34,16 +35,6 @@ const W = 595.28;
 const H = 841.89;
 const M = 36;
 
-function business() {
-  const env = (k: string) => process.env[k]?.trim() || "";
-  return {
-    legalName: env("BUSINESS_LEGAL_NAME"),
-    nit: env("BUSINESS_NIT"),
-    regime: env("BUSINESS_REGIME"),
-    address: env("BUSINESS_ADDRESS"),
-    email: env("BUSINESS_EMAIL") || site.email,
-  };
-}
 
 /** Quita emojis y caracteres de control que las fuentes no tienen. */
 const clean = (s: string) => s.replace(/\p{Extended_Pictographic}|️|‍/gu, "").replace(/[\u0000-\u001f]/g, " ");

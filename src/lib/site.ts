@@ -36,5 +36,4 @@ export const nav: NavItem[] = [
   },
   { label: velas.short, href: categoryHref(velas) },
   { label: navidad.name, href: navidad.href, highlight: true },
-  { label: "Nosotros", href: "/nosotros" },
 ];

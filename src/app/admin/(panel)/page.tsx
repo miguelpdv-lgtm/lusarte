@@ -8,6 +8,7 @@ import { ADMIN_FILTERS, isLow, type AdminFilter } from "@/lib/catalog/status";
 import { db } from "@/lib/db";
 import { getState } from "@/lib/effi/sync";
 import { formatCOP } from "@/lib/format";
+import { storeStatus } from "@/lib/setup-check";
 import { salesStats, type Period } from "@/lib/stats";
 
 export const dynamic = "force-dynamic";
@@ -24,11 +25,12 @@ function change(now: Period, before: Period) {
 
 export default async function PanelInicio() {
   await requireAdmin();
-  const [products, stats, articles, sales] = await Promise.all([
+  const [products, stats, articles, sales, status] = await Promise.all([
     loadProducts(),
     salesStats(),
     getState(db, "articles"),
     getState(db, "sales"),
+    storeStatus(),
   ]);
 
   const counts = Object.fromEntries(Object.entries(ADMIN_FILTERS).map(([k, f]) => [k, products.filter(f.test).length])) as Record<AdminFilter, number>;
@@ -44,6 +46,23 @@ export default async function PanelInicio() {
         <h1 className="font-display text-3xl font-extrabold">Hola</h1>
         <p className="mt-1 text-carbon-suave">Así va Lusarte. Las ventas son las remisiones registradas en Effi.</p>
       </div>
+
+      <section aria-labelledby="estado" className="toon grid gap-3 rounded-[1.25rem] bg-crema-claro p-5">
+        <h2 id="estado" className="font-display text-lg font-extrabold">
+          Estado de la tienda
+        </h2>
+        <ul className="grid gap-2 text-sm">
+          {status.map((i) => (
+            <li key={i.label} className="grid gap-0.5 sm:grid-cols-[11rem_1fr]">
+              <span className="font-bold">{i.label}</span>
+              <span>
+                <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${i.ok ? "bg-oliva/50" : "bg-miel"}`}>{i.value}</span>
+                {i.hint && <span className="mt-0.5 block text-xs text-carbon-suave">{i.hint}</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <SyncCard
         statuses={[

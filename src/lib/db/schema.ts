@@ -59,6 +59,13 @@ export const effiSales = mysqlTable(
   (t) => [primaryKey({ columns: [t.sucursal, t.id] }), index("effi_sales_fecha_idx").on(t.fecha)],
 );
 
+/** Ajustes editables desde el panel (JSON por clave): envíos y horarios de despacho. */
+export const settings = mysqlTable("settings", {
+  key: varchar({ length: 40 }).primaryKey(),
+  value: text().notNull(),
+  updatedAt: timestamp().notNull().defaultNow().onUpdateNow(),
+});
+
 /** Estado de las sincronizaciones (última corrida, errores). */
 export const syncState = mysqlTable("sync_state", {
   key: varchar({ length: 40 }).primaryKey(),
@@ -140,7 +147,8 @@ export const adminUsers = mysqlTable("admin_users", {
 
 /**
  * Pedido de la tienda. El código (LUS-000123) es también la referencia del pago en Wompi.
- * pendiente_pago → pagado → despachado, o pendiente_pago → rechazado (se puede reintentar y pasar a pagado).
+ * Pago en línea: pendiente_pago → pagado → despachado (→ entregado si es local), o pendiente_pago → rechazado.
+ * Contraentrega: contraentrega (confirmado, por cobrar) → despachado → entregado (cobrado). Cualquiera puede pasar a cancelado.
  */
 export const orders = mysqlTable(
   "orders",
@@ -165,6 +173,16 @@ export const orders = mysqlTable(
     addressNotes: varchar({ length: 200 }),
     subtotal: int().notNull(),
     shipping: int().notNull(),
+    /** local (domicilio propio en las ciudades locales) | nacional (transportadora) */
+    shippingZone: varchar({ length: 10 }).notNull().default("nacional"),
+    /** wompi (pago en línea) | contraentrega (paga al recibir; solo ciudades locales que lo permiten) */
+    paymentType: varchar({ length: 15 }).notNull().default("wompi"),
+    /** Entrega local: fecha programada (YYYY-MM-DD, hora de Colombia) según la hora de corte y los días hábiles */
+    scheduledFor: varchar({ length: 10 }),
+    /** Entrega local: franja elegida al despachar ("Hoy entre 2 y 6 p. m.") */
+    deliveryWindow: varchar({ length: 80 }),
+    deliveredAt: timestamp(),
+    cancelledAt: timestamp(),
     total: int().notNull(),
     wompiTransactionId: varchar({ length: 60 }),
     wompiStatus: varchar({ length: 20 }),

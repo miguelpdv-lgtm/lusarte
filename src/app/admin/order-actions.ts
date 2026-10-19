@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/session";
-import { createRemision, noteShipment } from "@/lib/effi/sales";
+import { annulRemision, createRemision, noteShipment } from "@/lib/effi/sales";
 import { sendOrderEmail } from "@/lib/email/order-emails";
 import type { EmailKind } from "@/lib/email/templates";
-import { CartError, getOrder, shipmentSchema, shipOrder } from "@/lib/shop/orders";
+import { cancelCodOrder, CartError, confirmCodOrder, getOrder, markDelivered, shipLocal, shipmentSchema, shipOrder } from "@/lib/shop/orders";
 
 export type ShipState = { error?: string; fields?: Partial<Record<string, string>>; ok?: string };
 
@@ -35,7 +35,10 @@ export async function ship(code: string, _prev: ShipState, form: FormData): Prom
 
 const RESENDABLE: Record<string, EmailKind[]> = {
   pagado: ["confirmacion", "venta"],
+  por_confirmar: ["recibido", "venta"],
+  contraentrega: ["confirmacion", "venta"],
   despachado: ["confirmacion", "venta", "despacho"],
+  entregado: ["confirmacion", "venta", "despacho"],
   rechazado: ["pago_fallido"],
 };
 
@@ -53,4 +56,69 @@ export async function retryRemision(code: string) {
   await requireAdmin();
   await createRemision(code);
   revalidatePath(`/admin/pedidos/${code}`);
+}
+
+export type LocalState = { error?: string; ok?: string };
+
+/** Despacho local: franja de entrega (de la lista o escrita) y nota; avisa al cliente la primera vez. */
+export async function shipLocalAction(code: string, _prev: LocalState, form: FormData): Promise<LocalState> {
+  await requireAdmin();
+  const preset = String(form.get("window") ?? "");
+  const custom = String(form.get("customWindow") ?? "").trim();
+  const window = (preset === "otra" ? custom : preset).slice(0, 80);
+  if (!window) return { error: "Elige o escribe la franja de entrega." };
+  const note = String(form.get("note") ?? "").trim().slice(0, 500) || null;
+  try {
+    const { first } = await shipLocal(code, window, note);
+    await noteShipment(code);
+    const notify = first || form.get("notify") === "on";
+    if (notify) await sendOrderEmail(code, "despacho", { force: !first });
+    revalidatePath(`/admin/pedidos/${code}`);
+    revalidatePath("/admin/pedidos");
+    return { ok: first ? "Despachado: le avisamos al cliente la franja." : notify ? "Franja actualizada y correo reenviado." : "Franja actualizada." };
+  } catch (e) {
+    if (e instanceof CartError) return { error: e.message };
+    console.error("No se pudo despachar (local):", e);
+    return { error: "No se pudo guardar. Inténtalo de nuevo." };
+  }
+}
+
+/** Entregado (y cobrado, si es contraentrega). */
+export async function deliverAction(code: string) {
+  await requireAdmin();
+  await markDelivered(code);
+  revalidatePath(`/admin/pedidos/${code}`);
+  revalidatePath("/admin/pedidos");
+}
+
+/** Anula un pedido contraentrega no entregado: primero la remisión en Effi (devuelve el inventario), luego el pedido. */
+export async function cancelCodAction(code: string, _prev: LocalState, form: FormData): Promise<LocalState> {
+  await requireAdmin();
+  const reason = String(form.get("reason") ?? "").trim().slice(0, 150) || "el cliente no recibió el pedido";
+  // Validar antes de tocar Effi: solo contraentregas que no se han entregado
+  const order = await getOrder(code);
+  if (!order || order.paymentType !== "contraentrega" || !["por_confirmar", "contraentrega", "despachado"].includes(order.status))
+    return { error: "Solo se anulan pedidos contraentrega que aún no se entregaron." };
+  try {
+    await annulRemision(code, reason);
+    await cancelCodOrder(code);
+  } catch (e) {
+    if (e instanceof CartError) return { error: e.message };
+    return { error: `Effi no anuló la remisión: ${e instanceof Error ? e.message : String(e)}. Anúlala en Effi y vuelve a intentar.` };
+  }
+  revalidatePath(`/admin/pedidos/${code}`);
+  revalidatePath("/admin/pedidos");
+  return { ok: "Pedido anulado." };
+}
+
+/** Confirma una contraentrega coordinada con el cliente: aparta el stock, crea la remisión y le avisa. */
+export async function confirmCodAction(code: string) {
+  await requireAdmin();
+  try {
+    await confirmCodOrder(code);
+  } catch (e) {
+    if (!(e instanceof CartError)) throw e;
+  }
+  revalidatePath(`/admin/pedidos/${code}`);
+  revalidatePath("/admin/pedidos");
 }

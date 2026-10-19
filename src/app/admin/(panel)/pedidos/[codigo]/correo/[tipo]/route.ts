@@ -1,8 +1,8 @@
 import { getAdmin } from "@/lib/auth/session";
-import { confirmationEmail, newSaleEmail, paymentFailedEmail, shippedEmail, type EmailKind } from "@/lib/email/templates";
+import { confirmationEmail, newSaleEmail, paymentFailedEmail, receivedEmail, shippedEmail, type EmailKind } from "@/lib/email/templates";
 import { getOrder } from "@/lib/shop/orders";
 
-const build = { confirmacion: confirmationEmail, venta: newSaleEmail, despacho: shippedEmail, pago_fallido: paymentFailedEmail };
+const build = { recibido: receivedEmail, confirmacion: confirmationEmail, venta: newSaleEmail, despacho: shippedEmail, pago_fallido: paymentFailedEmail };
 
 // Vista previa de un correo del pedido tal como lo recibe el destinatario (?texto=1 para la versión en texto plano).
 export async function GET(req: Request, { params }: RouteContext<"/admin/pedidos/[codigo]/correo/[tipo]">) {

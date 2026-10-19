@@ -5,7 +5,8 @@ import type { CartRequest, QuotedLine } from "@/lib/cart/types";
 import { getCatalog } from "@/lib/catalog/queries";
 import { checkoutEnabled } from "@/lib/shop/config";
 import { CartError, cartRequestSchema, createOrder, customerSchema, quoteLines } from "@/lib/shop/orders";
-import { cityNames } from "@/lib/shop/places";
+import { cityNames, findCity, findDepartment } from "@/lib/shop/places";
+import { deliveryOptions, type DeliveryOption } from "@/lib/shop/shipping";
 import { checkoutUrl } from "@/lib/shop/wompi";
 
 /** Precios y disponibilidad vigentes del carrito (catálogo en caché: solo para mostrar). */
@@ -21,6 +22,8 @@ export type CheckoutState = {
   values?: Record<string, string>;
   /** URL de Wompi a la que se redirige el navegador */
   payUrl?: string;
+  /** Contraentrega: página del pedido confirmado */
+  orderUrl?: string;
 };
 
 async function origin() {
@@ -50,7 +53,10 @@ export async function placeOrder(_prev: CheckoutState, form: FormData): Promise<
   }
 
   try {
-    const order = await createOrder(customer.data, lines);
+    const paymentType = values.paymentType === "contraentrega" ? "contraentrega" : "wompi";
+    const delivery = values.delivery === "recoger" ? "recoger" : values.delivery === "nacional" ? "nacional" : "domicilio";
+    const order = await createOrder(customer.data, lines, paymentType, delivery);
+    if (paymentType === "contraentrega") return { orderUrl: `/pedido/${order.code}?t=${order.token}` };
     const c = customer.data;
     const payUrl = checkoutUrl({
       reference: order.code,
@@ -70,4 +76,11 @@ export async function placeOrder(_prev: CheckoutState, form: FormData): Promise<
 /** Municipios del departamento elegido (para autocompletar en el checkout). */
 export async function citiesFor(departmentId: number): Promise<string[]> {
   return Number.isInteger(departmentId) ? cityNames(departmentId) : [];
+}
+
+/** Opciones de entrega (domicilio, recoger o nacional) para el municipio elegido; null si el municipio no es válido. */
+export async function shippingFor(departmentId: number, city: string): Promise<DeliveryOption[] | null> {
+  if (!Number.isInteger(departmentId) || !findDepartment(departmentId)) return null;
+  const place = findCity(departmentId, city);
+  return place ? deliveryOptions(place.id) : null;
 }

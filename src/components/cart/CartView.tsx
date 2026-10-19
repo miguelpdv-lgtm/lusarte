@@ -10,9 +10,9 @@ import { whatsappUrl } from "@/lib/site";
 import { CartLineItem } from "./CartLineItem";
 import { lineStatus, useQuote } from "./useQuote";
 
-type Props = { shipping: number; checkoutEnabled: boolean };
+type Props = { localNames: string[]; checkoutEnabled: boolean };
 
-export function CartView({ shipping, checkoutEnabled }: Props) {
+export function CartView({ localNames, checkoutEnabled }: Props) {
   const lines = useCart();
   const quote = useQuote(lines);
   const blocked = lines.some((l) => lineStatus(quote, l).blocked);
@@ -47,14 +47,13 @@ export function CartView({ shipping, checkoutEnabled }: Props) {
             <dd className="font-bold tabular-nums">{formatCOP(subtotal)}</dd>
           </div>
           <div className="flex justify-between">
-            <dt>Envío a toda Colombia</dt>
-            <dd className="font-bold tabular-nums">{formatCOP(shipping)}</dd>
-          </div>
-          <div className="mt-1 flex justify-between border-t-2 border-carbon/10 pt-3 text-base">
-            <dt className="font-bold">Total</dt>
-            <dd className="font-display text-xl font-extrabold tabular-nums">{formatCOP(subtotal + shipping)}</dd>
+            <dt>Envío</dt>
+            <dd className="font-bold">Según tu ciudad</dd>
           </div>
         </dl>
+        <p className="-mt-1 text-xs text-carbon-suave">
+          {localNames.length > 0 && `En ${localNames.join(" y ")}: domicilio Lusarte o recoger, y pago al recibir. `}Al resto del país enviamos por transportadora con flete al cobro.
+        </p>
 
         {blocked && (
           <p role="alert" className="rounded-xl bg-miel/60 px-3 py-2 text-sm font-semibold">

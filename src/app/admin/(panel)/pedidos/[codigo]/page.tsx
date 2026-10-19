@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { requireAdmin } from "@/lib/auth/session";
 import { formatCOP } from "@/lib/format";
-import { resendEmail, retryRemision } from "@/app/admin/order-actions";
+import { confirmCodAction, deliverAction, resendEmail, retryRemision } from "@/app/admin/order-actions";
+import { CancelCod, LocalDispatch } from "@/components/admin/LocalDispatch";
+import { describeDay, formatDay } from "@/lib/shop/calendar";
+import { getShippingSettings } from "@/lib/shop/shipping";
 import { remisionesMode } from "@/lib/effi/sales";
 import { ShipForm } from "@/components/admin/ShipForm";
 import { emailStatus } from "@/lib/email/order-emails";
@@ -21,10 +24,21 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
   const order = await getOrder((await params).codigo);
   if (!order) notFound();
   const s = statusInfo(order.status);
-  const [carriers, emails] = await Promise.all([usedCarriers(), emailStatus(order.id)]);
-  const canShip = order.status === "pagado" || order.status === "despachado";
+  const [carriers, emails, shipping] = await Promise.all([usedCarriers(), emailStatus(order.id), getShippingSettings()]);
+  const local = order.shippingZone !== "nacional";
+  const pickup = order.shippingZone === "recoger";
+  const cod = order.paymentType === "contraentrega";
+  // Venta confirmada: pagada en línea o contraentrega
+  const confirmed = ["pagado", "contraentrega", "despachado", "entregado"].includes(order.status);
+  const canShip = local ? ["pagado", "contraentrega", "despachado"].includes(order.status) : ["pagado", "despachado"].includes(order.status);
   const kinds: EmailKind[] =
-    order.status === "rechazado" ? ["pago_fallido"] : order.status === "despachado" ? ["confirmacion", "venta", "despacho"] : canShip ? ["confirmacion", "venta"] : [];
+    order.status === "rechazado"
+      ? ["pago_fallido"]
+      : ["despachado", "entregado"].includes(order.status)
+        ? ["confirmacion", "venta", "despacho"]
+        : confirmed
+          ? ["confirmacion", "venta"]
+          : [];
   const address = `${order.address}${order.addressNotes ? ` (${order.addressNotes})` : ""}, ${order.city}, ${order.department}`;
   const greeting = `¡Hola ${order.name.split(" ")[0]}! Te escribimos de Lusarte por tu pedido ${order.code}.`;
 
@@ -37,13 +51,71 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
         <h1 className="font-display text-3xl font-extrabold">{order.code}</h1>
         <span className={`rounded-full px-3 py-1 text-sm font-bold ${s.tint}`}>{s.label}</span>
       </div>
+      <p className="-mt-3 text-sm">
+        <strong>{pickup ? "Recoge en el punto de entrega" : local ? "Domicilio Lusarte" : "Envío nacional (flete al cobro)"}</strong>
+        {local && order.scheduledFor && ` · programada para ${describeDay(order.scheduledFor)} (${formatDay(order.scheduledFor)})`}
+        {" · "}
+        {cod ? <strong>Contraentrega: cobrar {formatCOP(order.total)}</strong> : "Pagado en línea"}
+        {order.deliveredAt && ` · entregado el ${dateFmt.format(order.deliveredAt)}`}
+      </p>
       {order.stockAlert && (
         <p role="alert" className="toon rounded-2xl bg-alerta px-4 py-3 text-sm font-bold text-crema">
           Se vendió más de lo que había en stock (dos pagos casi al tiempo). Revisa el inventario en Effi o escríbele al cliente.
         </p>
       )}
 
-      {canShip && (
+      {order.status === "por_confirmar" && (
+        <section className="toon toon-shadow grid gap-3 rounded-[1.25rem] bg-miel/50 p-5 text-sm">
+          <h2 className="font-display text-lg font-extrabold">Contraentrega por confirmar</h2>
+          <p>
+            Escríbele al cliente por WhatsApp para confirmar el pedido y {pickup ? "coordinar dónde y cuándo lo recoge" : "la dirección de entrega"}. Al confirmar se programa
+            la entrega, se aparta el inventario, se crea la remisión en Effi y le llega la confirmación por correo.
+          </p>
+          <form action={confirmCodAction.bind(null, order.code!)}>
+            <button type="submit" className="toon toon-press cursor-pointer rounded-full bg-estrella px-5 py-2.5 font-bold">
+              Confirmar pedido
+            </button>
+          </form>
+          <CancelCod code={order.code!} />
+        </section>
+      )}
+
+      {canShip && local && (
+        <section className={`toon grid gap-4 rounded-[1.25rem] p-5 ${order.status !== "despachado" ? "toon-shadow bg-estrella/40" : "bg-crema-claro"}`}>
+          <div>
+            <h2 className="font-display text-lg font-extrabold">
+              {pickup ? (order.status === "despachado" ? "Listo para recoger" : "Preparar para recoger") : order.status === "despachado" ? "En camino" : "Despacho local"}
+            </h2>
+            {order.shippedAt && (
+              <p className="text-sm text-carbon-suave">
+                Salió el {dateFmt.format(order.shippedAt)} · {order.deliveryWindow}
+              </p>
+            )}
+          </div>
+          <LocalDispatch
+            code={order.code!}
+            pickup={pickup}
+            windows={shipping.local.windows}
+            shipped={order.status === "despachado"}
+            initial={{ window: order.deliveryWindow, note: order.shippingNote }}
+          />
+          <form action={deliverAction.bind(null, order.code!)} className="grid gap-1 border-t-2 border-carbon/10 pt-4">
+            <button type="submit" className="toon toon-press cursor-pointer justify-self-start rounded-full bg-oliva/60 px-5 py-2.5 text-sm font-bold">
+              {cod ? `Entregado y cobrado (${formatCOP(order.total)})` : "Marcar como entregado"}
+            </button>
+            {cod && (
+              <p className="text-xs text-carbon-suave">
+                {order.effiRemisionId
+                  ? `Después registra el cobro en Effi, en la remisión N.º ${order.effiRemisionId} (queda como pendiente de cobro).`
+                  : "Registra la venta y el cobro en Effi."}
+              </p>
+            )}
+          </form>
+          {cod && <CancelCod code={order.code!} />}
+        </section>
+      )}
+
+      {canShip && !local && (
         <section className={`toon grid gap-4 rounded-[1.25rem] p-5 ${order.status === "pagado" ? "toon-shadow bg-estrella/40" : "bg-crema-claro"}`}>
           <div>
             <h2 className="font-display text-lg font-extrabold">{order.status === "pagado" ? "Despachar" : "Despacho"}</h2>
@@ -102,7 +174,7 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
           </div>
           <div className="flex justify-between">
             <dt>Envío</dt>
-            <dd className="tabular-nums">{formatCOP(order.shipping)}</dd>
+            <dd className="tabular-nums">{!local ? "Al cobro" : pickup ? "Recoge" : formatCOP(order.shipping)}</dd>
           </div>
           <div className="flex justify-between text-base font-bold">
             <dt>Total</dt>
@@ -111,18 +183,23 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
         </dl>
       </section>
 
-      {canShip && (
+      {(confirmed || order.status === "cancelado") && (
         <section className="toon grid gap-2 rounded-[1.25rem] bg-crema-claro p-5 text-sm">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-display text-lg font-extrabold">Effi</h2>
-            <a href={`/admin/pedidos/${order.code}/comprobante`} target="_blank" className="font-semibold underline-offset-4 hover:underline">
-              Comprobante en PDF
-            </a>
+            {confirmed && (
+              <a href={`/admin/pedidos/${order.code}/comprobante`} target="_blank" className="font-semibold underline-offset-4 hover:underline">
+                Comprobante en PDF
+              </a>
+            )}
           </div>
-          {order.effiRemisionId ? (
+          {order.status === "cancelado" ? (
+            <p>{order.effiRemisionId ? `Remisión N.º ${order.effiRemisionId} anulada en Effi (el inventario volvió).` : "Pedido anulado (no tenía remisión en Effi)."}</p>
+          ) : order.effiRemisionId ? (
             <p>
-              Remisión de venta <strong>N.º {order.effiRemisionId}</strong>. El inventario ya se descontó en Effi.
-              {order.trackingNumber && " La guía quedó anotada en su observación."}
+              Remisión de venta <strong>N.º {order.effiRemisionId}</strong>
+              {cod ? ", pendiente de cobro (Contado a 1 día)" : ""}. El inventario ya se descontó en Effi.
+              {(order.trackingNumber || order.deliveryWindow) && " La entrega quedó anotada en su observación."}
             </p>
           ) : (
             <>
@@ -146,10 +223,14 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
         <h2 className="font-display text-lg font-extrabold">Pago</h2>
         <p>Creado: {dateFmt.format(order.createdAt)}</p>
         {order.paidAt && <p>Pagado: {dateFmt.format(order.paidAt)}</p>}
-        <p>
-          Wompi: {order.wompiTransactionId ?? "sin transacción"} {order.wompiStatus && `(${order.wompiStatus})`}
-          {order.paymentMethod && ` · ${order.paymentMethod}`}
-        </p>
+        {cod ? (
+          <p>Contraentrega: {order.status === "entregado" ? "cobrado al entregar" : `cobrar ${formatCOP(order.total)} al entregar`}.</p>
+        ) : (
+          <p>
+            Wompi: {order.wompiTransactionId ?? "sin transacción"} {order.wompiStatus && `(${order.wompiStatus})`}
+            {order.paymentMethod && ` · ${order.paymentMethod}`}
+          </p>
+        )}
       </section>
 
       {kinds.length > 0 && (

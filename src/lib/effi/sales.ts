@@ -15,6 +15,8 @@ const VENTA = {
   bodega: 1,
   centroCostos: 1,
   formaPagoContado: 1,
+  /** "Contado a 1 día": la contraentrega queda pendiente de cobro en Effi hasta que la clienta registre el pago */
+  formaPagoContraentrega: 2,
   /** "Transferencia bancaria": el medio que usa la clienta para Nequi */
   medioPago: 5,
   caja: { sucursal: 1, id: 1 },
@@ -69,6 +71,9 @@ async function ensureClient(o: OrderWithItems): Promise<number> {
         },
       ],
       observacion: `Creado por la tienda web (${o.code})`,
+      // Vacío = cupo ilimitado, como los clientes creados en el web. Hace falta para la contraentrega (venta a
+      // crédito); si el usuario de la API no tiene el permiso "extras" de Clientes, Effi lo deja en 0.
+      cupo_credito: "",
     });
     if (res.ok) return Number(res.data.tercero);
   } catch (e) {
@@ -105,7 +110,7 @@ function remisionBody(o: OrderWithItems, cliente: number) {
     id_ciudad_cliente: o.effiCityId,
     direccion_cliente: clip(o.address, 200),
     referencia_cliente: o.addressNotes ?? "",
-    observacion: clip(`Pedido web ${o.code} · Wompi ${o.wompiTransactionId ?? ""}`, 255),
+    observacion: clip(header(o), 255),
     articulo: lines.map((l) => l.articulo),
     descripcion: lines.map((l) => l.descripcion),
     cantidad: lines.map((l) => l.cantidad),
@@ -113,15 +118,34 @@ function remisionBody(o: OrderWithItems, cliente: number) {
     descuento: lines.map(() => 0),
     gift: lines.map(() => 0),
     observacion_concepto: lines.map((l) => l.observacion),
-    t_forma_pago: [VENTA.formaPagoContado],
-    valor_forma_pago: [o.total],
-    medio_pago: [VENTA.medioPago],
-    sucursal_caja_medio_pago: [VENTA.caja.sucursal],
-    id_caja_medio_pago: [VENTA.caja.id],
-    cuenta_medio_pago: [VENTA.cuenta],
-    valor_medio_pago: [o.total],
-    observacion_medio_pago: [clip(`Wompi ${o.paymentMethod ?? ""} ${o.wompiTransactionId ?? ""}`.trim(), 255)],
+    ...(o.paymentType === "contraentrega"
+      ? // Crédito: sin medios de pago; queda pendiente de cobro
+        { t_forma_pago: [VENTA.formaPagoContraentrega], valor_forma_pago: [o.total] }
+      : {
+          t_forma_pago: [VENTA.formaPagoContado],
+          valor_forma_pago: [o.total],
+          medio_pago: [VENTA.medioPago],
+          sucursal_caja_medio_pago: [VENTA.caja.sucursal],
+          id_caja_medio_pago: [VENTA.caja.id],
+          cuenta_medio_pago: [VENTA.cuenta],
+          valor_medio_pago: [o.total],
+          observacion_medio_pago: [clip(`Wompi ${o.paymentMethod ?? ""} ${o.wompiTransactionId ?? ""}`.trim(), 255)],
+        }),
   };
+}
+
+/** Observación de la remisión: código del pedido, cómo se pagó y cómo se entrega. */
+function header(o: OrderWithItems) {
+  const pay = o.paymentType === "contraentrega" ? "CONTRAENTREGA (cobrar al entregar)" : `Wompi ${o.wompiTransactionId ?? ""}`;
+  const delivery =
+    o.shippingZone === "recoger"
+      ? `Recoge en punto de entrega${o.scheduledFor ? ` ${o.scheduledFor}` : ""}${o.deliveryWindow ? ` ${o.deliveryWindow}` : ""}`
+      : o.shippingZone === "local"
+      ? `Domicilio local${o.scheduledFor ? ` ${o.scheduledFor}` : ""}${o.deliveryWindow ? ` ${o.deliveryWindow}` : ""}`
+      : o.trackingNumber
+        ? `Despachado: ${o.carrier} guía ${o.trackingNumber}`
+        : "Envío nacional, flete al cobro";
+  return `Pedido web ${o.code} · ${pay} · ${delivery}`;
 }
 
 const saveResult = (orderId: number, set: Partial<typeof schema.orders.$inferInsert>) => db.update(schema.orders).set(set).where(eq(schema.orders.id, orderId));
@@ -133,7 +157,7 @@ const saveResult = (orderId: number, set: Partial<typeof schema.orders.$inferIns
  */
 export async function createRemision(code: string, { force = false } = {}): Promise<number | null> {
   const o = await getOrder(code);
-  if (!o || (o.status !== "pagado" && o.status !== "despachado")) return null;
+  if (!o || !["pagado", "contraentrega", "despachado", "entregado"].includes(o.status)) return null;
   if (o.effiRemisionId) return o.effiRemisionId;
   const mode = remisionesMode();
   if (!mode.on && !force) {
@@ -158,24 +182,34 @@ export async function createRemision(code: string, { force = false } = {}): Prom
     await saveResult(o.id, { effiRemisionId: id, effiRemisionError: null });
     return id;
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    let message = e instanceof Error ? e.message : String(e);
+    if (/cupo/i.test(message))
+      message += " → En Effi, abre el cliente y deja vacío su cupo de crédito (ilimitado); luego usa \"Crear remisión en Effi\". Para que no vuelva a pasar, dale al usuario de la API el permiso extras de Clientes.";
     console.error(`Remisión de ${code} falló:`, message);
     await saveResult(o.id, { effiRemisionError: clip(message, 500) });
     return null;
   }
 }
 
-/** Al despachar: agrega la transportadora y la guía a la observación de la remisión (si existe). */
+/** Al despachar (nacional o local): actualiza la observación de la remisión con la guía o la franja. */
 export async function noteShipment(code: string) {
   const o = await getOrder(code);
-  if (!o?.effiRemisionId || !o.trackingNumber) return;
+  if (!o?.effiRemisionId) return;
   try {
-    await effiRequest("PUT", "remision_v", {
-      sucursal: VENTA.sucursal,
-      id: o.effiRemisionId,
-      observacion: clip(`Pedido web ${o.code} · Wompi ${o.wompiTransactionId ?? ""} · Despachado: ${o.carrier} guía ${o.trackingNumber}`, 255),
-    });
+    await effiRequest("PUT", "remision_v", { sucursal: VENTA.sucursal, id: o.effiRemisionId, observacion: clip(header(o), 255) });
   } catch (e) {
-    console.error(`No se pudo anotar la guía en la remisión de ${code}:`, e);
+    console.error(`No se pudo actualizar la observación de la remisión de ${code}:`, e);
   }
+}
+
+/** Anula la remisión de un pedido cancelado (Effi devuelve el inventario). Lanza si Effi no la anula. */
+export async function annulRemision(code: string, reason: string) {
+  const o = await getOrder(code);
+  if (!o?.effiRemisionId) return;
+  await effiRequest("DELETE", "remision_v", {
+    sucursal: VENTA.sucursal,
+    id: o.effiRemisionId,
+    observacion_anular: clip(`Pedido web ${o.code} anulado: ${reason}`, 255),
+  });
+  await saveResult(o.id, { effiRemisionError: `Remisión ${o.effiRemisionId} anulada en Effi` });
 }

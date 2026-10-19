@@ -20,12 +20,13 @@ Lusarte es ante todo una **tienda virtual**: todo el sitio existe para que algui
 | 6. Carrito, checkout y pagos | 🟡 Hecho: carrito (localStorage + mini carrito), `/checkout`, pedidos (`orders`), Wompi Web Checkout con firma, webhook `/api/wompi/webhook`, `/pedido/[codigo]` con respaldo por API, `/admin/pedidos` (solo lectura). Probado en sandbox. Remisión automática en Effi + comprobante PDF en los correos (`docs/EFFI.md` → Remisiones de la tienda). Falta: valor real del envío y llaves de producción |
 | 7. Correos | ✅ Brevo con la marca (tema claro/oscuro), registro en `email_log`, vista previa y reenvío en el panel (`docs/CORREOS.md`). Falta la API key y autenticar `lusarte.net` en Brevo |
 | 8. Despacho | ✅ Formulario Despachar (transportadora, guía, rastreo, nota) → correo al cliente; corrección de guía y reenvío; seguimiento en `/pedido/[codigo]` |
+| Envíos (2026-10-19) | ✅ Políticas de Lusarte: domicilio por ciudad (Panel → Envíos) con hora de corte, días y festivos; recoger en el punto de entrega; contraentrega "por confirmar" en ciudades locales; envío nacional con flete al cobro. Panel con pestañas Despacho local / nacional. Páginas `/envios-y-devoluciones` y `/como-comprar` con el texto de la dueña |
 | 9 y 10 | ⬜ Pendientes |
 
 **⚠️ Lo que falta para seguir** (en orden):
 
 1. **Subir a GoDaddy** el zip nuevo y el `.sql` nuevo, y agregar el secreto `EFFI_API_KEY`.
-2. **Llaves de prueba de Wompi** (`WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET`) y la URL de eventos `https://<dominio>/api/wompi/webhook` en el dashboard. Sin llaves el checkout queda apagado y el carrito ofrece pedir por WhatsApp. **Valor del envío** (`SHIPPING_FLAT_COP`, hoy 15.000 provisional).
+2. **Llaves de prueba de Wompi** (`WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET`) y la URL de eventos `https://<dominio>/api/wompi/webhook` en el dashboard. Sin llaves el checkout queda apagado y el carrito ofrece pedir por WhatsApp. **Tarifas de domicilio** por ciudad en Panel → Envíos (hoy $8.000 provisional).
 3. ~~Cuenta de Effi para Wompi~~: Nequi (definido el 2026-10-19).
 4. **Fotos y descripciones:** ningún artículo de Effi tiene foto ni descripción. Se cargan desde el panel (filtros "Sin foto" y "Sin descripción").
 5. **Revisar la agrupación** de presentaciones en el panel (algunos artículos están duplicados en Effi, p. ej. "MOLDE LEON").
@@ -299,7 +300,7 @@ Diseño con la marca, hero "Enciéndela" (2026-10-07), secciones y responsive. L
 
 | Tema | Decisión |
 |---|---|
-| Envío | **Tarifa fija nacional**, sumada en el carrito y el checkout. El valor vive en una variable de entorno (`SHIPPING_FLAT_COP`), así que se cambia sin tocar código |
+| Envío | ~~Tarifa fija nacional~~ → (2026-10-19) domicilio por ciudad en las ciudades locales, recoger, y nacional con flete al cobro (Panel → Envíos) |
 | Presentaciones | **Sí.** Cada producto tiene una o más, cada una con su precio |
 | Inventario | **Las dos opciones:** unidades opcionales por presentación (se descuentan solas) + interruptor de agotado manual |
 | Transportadora | **Cualquiera**, escrita al momento del despacho; el link de rastreo es opcional |

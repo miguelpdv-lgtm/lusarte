@@ -36,6 +36,13 @@
       "when": 1792422436600,
       "tag": "0004_remision_effi",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1792426787576,
+      "tag": "0005_envios_local_contraentrega",
+      "breakpoints": true
     }
   ]
 }

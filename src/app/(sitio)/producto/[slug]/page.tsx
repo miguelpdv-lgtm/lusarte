@@ -8,6 +8,7 @@ import { ProductCard, ProductThumb } from "@/components/ui/ProductCard";
 import { categoryHref, findCategory, findSubcategory, subcategoryHref } from "@/data/catalog";
 import { getCatalog, getProduct } from "@/lib/catalog/queries";
 import { isOptionAvailable, isProductAvailable, type Product } from "@/lib/catalog/types";
+import { shippingRange } from "@/lib/shop/shipping";
 import { site } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -59,7 +60,7 @@ export default async function ProductoPage({ params }: PageProps<"/producto/[slu
 
   const category = findCategory(product.category);
   const subcategory = findSubcategory(product.category, product.subcategory);
-  const catalog = await getCatalog();
+  const [catalog, { localNames }] = await Promise.all([getCatalog(), shippingRange()]);
   const related = catalog
     .filter((p) => p.id !== product.id && p.category === product.category && isProductAvailable(p))
     .sort((a, b) => Number(b.subcategory === product.subcategory) - Number(a.subcategory === product.subcategory) || b.images.length - a.images.length)
@@ -133,7 +134,12 @@ export default async function ProductoPage({ params }: PageProps<"/producto/[slu
             )}
 
             <p className="rounded-2xl bg-lavanda/50 px-4 py-3 text-sm">
-              <strong>Envíos a toda Colombia</strong> con tarifa fija. Te enviamos el número de guía por correo cuando despachamos tu pedido.
+              {localNames.length > 0 && (
+                <>
+                  <strong>Domicilio en {localNames.join(" y ")}</strong> y{" "}
+                </>
+              )}
+              <strong>envíos a toda Colombia</strong>. El valor del envío se calcula con tu ciudad al pagar.
             </p>
           </div>
         </div>

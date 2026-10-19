@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useState, type ReactNode } from "react";
-import { citiesFor, placeOrder, type CheckoutState } from "@/app/(sitio)/checkout-actions";
+import { citiesFor, placeOrder, shippingFor, type CheckoutState } from "@/app/(sitio)/checkout-actions";
+import type { Delivery, DeliveryOption } from "@/lib/shop/shipping";
 import { cartSubtotal, useCart } from "@/lib/cart/store";
 import { lineKey } from "@/lib/cart/types";
 import { formatCOP } from "@/lib/format";
@@ -21,18 +22,37 @@ function Field({ label, error, hint, className = "", children }: { label: string
   );
 }
 
-type Props = { shipping: number; departments: { id: number; name: string }[]; idTypes: Record<string, string> };
+type Props = { departments: { id: number; name: string }[]; idTypes: Record<string, string> };
 
-export function CheckoutForm({ shipping, departments, idTypes }: Props) {
+export function CheckoutForm({ departments, idTypes }: Props) {
   const lines = useCart();
-  const quote = useQuote(lines);
+  const stock = useQuote(lines);
   const [state, action, pending] = useActionState<CheckoutState, FormData>(placeOrder, {});
-  const blocked = lines.some((l) => lineStatus(quote, l).blocked);
+  const blocked = lines.some((l) => lineStatus(stock, l).blocked);
   const subtotal = cartSubtotal(lines);
   const v = state.values ?? {};
   const f = state.fields ?? {};
   const [departmentId, setDepartmentId] = useState(v.departmentId ?? "");
   const [cities, setCities] = useState<string[]>([]);
+  const [city, setCity] = useState(v.city ?? "");
+  const [options, setOptions] = useState<DeliveryOption[] | null>(null);
+  const [delivery, setDelivery] = useState<Delivery>((v.delivery as Delivery) || "domicilio");
+  const [paymentType, setPaymentType] = useState<"wompi" | "contraentrega">(v.paymentType === "contraentrega" ? "contraentrega" : "wompi");
+  const quote = options ? (options.find((o) => o.delivery === delivery) ?? options[0]) : null;
+  const shipping = quote ? quote.price : null;
+  const total = subtotal + (shipping ?? 0);
+  const cod = !!quote?.cod && paymentType === "contraentrega";
+
+  // Tarifa y estimado de entrega al elegir el municipio
+  useEffect(() => {
+    if (!departmentId || !city.trim()) return;
+    let alive = true;
+    const t = setTimeout(() => shippingFor(Number(departmentId), city).then((q) => alive && setOptions(q)), 250);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [departmentId, city]);
 
   // Municipios del departamento elegido, para autocompletar
   useEffect(() => {
@@ -47,9 +67,10 @@ export function CheckoutForm({ shipping, departments, idTypes }: Props) {
   // Pedido creado: al pago en Wompi
   useEffect(() => {
     if (state.payUrl) window.location.assign(state.payUrl);
-  }, [state.payUrl]);
+    else if (state.orderUrl) window.location.assign(state.orderUrl);
+  }, [state.payUrl, state.orderUrl]);
 
-  if (lines.length === 0 && !state.payUrl) {
+  if (lines.length === 0 && !state.payUrl && !state.orderUrl) {
     return (
       <div className="toon rounded-[1.75rem] bg-crema-claro px-6 py-12 text-center">
         <p className="font-hand text-3xl">Tu carrito está vacío</p>
@@ -101,7 +122,10 @@ export function CheckoutForm({ shipping, departments, idTypes }: Props) {
               name="departmentId"
               required
               value={departmentId}
-              onChange={(e) => setDepartmentId(e.target.value)}
+              onChange={(e) => {
+                setDepartmentId(e.target.value);
+                setOptions(null);
+              }}
               aria-invalid={!!f.departmentId}
               className={inputClass}
             >
@@ -122,7 +146,11 @@ export function CheckoutForm({ shipping, departments, idTypes }: Props) {
               autoComplete="off"
               required
               disabled={!departmentId}
-              defaultValue={v.city}
+              value={city}
+              onChange={(e) => {
+                setCity(e.target.value);
+                setOptions(null);
+              }}
               aria-invalid={!!f.city}
               className={`${inputClass} disabled:opacity-50`}
             />
@@ -139,13 +167,78 @@ export function CheckoutForm({ shipping, departments, idTypes }: Props) {
             <input name="addressNotes" defaultValue={v.addressNotes} placeholder="Apartamento, barrio, punto de referencia" className={inputClass} />
           </Field>
         </fieldset>
+        <fieldset className="toon grid gap-3 rounded-[1.75rem] bg-crema-claro p-5 sm:p-6">
+          <legend className="sr-only">Envío y pago</legend>
+          <h2 className="font-display text-xl font-extrabold">Envío y pago</h2>
+          {!quote || !options ? (
+            <p className="text-sm text-carbon-suave">Elige tu departamento y municipio para ver cómo te llega.</p>
+          ) : (
+            <>
+              <input type="hidden" name="delivery" value={quote.delivery} />
+              <div role="radiogroup" aria-label="Entrega" className="grid gap-2">
+                {options.map((o) => (
+                  <label
+                    key={o.delivery}
+                    className={`flex cursor-pointer items-start gap-3 rounded-2xl border-2 px-4 py-3 ${quote.delivery === o.delivery ? "border-carbon bg-white" : "border-carbon/20"}`}
+                  >
+                    <input
+                      type="radio"
+                      checked={quote.delivery === o.delivery}
+                      onChange={() => setDelivery(o.delivery)}
+                      className="mt-1 accent-carbon"
+                    />
+                    <span className="flex-1">
+                      <span className="flex justify-between gap-3 font-bold">
+                        {o.title}
+                        <span className="shrink-0 tabular-nums">{o.delivery === "nacional" ? "Al cobro" : o.price ? formatCOP(o.price) : "Gratis"}</span>
+                      </span>
+                      <span className="block text-sm text-carbon-suave">{o.estimate}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+              <div role="radiogroup" aria-label="Forma de pago" className="grid gap-2">
+                <p className="text-sm font-bold">¿Cómo quieres pagar?</p>
+                {(
+                  [
+                    ["wompi", "Pagar en línea", "Tarjeta, PSE, Nequi o Bancolombia con Wompi."],
+                    ...(quote.cod
+                      ? [["contraentrega", "Pagar al recibir", "En efectivo o transferencia. Te escribimos por WhatsApp para confirmar el pedido y coordinar la entrega."]]
+                      : []),
+                  ] as [string, string, string][]
+                ).map(([value, title, hint]) => (
+                  <label
+                    key={value}
+                    className={`flex cursor-pointer items-start gap-3 rounded-2xl border-2 px-4 py-3 ${
+                      (quote.cod ? paymentType : "wompi") === value ? "border-carbon bg-white" : "border-carbon/20"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentType"
+                      value={value}
+                      checked={(quote.cod ? paymentType : "wompi") === value}
+                      onChange={() => setPaymentType(value as "wompi" | "contraentrega")}
+                      className="mt-1 accent-carbon"
+                    />
+                    <span>
+                      <span className="block font-bold">{title}</span>
+                      <span className="text-sm text-carbon-suave">{hint}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </>
+          )}
+        </fieldset>
       </div>
+
 
       <aside className="toon toon-shadow grid gap-4 rounded-[1.75rem] bg-crema-claro p-5 lg:sticky lg:top-32">
         <h2 className="font-display text-xl font-extrabold">Tu pedido</h2>
         <ul className="grid max-h-72 gap-3 overflow-y-auto text-sm">
           {lines.map((l) => {
-            const s = lineStatus(quote, l);
+            const s = lineStatus(stock, l);
             return (
               <li key={lineKey(l)} className="flex justify-between gap-3">
                 <span className="min-w-0">
@@ -166,11 +259,13 @@ export function CheckoutForm({ shipping, departments, idTypes }: Props) {
           </div>
           <div className="flex justify-between">
             <dt>Envío</dt>
-            <dd className="font-bold tabular-nums">{formatCOP(shipping)}</dd>
+            <dd className="font-bold tabular-nums">
+              {!quote ? "Según tu ciudad" : quote.delivery === "nacional" ? "Al cobro" : shipping ? formatCOP(shipping) : "Gratis"}
+            </dd>
           </div>
           <div className="flex justify-between border-t-2 border-carbon/10 pt-3 text-base">
             <dt className="font-bold">Total</dt>
-            <dd className="font-display text-xl font-extrabold tabular-nums">{formatCOP(subtotal + shipping)}</dd>
+            <dd className="font-display text-xl font-extrabold tabular-nums">{formatCOP(total)}</dd>
           </div>
         </dl>
 
@@ -203,12 +298,26 @@ export function CheckoutForm({ shipping, departments, idTypes }: Props) {
 
         <button
           type="submit"
-          disabled={pending || blocked || !!state.payUrl}
+          disabled={pending || blocked || !quote || !!state.payUrl || !!state.orderUrl}
           className="toon toon-press cursor-pointer rounded-full bg-estrella px-6 py-3 text-sm font-bold disabled:cursor-wait disabled:opacity-60"
         >
-          {state.payUrl ? "Abriendo Wompi…" : pending ? "Creando tu pedido…" : `Pagar ${formatCOP(subtotal + shipping)}`}
+          {state.payUrl
+            ? "Abriendo Wompi…"
+            : state.orderUrl
+              ? "Confirmando…"
+              : pending
+                ? "Creando tu pedido…"
+                : !quote
+                  ? "Elige tu ciudad para continuar"
+                  : cod
+                    ? "Enviar pedido · pagas al recibir"
+                    : `Pagar ${formatCOP(total)}`}
         </button>
-        <p className="text-center text-xs text-carbon-suave">Pago seguro con Wompi: tarjeta, PSE, Nequi o Bancolombia.</p>
+        <p className="text-center text-xs text-carbon-suave">
+          {cod
+            ? "Te escribimos por WhatsApp para confirmar tu pedido. Los pedidos están sujetos a disponibilidad."
+            : "Pago seguro con Wompi: tarjeta, PSE, Nequi o Bancolombia."}
+        </p>
       </aside>
     </form>
   );

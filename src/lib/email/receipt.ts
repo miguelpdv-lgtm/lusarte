@@ -9,6 +9,7 @@ import { db, schema } from "@/lib/db";
 import { formatCOP } from "@/lib/format";
 import type { OrderWithItems } from "@/lib/shop/orders";
 import { site } from "@/lib/site";
+import { formatDay } from "@/lib/shop/calendar";
 import { siteUrl } from "./layout";
 import { paymentMethod } from "./templates";
 
@@ -181,7 +182,9 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
   card(M, barTop, W - 2 * M, barH, { fill: C.estrella });
   text("COMPROBANTE DE VENTA", M + 14, barTop - 15, 7, f.bold, C.suave);
   text(title, M + 14, barTop - 32, 15, f.display);
-  const statusLabel = o.status === "despachado" ? "Despachado" : "Pagado";
+  const cod = o.paymentType === "contraentrega";
+  const statusLabel =
+    o.status === "entregado" ? "Entregado" : o.status === "despachado" ? "Despachado" : cod ? "Pago al recibir" : "Pagado";
   const sw = f.bold.widthOfTextAtSize(statusLabel, 7.5) + 18;
   const sx = W - M - 14 - sw;
   card(sx, barTop - 12, sw, 16, { fill: C.blanco, r: 8 });
@@ -203,7 +206,17 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
   const deliveryLines: [string, string][] = [
     ["Dirección", addr || "—"],
     ["Ciudad", `${o.city}, ${o.department}`],
-    ...(o.trackingNumber ? ([["Transportadora", `${o.carrier} · guía ${o.trackingNumber}`]] as [string, string][]) : []),
+    ...(o.shippingZone !== "nacional"
+      ? ([
+          [
+            "Entrega",
+            `${o.shippingZone === "recoger" ? "Recoge en el punto de entrega" : "Domicilio Lusarte"}${o.scheduledFor ? ` · ${formatDay(o.scheduledFor)}` : ""}`,
+          ],
+          ...(o.deliveryWindow ? [["Franja", o.deliveryWindow]] : []),
+        ] as [string, string][])
+      : o.trackingNumber
+        ? ([["Transportadora", `${o.carrier} · guía ${o.trackingNumber}`]] as [string, string][])
+        : ([["Entrega", "Envío nacional por transportadora (flete al cobro)"]] as [string, string][])),
   ];
   const valueW = colW - 24 - 62;
   const rowsH = (lines: [string, string][]) => lines.reduce((h, [, v]) => h + wrap(v, f.regular, 8.5, valueW).length * 11 + 3, 0);
@@ -259,7 +272,9 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
       qty: i.quantity,
       price: i.unitPrice,
     })),
-    ...(o.shipping > 0 ? [{ ref: "", desc: "Domicilio · envío a toda Colombia", note: "", qty: 1, price: o.shipping }] : []),
+    ...(o.shipping > 0
+      ? [{ ref: "", desc: `Domicilio · ${o.city}`, note: "", qty: 1, price: o.shipping }]
+      : []),
   ];
   concepts.forEach((c, idx) => {
     const lines = wrap(c.desc, f.regular, 8.5, descW);
@@ -294,12 +309,19 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
   const leftW = W - 2 * M - 200 - 12;
   card(M, y, leftW, blockH, { fill: C.blanco });
   text("Pago", M + 12, y - 17, 10, f.display);
-  const pay: [string, string][] = [
-    ["Forma de pago", `Contado · ${formatCOP(o.total)}`],
-    ["Medio", `Pago en línea con Wompi${o.paymentMethod ? ` (${paymentMethod(o.paymentMethod)})` : ""}`],
-    ["Transacción", o.wompiTransactionId ?? "—"],
-    ["Impuestos", "No registra impuestos ni retenciones"],
-  ];
+  const pay: [string, string][] = cod
+    ? [
+        ["Forma de pago", `Contraentrega · ${formatCOP(o.total)}`],
+        ["Medio", "Efectivo o transferencia al recibir"],
+        ["Estado", o.status === "entregado" ? "Cobrado" : "Pendiente de cobro"],
+        ["Impuestos", "No registra impuestos ni retenciones"],
+      ]
+    : [
+        ["Forma de pago", `Contado · ${formatCOP(o.total)}`],
+        ["Medio", `Pago en línea con Wompi${o.paymentMethod ? ` (${paymentMethod(o.paymentMethod)})` : ""}`],
+        ["Transacción", o.wompiTransactionId ?? "—"],
+        ["Impuestos", "No registra impuestos ni retenciones"],
+      ];
   pay.forEach(([k, v], i) => {
     text(k, M + 12, y - 33 - i * 14, 7.5, f.bold, C.suave);
     text(v, M + 92, y - 33 - i * 14, 8.5);
@@ -310,14 +332,14 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
   const tot: [string, string][] = [
     ["Subtotal productos", formatCOP(o.subtotal)],
     ["Descuento", formatCOP(0)],
-    ["Envío", formatCOP(o.shipping)],
+    ["Envío", o.shippingZone === "nacional" ? "Al cobro" : o.shippingZone === "recoger" ? "Recoge" : formatCOP(o.shipping)],
   ];
   tot.forEach(([k, v], i) => {
     text(k, tx + 12, y - 18 - i * 14, 8.5, f.regular, C.suave);
     textRight(v, tx + 188, y - 18 - i * 14, 8.5, f.bold);
   });
   card(tx + 8, y - 58, 184, 30, { fill: C.estrella, r: 8 });
-  text("TOTAL", tx + 18, y - 77, 9, f.bold);
+  text(cod && o.status !== "entregado" ? "TOTAL A PAGAR" : "TOTAL", tx + 18, y - 77, 9, f.bold);
   textRight(formatCOP(o.total), tx + 182, y - 78, 15, f.display);
   y -= blockH + 12;
 

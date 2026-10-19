@@ -15,8 +15,9 @@ const columns = [
   {
     title: "Ayuda",
     links: [
+      { label: "Cómo comprar", href: "/como-comprar" },
       { label: "Preguntas frecuentes", href: "/preguntas-frecuentes" },
-      { label: "Envíos y devoluciones", href: "/envios-y-devoluciones" },
+      { label: "Envíos, cambios y garantías", href: "/envios-y-devoluciones" },
       { label: "Contacto", href: "/contacto" },
       { label: "Nosotros", href: "/nosotros" },
     ],

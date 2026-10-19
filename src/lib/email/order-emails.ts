@@ -4,9 +4,10 @@ import { db, schema } from "@/lib/db";
 import { getOrder, type OrderWithItems } from "@/lib/shop/orders";
 import { receiptPdf } from "./receipt";
 import { adminRecipients, EmailNotConfigured, sendEmail, type Recipient } from "./brevo";
-import { confirmationEmail, newSaleEmail, paymentFailedEmail, shippedEmail, type EmailKind, type Rendered } from "./templates";
+import { confirmationEmail, newSaleEmail, paymentFailedEmail, receivedEmail, shippedEmail, type EmailKind, type Rendered } from "./templates";
 
 const build: Record<EmailKind, (o: OrderWithItems) => Rendered> = {
+  recibido: receivedEmail,
   confirmacion: confirmationEmail,
   venta: newSaleEmail,
   despacho: shippedEmail,

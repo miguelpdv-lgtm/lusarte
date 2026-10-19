@@ -29,6 +29,8 @@ export function checkoutUrl(input: CheckoutInput) {
     "customer-data:email": input.customer.email,
     "customer-data:full-name": input.customer.name,
     "customer-data:phone-number": input.customer.phone,
+    // Sin el prefijo, Wompi no prellena el celular
+    "customer-data:phone-number-prefix": "+57",
     "shipping-address:address-line-1": input.shipping.address,
     "shipping-address:country": "CO",
     "shipping-address:city": input.shipping.city,

@@ -60,7 +60,12 @@ export async function sendEmail(email: Email): Promise<string> {
 
   const json = (await res.json().catch(() => null)) as { messageId?: string; message?: string } | null;
   if (!res.ok) {
-    const hint = res.status === 401 ? " (la API key de Brevo es inválida)" : "";
+    const hint =
+      res.status === 401 && /ip address/i.test(json?.message ?? "")
+        ? " (Brevo bloquea esta IP: agrégala en Brevo → Seguridad → IP autorizadas, o desactiva el bloqueo de IPs)"
+        : res.status === 401
+          ? " (la API key de Brevo es inválida)"
+          : "";
     throw new Error(`Brevo respondió ${res.status}: ${json?.message ?? "sin detalle"}${hint}`);
   }
   return json?.messageId ?? "";

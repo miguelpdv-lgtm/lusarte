@@ -17,5 +17,10 @@ function connectionOptions(url = process.env.DATABASE_URL): mysql.PoolOptions {
 export function createDb(url?: string) {
   // Pool pequeño que suelta las conexiones inactivas: el hosting prefiere conexiones de vida corta
   const pool = mysql.createPool({ ...connectionOptions(url), connectionLimit: 5, maxIdle: 1, idleTimeout: 60_000, enableKeepAlive: true, timezone: "Z" });
+  // La app lee las fechas como UTC ("Z"): la sesión de MySQL también debe estar en UTC, o los
+  // DEFAULT now() quedan en la hora local del servidor y se ven corridos
+  pool.on("connection", (conn) => {
+    conn.query("SET time_zone = '+00:00'");
+  });
   return { pool, db: drizzle(pool, { schema, mode: "default", casing: "snake_case" }) };
 }

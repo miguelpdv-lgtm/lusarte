@@ -49,3 +49,7 @@ next-env.d.ts
 
 # base de datos y archivos locales de desarrollo (MySQL portable, uploads)
 /.local/
+/public/assets/uploads/
+
+# zips de despliegue sueltos
+/*.zip

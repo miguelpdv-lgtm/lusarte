@@ -11,6 +11,8 @@
   --color-oliva: #aaa96c;
   --color-cielo: #8aa9c1;
   --color-lavanda: #dcc5e0;
+  /* Lavanda oscurecida para gráficas del panel (contraste sobre crema) */
+  --color-uva: #9a7aae;
   /* Fondo del hero apagado (carbón más profundo) */
   --color-noche: #2a2b2b;
   /* Acentos de los stickers: usar con moderación */

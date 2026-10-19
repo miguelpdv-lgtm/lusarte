@@ -1,3 +1,4 @@
+import { syncEffiIfStale } from "@/lib/effi/auto";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ProductCard } from "@/components/ui/ProductCard";
@@ -23,6 +24,7 @@ type Props = {
 };
 
 export async function StorePage({ path, title, intro, crumbs, scope, filters, chips, tint = "bg-lavanda" }: Props) {
+  syncEffiIfStale();
   const result = filterProducts(await getCatalog(), { ...filters, ...scope });
   const hasFilters = Boolean(filters.q || filters.price || filters.available);
 

@@ -3,21 +3,27 @@ import { asc, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db, schema } from "@/lib/db";
 import { mediaUrl } from "@/lib/storage";
-import type { Product } from "./types";
+import type { AdminProduct, Product } from "./types";
 
-/** Etiqueta de caché del catálogo: el panel la invalida al guardar (updateTag). */
+/** Etiqueta de caché del catálogo: se invalida al guardar en el panel y al sincronizar con Effi. */
 export const CATALOG_TAG = "catalogo";
 
-/** Carga productos con sus presentaciones e imágenes. `onlyVisible` para la tienda. */
-export async function loadProducts({ onlyVisible }: { onlyVisible: boolean }): Promise<(Product & { visible: boolean })[]> {
-  const base = db.select().from(schema.products);
+/**
+ * Productos de la tienda con sus presentaciones (precio y stock de Effi) e imágenes.
+ * Es la vista completa del panel; la tienda filtra sobre ella.
+ */
+export async function loadProducts(): Promise<AdminProduct[]> {
   const [rows, options, images] = await Promise.all([
-    onlyVisible ? base.where(eq(schema.products.visible, true)) : base,
-    db.select().from(schema.productOptions).orderBy(asc(schema.productOptions.position), asc(schema.productOptions.id)),
+    db.select().from(schema.products),
+    db
+      .select({ option: schema.productOptions, article: schema.effiArticles })
+      .from(schema.productOptions)
+      .innerJoin(schema.effiArticles, eq(schema.effiArticles.id, schema.productOptions.effiArticleId))
+      .orderBy(asc(schema.productOptions.position), asc(schema.productOptions.id)),
     db.select().from(schema.productImages).orderBy(asc(schema.productImages.position), asc(schema.productImages.id)),
   ]);
 
-  const optionsBy = Map.groupBy(options, (o) => o.productId);
+  const optionsBy = Map.groupBy(options, (o) => o.option.productId);
   const imagesBy = Map.groupBy(images, (i) => i.productId);
 
   return rows.map((p) => ({
@@ -35,14 +41,25 @@ export async function loadProducts({ onlyVisible }: { onlyVisible: boolean }): P
     visible: p.visible,
     position: p.position,
     createdAt: p.createdAt.getTime(),
-    options: (optionsBy.get(p.id) ?? []).map((o) => ({
+    options: (optionsBy.get(p.id) ?? []).map(({ option: o, article: a }) => ({
       id: o.id,
-      name: o.name,
-      price: o.price,
+      name: o.label,
+      price: a.precio,
       compareAtPrice: o.compareAtPrice,
-      stock: o.stock,
-      soldOut: o.soldOut,
+      // Sin trazabilidad o sin control de stock: se vende sin límite
+      stock: a.gestionStock <= 1 ? null : Math.max(0, a.stock),
+      soldOut: !a.vigente,
+      hidden: o.hidden,
+      effiArticleId: a.id,
+      effiName: a.nombre,
+      referencia: a.referencia,
+      precioEspecial: a.precioEspecial,
+      stockMinimo: a.stockMinimo,
+      gestionStock: a.gestionStock,
+      costo: a.costo,
+      categoriaId: a.categoriaId,
     })),
+    effiCategoryId: optionsBy.get(p.id)?.[0]?.article.categoriaId ?? null,
     images: (imagesBy.get(p.id) ?? []).map((i) => ({
       id: i.id,
       url: mediaUrl(i.file),
@@ -53,11 +70,22 @@ export async function loadProducts({ onlyVisible }: { onlyVisible: boolean }): P
   }));
 }
 
-/** Catálogo público (solo visibles y con al menos una presentación), en caché hasta que el panel guarde. */
+/** Catálogo público: visibles, con categoría de tienda y con al menos una presentación a la venta. */
 export const getCatalog = unstable_cache(
-  async () => (await loadProducts({ onlyVisible: true })).filter((p) => p.options.length > 0),
+  async (): Promise<Product[]> =>
+    (await loadProducts()).flatMap((p) => {
+      const options = p.options.filter((o) => !o.hidden && o.price > 0);
+      if (!p.visible || !p.category || options.length === 0) return [];
+      return [
+        {
+          ...p,
+          category: p.category,
+          options: options.map(({ id, name, price, compareAtPrice, stock, soldOut }) => ({ id, name, price, compareAtPrice, stock, soldOut })),
+        },
+      ];
+    }),
   ["catalogo-publico"],
-  { tags: [CATALOG_TAG], revalidate: 3600 },
+  { tags: [CATALOG_TAG], revalidate: 300 },
 );
 
 export async function getProduct(slug: string) {

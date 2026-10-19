@@ -53,6 +53,7 @@ export const categories: Category[] = [
     subcategories: [
       { slug: "premium-gata-golosa", name: "Premium Gata Golosa" },
       { slug: "difusores-de-varitas", name: "Para difusores de varitas" },
+      { slug: "hidrosolubles", name: "Hidrosolubles" },
     ],
   },
   {
@@ -83,7 +84,10 @@ export const categories: Category[] = [
     icon: "/brand/icon-tijeras.svg",
     tint: "bg-arena",
     group: "insumos",
-    subcategories: [{ slug: "flores-preservadas", name: "Flores preservadas" }],
+    subcategories: [
+      { slug: "flores-preservadas", name: "Flores preservadas" },
+      { slug: "papeleria", name: "Papelería" },
+    ],
   },
   {
     slug: "velas-y-ambientadores",
@@ -114,3 +118,23 @@ export const subcategoryHref = (c: Category, s: Subcategory) => `/tienda/${c.slu
 export const findCategory = (slug: string) => categories.find((c) => c.slug === slug);
 export const findSubcategory = (category: string, sub: string | null) =>
   sub ? findCategory(category)?.subcategories.find((s) => s.slug === sub) : undefined;
+
+/**
+ * Categorías de Effi (id de categoria_articulo) → categoría de la tienda.
+ * Effi manda: el producto web toma la categoría del artículo. Si Effi crea una categoría nueva,
+ * se agrega aquí; mientras tanto sus productos quedan ocultos y marcados en el panel.
+ */
+export const effiCategoryMap: Record<number, { category: string; subcategory?: string; navidad?: boolean }> = {
+  1: { category: "moldes" },
+  2: { category: "fragancias" },
+  3: { category: "ceras-y-aditivos" },
+  4: { category: "complementos", subcategory: "flores-preservadas" },
+  5: { category: "complementos" },
+  6: { category: "fragancias", subcategory: "premium-gata-golosa" },
+  7: { category: "velas-y-ambientadores" },
+  8: { category: "recipientes-y-empaques" },
+  9: { category: "moldes", subcategory: "navidad-2026", navidad: true },
+  10: { category: "fragancias", subcategory: "difusores-de-varitas" },
+  11: { category: "complementos", subcategory: "papeleria" },
+  12: { category: "fragancias", subcategory: "hidrosolubles" },
+};

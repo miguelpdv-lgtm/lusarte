@@ -3,17 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "node scripts/next.mjs build-start",
+    "dev:local": "next dev",
+    "build": "node scripts/next.mjs build",
+    "start": "node scripts/next.mjs start",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --env-file-if-exists=.env.local scripts/migrate.ts",
-    "db:seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts",
     "admin:create": "tsx --env-file-if-exists=.env.local scripts/create-admin.ts",
-    "db:local": "node scripts/mysql-local.mjs"
+    "db:local": "node scripts/mysql-local.mjs",
+    "zip:godaddy": "python scripts/zip-godaddy.py",
+    "effi:sync": "tsx --env-file-if-exists=.env.local scripts/effi-sync.ts"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "drizzle-orm": "^0.45.3",
     "mysql2": "^3.24.5",
     "next": "16.3.6",
@@ -21,18 +27,17 @@
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
     "sharp": "^0.35.5",
+    "tailwindcss": "^4",
+    "typescript": "^5",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
-    "tailwindcss": "^4",
-    "tsx": "^4.23.15",
-    "typescript": "^5"
+    "tsx": "^4.23.15"
+  },
+  "engines": {
+    "node": ">=20.9"
   }
 }

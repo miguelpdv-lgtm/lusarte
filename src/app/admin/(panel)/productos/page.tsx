@@ -5,8 +5,7 @@ import type { ReactNode } from "react";
 import { categories } from "@/data/catalog";
 import { requireAdmin } from "@/lib/auth/session";
 import { loadProducts } from "@/lib/catalog/queries";
-import { ADMIN_FILTERS, LOW_STOCK, type AdminFilter } from "@/lib/catalog/status";
-import { availableUnits, isProductAvailable } from "@/lib/catalog/types";
+import { ADMIN_FILTERS, type AdminFilter } from "@/lib/catalog/status";
 import { formatCOP } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Productos" };
@@ -26,14 +25,18 @@ export default async function ProductosAdmin({ searchParams }: PageProps<"/admin
   const estado = (typeof sp.estado === "string" && sp.estado in ADMIN_FILTERS ? sp.estado : null) as AdminFilter | null;
   const categoria = typeof sp.categoria === "string" ? sp.categoria : "";
 
-  let list = await loadProducts({ onlyVisible: false });
+  let list = await loadProducts();
   if (estado) list = list.filter(ADMIN_FILTERS[estado].test);
   if (categoria) list = list.filter((p) => p.category === categoria);
   if (q.trim()) {
     const words = norm(q).split(/\s+/).filter(Boolean);
-    list = list.filter((p) => words.every((w) => norm(p.name).includes(w)));
+    // Busca en el nombre web y en el nombre/referencia de cada artículo de Effi
+    list = list.filter((p) => {
+      const haystack = norm(`${p.name} ${p.options.map((o) => `${o.effiName} ${o.referencia ?? ""}`).join(" ")}`);
+      return words.every((w) => haystack.includes(w));
+    });
   }
-  list.sort((a, b) => a.category.localeCompare(b.category) || a.position - b.position || a.name.localeCompare(b.name));
+  list.sort((a, b) => (a.category ?? "").localeCompare(b.category ?? "") || a.name.localeCompare(b.name));
 
   const linkWith = (patch: Record<string, string | null>) => {
     const next = new URLSearchParams();
@@ -45,9 +48,9 @@ export default async function ProductosAdmin({ searchParams }: PageProps<"/admin
 
   return (
     <div className="grid grid-cols-1 gap-6">
-      {sp.eliminado && (
+      {sp.anulado && (
         <p role="status" className="toon rounded-2xl bg-oliva/40 px-4 py-3 text-sm font-semibold">
-          Producto eliminado.
+          Producto anulado en Effi y retirado de la tienda.
         </p>
       )}
 
@@ -62,8 +65,8 @@ export default async function ProductosAdmin({ searchParams }: PageProps<"/admin
         <input
           name="q"
           defaultValue={q}
-          placeholder="Buscar por nombre"
-          aria-label="Buscar por nombre"
+          placeholder="Buscar por nombre o referencia"
+          aria-label="Buscar por nombre o referencia"
           className="min-w-0 flex-1 rounded-full border-2 border-carbon/80 bg-white px-4 py-2 text-sm"
         />
         <select
@@ -108,7 +111,6 @@ export default async function ProductosAdmin({ searchParams }: PageProps<"/admin
             const prices = p.options.map((o) => o.price);
             const min = Math.min(...prices);
             const max = Math.max(...prices);
-            const low = p.options.some((o) => !o.soldOut && o.stock !== null && availableUnits(o) <= LOW_STOCK);
             return (
               <li key={p.id}>
                 <Link
@@ -121,13 +123,15 @@ export default async function ProductosAdmin({ searchParams }: PageProps<"/admin
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-bold">{p.name}</p>
                     <p className="truncate text-xs text-carbon-suave">
-                      {categoryName.get(p.category)} · {p.options.length} {p.options.length === 1 ? "presentación" : "presentaciones"}
+                      {(p.category && categoryName.get(p.category)) || "Sin categoría"} · {p.options.length} {p.options.length === 1 ? "presentación" : "presentaciones"}
                     </p>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {!p.visible && <Tag className="bg-carbon text-crema">Oculto</Tag>}
-                      {!isProductAvailable(p) && <Tag className="bg-miel">Agotado</Tag>}
-                      {low && <Tag className="bg-estrella">Pocas unidades</Tag>}
+                      {ADMIN_FILTERS.agotados.test(p) && <Tag className="bg-miel">Agotado</Tag>}
+                      {ADMIN_FILTERS.pocas.test(p) && <Tag className="bg-estrella">Pocas unidades</Tag>}
                       {p.images.length === 0 && <Tag className="bg-lavanda">Sin foto</Tag>}
+                      {!p.description.trim() && <Tag className="bg-cielo/60">Sin descripción</Tag>}
+                      {!p.category && <Tag className="bg-carbon/20">Sin categoría en Effi</Tag>}
                     </div>
                   </div>
                   <p className="shrink-0 text-right text-sm font-bold tabular-nums">

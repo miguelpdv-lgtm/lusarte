@@ -1,3 +1,4 @@
+import { syncEffiIfStale } from "@/lib/effi/auto";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/store/Breadcrumbs";
@@ -52,6 +53,7 @@ function Description({ text }: { text: string }) {
 }
 
 export default async function ProductoPage({ params }: PageProps<"/producto/[slug]">) {
+  syncEffiIfStale();
   const product = await getProduct((await params).slug);
   if (!product) notFound();
 

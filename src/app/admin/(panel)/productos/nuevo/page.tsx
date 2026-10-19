@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ProductForm } from "@/components/admin/ProductForm";
+import { NewProductForm } from "@/components/admin/NewProductForm";
 import { requireAdmin } from "@/lib/auth/session";
+import { effiCategoryOptions } from "@/lib/catalog/effi-categories";
 
 export const metadata: Metadata = { title: "Nuevo producto" };
 
@@ -14,8 +15,9 @@ export default async function NuevoProducto() {
           ← Productos
         </Link>
         <h1 className="mt-2 font-display text-3xl font-extrabold">Nuevo producto</h1>
+        <p className="mt-1 text-carbon-suave">Se crea en Effi y en la tienda al mismo tiempo. También puedes crearlo en Effi: aparece aquí solo al sincronizar.</p>
       </div>
-      <ProductForm />
+      <NewProductForm effiCategories={await effiCategoryOptions()} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "cf9373a1-b508-4573-a938-be85315f465f",
+  "id": "d69d0e57-2553-409c-bb63-a2d0261aac58",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "admin_users": {
@@ -63,6 +63,218 @@
           ]
         }
       },
+      "checkConstraint": {}
+    },
+    "effi_articles": {
+      "name": "effi_articles",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "referencia": {
+          "name": "referencia",
+          "type": "varchar(60)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "categoria_id": {
+          "name": "categoria_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "categoria_nombre": {
+          "name": "categoria_nombre",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "precio": {
+          "name": "precio",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "precio_especial": {
+          "name": "precio_especial",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "gestion_stock": {
+          "name": "gestion_stock",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stock": {
+          "name": "stock",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "stock_minimo": {
+          "name": "stock_minimo",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "tipo_articulo": {
+          "name": "tipo_articulo",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vigente": {
+          "name": "vigente",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "synced_at": {
+          "name": "synced_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "effi_articles_categoria_idx": {
+          "name": "effi_articles_categoria_idx",
+          "columns": [
+            "categoria_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "effi_articles_id": {
+          "name": "effi_articles_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "effi_sales": {
+      "name": "effi_sales",
+      "columns": {
+        "sucursal": {
+          "name": "sucursal",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "id_transaccion": {
+          "name": "id_transaccion",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fecha": {
+          "name": "fecha",
+          "type": "datetime",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "total": {
+          "name": "total",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cliente": {
+          "name": "cliente",
+          "type": "varchar(160)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ciudad": {
+          "name": "ciudad",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ecommerce": {
+          "name": "ecommerce",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "vigente": {
+          "name": "vigente",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        }
+      },
+      "indexes": {
+        "effi_sales_fecha_idx": {
+          "name": "effi_sales_fecha_idx",
+          "columns": [
+            "fecha"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "effi_sales_sucursal_id_pk": {
+          "name": "effi_sales_sucursal_id_pk",
+          "columns": [
+            "sucursal",
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
       "checkConstraint": {}
     },
     "product_images": {
@@ -171,16 +383,16 @@
           "notNull": true,
           "autoincrement": false
         },
-        "name": {
-          "name": "name",
-          "type": "varchar(80)",
+        "effi_article_id": {
+          "name": "effi_article_id",
+          "type": "int",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "price": {
-          "name": "price",
-          "type": "int",
+        "label": {
+          "name": "label",
+          "type": "varchar(80)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -192,15 +404,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "stock": {
-          "name": "stock",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "sold_out": {
-          "name": "sold_out",
+        "hidden": {
+          "name": "hidden",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -248,7 +453,14 @@
           ]
         }
       },
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "product_options_effiArticleId_unique": {
+          "name": "product_options_effiArticleId_unique",
+          "columns": [
+            "effi_article_id"
+          ]
+        }
+      },
       "checkConstraint": {}
     },
     "products": {
@@ -268,6 +480,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "group_key": {
+          "name": "group_key",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "name": {
           "name": "name",
           "type": "varchar(160)",
@@ -279,7 +498,7 @@
           "name": "category",
           "type": "varchar(60)",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "subcategory": {
@@ -368,6 +587,13 @@
         }
       },
       "indexes": {
+        "products_group_idx": {
+          "name": "products_group_idx",
+          "columns": [
+            "group_key"
+          ],
+          "isUnique": false
+        },
         "products_category_idx": {
           "name": "products_category_idx",
           "columns": [
@@ -394,6 +620,46 @@
           ]
         }
       },
+      "checkConstraint": {}
+    },
+    "sync_state": {
+      "name": "sync_state",
+      "columns": {
+        "key": {
+          "name": "key",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "sync_state_key": {
+          "name": "sync_state_key",
+          "columns": [
+            "key"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
       "checkConstraint": {}
     }
   },

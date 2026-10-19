@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { BrandIcon } from "@/components/ui/BrandIcon";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { ArrowIcon, WhatsAppIcon } from "@/components/ui/icons";
@@ -13,10 +14,22 @@ let litBefore = false;
 const buttonBase =
   "toon toon-press inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-bold";
 
-/** Hero "Enciéndela": arranca a oscuras y al encender la vela el fondo pasa a lavanda. */
+/** Hero "Enciéndela": entra a oscuras, la vela se enciende sola y el fondo (foto + velo morado) se ilumina. */
 export function Hero() {
   const [lit, setLit] = useState(litBefore);
   const [wasLit, setWasLit] = useState(litBefore);
+
+  // Animación de entrada: la vela se enciende sola al llegar (al instante si se prefiere menos movimiento)
+  useEffect(() => {
+    if (litBefore) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = setTimeout(() => {
+      litBefore = true;
+      setWasLit(true);
+      setLit(true);
+    }, reduce ? 0 : 900);
+    return () => clearTimeout(timer);
+  }, []);
 
   const toggle = () => {
     litBefore = !lit;
@@ -29,10 +42,23 @@ export function Hero() {
       {/* La onda de arriba la pone el header (sticky); aquí solo la de abajo.
           --toon-ink: en la oscuridad los contornos toon son crema para que se vean. */}
       <div
-        className={`wave-bottom relative overflow-hidden px-4 pt-12 pb-16 transition-colors duration-900 sm:pt-16 sm:pb-20 lg:pt-20 lg:pb-24 ${
-          lit ? "bg-lavanda text-carbon" : "bg-noche text-crema [--toon-ink:var(--color-crema)]"
+        className={`wave-bottom relative isolate overflow-hidden bg-noche px-4 pt-12 pb-16 transition-colors duration-900 sm:pt-16 sm:pb-20 lg:pt-20 lg:pb-24 ${
+          lit ? "text-carbon" : "text-crema [--toon-ink:var(--color-crema)]"
         }`}
       >
+        {/* Fondo: foto de productos + velo morado parejo, con transparencia para que se vea la foto completa */}
+        <Image src="/brand/hero.jpg" alt="" fill priority sizes="100vw" className="-z-20 object-cover object-[72%_center] lg:object-center" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 bg-lavanda/60"
+        />
+        {/* A oscuras: velo noche, se desvanece al encender la vela */}
+        <div
+          aria-hidden="true"
+          className={`absolute inset-0 -z-10 bg-noche/85 transition-opacity duration-900 ${
+            lit ? "opacity-0" : "opacity-100"
+          }`}
+        />
         <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10">
           <Candle
             lit={lit}

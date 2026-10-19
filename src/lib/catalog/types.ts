@@ -3,11 +3,26 @@
 export type ProductOption = {
   id: number;
   name: string;
+  /** De Effi (tarifa normal) */
   price: number;
   compareAtPrice: number | null;
-  /** null = sin conteo de inventario */
+  /** De Effi. null = el artículo no lleva control de stock */
   stock: number | null;
   soldOut: boolean;
+};
+
+/** Presentación vista desde el panel: con los datos del artículo de Effi. */
+export type AdminOption = ProductOption & {
+  hidden: boolean;
+  effiArticleId: number;
+  effiName: string;
+  referencia: string | null;
+  precioEspecial: number;
+  stockMinimo: number;
+  /** 0-1 sin control de stock, 2+ con control */
+  gestionStock: number;
+  costo: number;
+  categoriaId: number | null;
 };
 
 export type ProductImage = {
@@ -52,3 +67,12 @@ export function cheapestOption(p: Product) {
   const list = pool.length ? pool : p.options;
   return list.reduce<ProductOption | undefined>((min, o) => (!min || o.price < min.price ? o : min), undefined);
 }
+
+/** Producto visto desde el panel. category es null si la categoría de Effi no está mapeada. */
+export type AdminProduct = Omit<Product, "options" | "category"> & {
+  category: string | null;
+  visible: boolean;
+  options: AdminOption[];
+  /** Categoría de Effi del producto (la de su primera presentación) */
+  effiCategoryId: number | null;
+};

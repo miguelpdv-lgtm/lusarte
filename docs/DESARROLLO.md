@@ -52,7 +52,7 @@ npm run admin:create -- correo@ejemplo.com "clave de 10+ caracteres"   # crea el
 ## 4. Correr la web
 
 ```bash
-npm run dev       # http://localhost:3000 · panel en /admin
+npm run dev:local # http://localhost:3000 · panel en /admin (npm run dev compila y arranca en modo producción, como GoDaddy)
 ```
 
 ## Cambios en el esquema

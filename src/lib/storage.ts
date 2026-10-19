@@ -5,7 +5,8 @@ import sharp from "sharp";
 import { slugify } from "@/lib/slug";
 
 // Solo servidor (usa el disco). Lo usan el panel, la ruta /media y los scripts de carga.
-// Fotos de productos subidas desde el panel. Se guardan en UPLOADS_DIR, una carpeta que
+// Fotos de productos subidas desde el panel. Se guardan en UPLOADS_DIR (por defecto public/assets/uploads,
+// la carpeta que GoDaddy conserva entre publicaciones), una carpeta que
 // sobrevive a los redeploys, y se sirven por /media/<archivo> (src/app/media/[file]/route.ts).
 
 const MAX_BYTES = 15 * 1024 * 1024;
@@ -15,7 +16,7 @@ const ACCEPTED = ["image/jpeg", "image/png", "image/webp"];
 export const FILE_PATTERN = /^[a-z0-9-]+\.webp$/;
 
 // La carpeta viene de una variable de entorno: que el empaquetador no intente rastrear su contenido
-const uploadsDir = () => path.resolve(/*turbopackIgnore: true*/ process.cwd(), process.env.UPLOADS_DIR || ".local/uploads");
+const uploadsDir = () => path.resolve(/*turbopackIgnore: true*/ process.cwd(), process.env.UPLOADS_DIR || "public/assets/uploads");
 
 export const mediaUrl = (file: string) => `/media/${file}`;
 

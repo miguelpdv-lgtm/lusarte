@@ -5,8 +5,15 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1791428633562,
+      "when": 1792253700421,
       "tag": "0000_inicial",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1792256040302,
+      "tag": "0001_effi_costo_categorias",
       "breakpoints": true
     }
   ]

@@ -8,24 +8,29 @@ Lusarte es ante todo una **tienda virtual**: todo el sitio existe para que algui
 
 ## 0. Estado y lo que falta
 
+> **Cambio de rumbo (2026-10-17): integración con Effi ERP.** Effi es la fuente de verdad de productos, precios, stock y ventas; la tienda y el panel son una capa encima (fotos, descripciones, visibilidad). Detalle en `docs/EFFI.md`. Se borró el catálogo transcrito del Canva.
+
 | Fase | Estado |
 |---|---|
-| 1. Landing | ✅ Hecha y publicada en el preview de Vercel |
-| 2. Decisiones y cuentas | 🟡 Hosting definido (GoDaddy), falta comprarlo; faltan Wompi, Resend, DNS y el valor del envío |
-| 3. Base técnica | 🟡 Hecha en local (MySQL portable, esquema, migraciones, carga del catálogo). **Falta el deploy en GoDaddy con su MySQL** |
-| 4. Panel: productos e imágenes | ✅ Hecho en local y probado (login, lista con filtros, crear/editar/eliminar, presentaciones, inventario, fotos) |
-| 5. Tienda pública | ✅ Hecha en local y probada en celular y escritorio (tienda, categorías, búsqueda, filtros, ficha, páginas de ayuda y legales, 404) |
-| 6 a 10 | ⬜ Pendientes |
+| 1. Landing | ✅ Publicada en GoDaddy (hero con foto y vela que se enciende sola) |
+| 2. Decisiones y cuentas | 🟡 GoDaddy ✅ · Effi ✅ · faltan Wompi, Resend, DNS y el valor del envío |
+| 3. Base técnica | ✅ MySQL + migraciones · sincronización con Effi (artículos cada 15 min y ventas) |
+| 4. Panel | ✅ Estadísticas de ventas (Effi), estado de la sincronización, productos con capa web (fotos, descripción, visibilidad, precio que se envía a Effi, agrupar/separar presentaciones) |
+| 5. Tienda pública | ✅ Catálogo de Effi: 518 productos, precios y stock reales |
+| 6. Carrito, checkout y pagos | ⬜ Incluye crear la **remisión de venta en Effi** y el **PDF al admin** (`docs/EFFI.md` → Pendiente) |
+| 7 a 10 | ⬜ Pendientes |
 
 **⚠️ Lo que falta para seguir** (en orden):
 
-1. **Comprar GoDaddy** y validar el checklist del Anexo A. Hasta entonces **no conviene hacer push a `main`**: Vercel no tiene base de datos y las páginas de la tienda fallarían en el preview.
-2. **Valor de la tarifa fija de envío** (§10.2 #1): bloquea la fase 6.
-3. **Cuenta de Wompi** con llaves de sandbox: bloquea la fase 6.
-4. **Fotos de producto**: la tienda ya muestra el ícono de la categoría cuando falta la foto, pero solo 4 de los 326 productos tienen foto. La clienta puede subirlas desde el panel, o pedirle que exporte las de Canva en buena calidad.
-5. **Revisar el catálogo cargado** en el panel: los 🚫 de Canva que se transcribieron, los 19 productos ocultos por estar agotados y sin precio, y las presentaciones agotadas sin precio que se omitieron.
-6. **Correo de la clienta** para su usuario del panel (`npm run admin:create`).
-7. **Textos provisionales**: nosotros, preguntas frecuentes, envíos, términos y privacidad están marcados como borrador en la página. Faltan razón social, NIT, ciudad, correo y link de Facebook.
+1. **Subir a GoDaddy** el zip nuevo y el `.sql` nuevo, y agregar el secreto `EFFI_API_KEY`.
+2. **Valor de la tarifa fija de envío** y **cuenta de Wompi** (sandbox): bloquean la fase 6.
+3. **A qué cuenta de Effi entra el dinero de Wompi** (Nequi, Daviplata o Nubank), para la remisión.
+4. **Fotos y descripciones:** ningún artículo de Effi tiene foto ni descripción. Se cargan desde el panel (filtros "Sin foto" y "Sin descripción").
+5. **Revisar la agrupación** de presentaciones en el panel (algunos artículos están duplicados en Effi, p. ej. "MOLDE LEON").
+6. **"Molde Cactus"** no tiene categoría en Effi: está oculto hasta que se le asigne.
+7. **Resend + DNS de `lusarte.net`** para los correos (venta al admin con PDF, despacho).
+8. **Textos provisionales** (nosotros, envíos, términos, privacidad) y datos legales (razón social, NIT, ciudad: la sucursal de Effi está en Barranquilla).
+9. **API key de Effi:** vence a los 360 días (renovar en Administración → Usuarios). El panel muestra el error si Effi la rechaza.
 
 ## 1. Alcance: paquete Profesional
 

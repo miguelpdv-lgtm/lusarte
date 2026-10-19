@@ -1,35 +1,98 @@
-import { boolean, index, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, datetime, index, int, mysqlTable, primaryKey, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
-// Precios en pesos colombianos, enteros (sin decimales).
-// Las categorías viven en el código (src/data/catalog.ts); aquí se guarda su slug.
+// Effi ERP es la fuente de verdad de artículos, precios, stock y ventas.
+// effi_* es una copia local que se sincroniza (src/lib/effi/sync.ts); products/product_options/product_images
+// son la capa de la tienda: cómo se agrupan, muestran y describen esos artículos en la web.
+// Precios en pesos colombianos, enteros.
 
+/** Copia de los artículos de Effi (api/articulo). */
+export const effiArticles = mysqlTable(
+  "effi_articles",
+  {
+    /** Id del artículo en Effi */
+    id: int().primaryKey(),
+    nombre: varchar({ length: 160 }).notNull(),
+    referencia: varchar({ length: 60 }),
+    categoriaId: int(),
+    categoriaNombre: varchar({ length: 120 }),
+    /** Tarifa normal (la de la web) */
+    precio: int().notNull(),
+    /** Tarifa especial: se guarda para no borrarla al modificar precios en Effi */
+    precioEspecial: int().notNull().default(0),
+    /** 0 sin trazabilidad, 1 sin control de stock, 2-5 con control */
+    gestionStock: int().notNull(),
+    stock: int().notNull().default(0),
+    stockMinimo: int().notNull().default(0),
+    /** Costo promedio (para los ajustes de inventario que suman stock) */
+    costo: int().notNull().default(0),
+    /** 4 = servicio (p. ej. DOMICILIO), no se muestra en la tienda */
+    tipoArticulo: int().notNull(),
+    vigente: boolean().notNull().default(true),
+    syncedAt: timestamp().notNull().defaultNow(),
+  },
+  (t) => [index("effi_articles_categoria_idx").on(t.categoriaId)],
+);
+
+/** Categorías de artículos de Effi (api/categoria_articulo), para elegirlas desde el panel. */
+export const effiCategories = mysqlTable("effi_categories", {
+  id: int().primaryKey(),
+  nombre: varchar({ length: 120 }).notNull(),
+  vigente: boolean().notNull().default(true),
+});
+
+/** Copia resumida de las remisiones de venta de Effi (api/remision_v), para las estadísticas. */
+export const effiSales = mysqlTable(
+  "effi_sales",
+  {
+    sucursal: int().notNull(),
+    id: int().notNull(),
+    idTransaccion: varchar({ length: 40 }).notNull(),
+    /** Fecha de creación en UTC */
+    fecha: datetime().notNull(),
+    total: int().notNull(),
+    cliente: varchar({ length: 160 }),
+    ciudad: varchar({ length: 80 }),
+    /** Viene de una integración ecommerce (la tienda) */
+    ecommerce: boolean().notNull().default(false),
+    vigente: boolean().notNull().default(true),
+  },
+  (t) => [primaryKey({ columns: [t.sucursal, t.id] }), index("effi_sales_fecha_idx").on(t.fecha)],
+);
+
+/** Estado de las sincronizaciones (última corrida, errores). */
+export const syncState = mysqlTable("sync_state", {
+  key: varchar({ length: 40 }).primaryKey(),
+  value: text().notNull(),
+  updatedAt: timestamp().notNull().defaultNow().onUpdateNow(),
+});
+
+/** Producto de la tienda: agrupa uno o más artículos de Effi (sus presentaciones). */
 export const products = mysqlTable(
   "products",
   {
     id: int().autoincrement().primaryKey(),
     slug: varchar({ length: 160 }).notNull().unique(),
+    /** Clave de agrupación automática: "<categoría Effi>|<nombre sin presentación>" */
+    groupKey: varchar({ length: 200 }).notNull(),
     name: varchar({ length: 160 }).notNull(),
-    category: varchar({ length: 60 }).notNull(),
+    /** Derivadas de la categoría de Effi en cada sincronización (effiCategoryMap) */
+    category: varchar({ length: 60 }),
     subcategory: varchar({ length: 60 }),
     description: text().notNull(),
-    /** Advertencia corta visible en la ficha: "No compatible con parafina" */
     warning: varchar({ length: 160 }),
-    /** Etiqueta sobre la foto: "Personalizable", "Premium"… */
     badge: varchar({ length: 40 }),
-    /** Si no es null, el producto se puede personalizar y esta es la pregunta: "Color y mensaje" */
     personalization: varchar({ length: 80 }),
     visible: boolean().notNull().default(true),
     featured: boolean().notNull().default(false),
     navidad: boolean().notNull().default(false),
-    /** Orden dentro de su categoría (menor primero) */
     position: int().notNull().default(0),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp().notNull().defaultNow().onUpdateNow(),
   },
-  (t) => [index("products_category_idx").on(t.category, t.subcategory)],
+  (t) => [index("products_group_idx").on(t.groupKey), index("products_category_idx").on(t.category, t.subcategory)],
 );
 
-/** Presentaciones: todo producto tiene al menos una ("30 ml", "Docena", "Única"). */
+/** Presentación: un artículo de Effi dentro de un producto de la tienda. */
 export const productOptions = mysqlTable(
   "product_options",
   {
@@ -37,13 +100,13 @@ export const productOptions = mysqlTable(
     productId: int()
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
-    name: varchar({ length: 80 }).notNull(),
-    price: int().notNull(),
-    /** Precio anterior, se muestra tachado ("ANTES $10.000") */
+    effiArticleId: int().notNull().unique(),
+    /** Nombre de la presentación en la web ("30 ml") */
+    label: varchar({ length: 80 }).notNull(),
+    /** Precio anterior (tachado). Solo existe en la web */
     compareAtPrice: int(),
-    /** null = sin conteo de inventario */
-    stock: int(),
-    soldOut: boolean().notNull().default(false),
+    /** Ocultar esta presentación en la web sin tocar Effi */
+    hidden: boolean().notNull().default(false),
     position: int().notNull().default(0),
   },
   (t) => [index("product_options_product_idx").on(t.productId)],

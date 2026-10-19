@@ -1,0 +1,2 @@
+Fuentes de la marca para el comprobante en PDF (src/lib/email/receipt.ts).
+DM Sans, Bricolage Grotesque y Patrick Hand: SIL Open Font License 1.1 (Google Fonts, vía Fontsource).

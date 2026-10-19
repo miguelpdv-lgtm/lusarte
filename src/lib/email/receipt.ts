@@ -1,172 +1,353 @@
 import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFPage } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
+import { inArray } from "drizzle-orm";
+import { PDFDocument, rgb, type PDFFont, type PDFImage, type PDFPage } from "pdf-lib";
+import QRCode from "qrcode";
+import { db, schema } from "@/lib/db";
 import { formatCOP } from "@/lib/format";
-import { LEGAL_ID_TYPES, type OrderWithItems } from "@/lib/shop/orders";
+import type { OrderWithItems } from "@/lib/shop/orders";
 import { site } from "@/lib/site";
+import { siteUrl } from "./layout";
 import { paymentMethod } from "./templates";
 
-// Comprobante del pedido en PDF (Effi no entrega el PDF de la remisión por la API).
-// Va adjunto a la confirmación del cliente y al aviso de venta, con el número de la remisión de Effi.
+// Comprobante de venta en PDF (la API de Effi no entrega el PDF de la remisión). Tiene todo lo del documento
+// de Effi (datos legales, cliente, referencias, descuentos, impuestos, forma de pago, observación, recibido)
+// más la marca, el pago en línea, la entrega y un QR al estado del pedido.
+// Los datos legales del negocio vienen de variables de entorno (el repo es público): BUSINESS_*.
 
 const hex = (h: string) => rgb(parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255);
-const C = { carbon: hex("#383939"), suave: hex("#5b5c5b"), crema: hex("#efebe0"), cremaClaro: hex("#f7f4ec"), lavanda: hex("#dcc5e0"), estrella: hex("#f5eca0") };
+const C = {
+  carbon: hex("#383939"),
+  suave: hex("#5b5c5b"),
+  crema: hex("#efebe0"),
+  cremaClaro: hex("#f7f4ec"),
+  lavanda: hex("#dcc5e0"),
+  estrella: hex("#f5eca0"),
+  linea: hex("#d9d3c3"),
+  blanco: hex("#ffffff"),
+};
 
-/** Las fuentes estándar del PDF solo tienen Latin-1: se quitan emojis y símbolos fuera de ese rango. */
-const safe = (s: string) =>
-  s
-    .replace(/[“”]/g, '"')
-    .replace(/[‘’]/g, "'")
-    .replace(/[–—]/g, "-")
-    .replace(/…/g, "...")
-    .replace(/[^\x20-\x7e\xa0-\xff]/g, "");
+const W = 595.28;
+const H = 841.89;
+const M = 36;
 
-function wrap(text: string, font: PDFFont, size: number, width: number) {
-  const lines: string[] = [];
-  for (const para of safe(text).split("\n")) {
-    let line = "";
-    for (const word of para.split(" ")) {
-      const next = line ? `${line} ${word}` : word;
-      if (font.widthOfTextAtSize(next, size) > width && line) {
-        lines.push(line);
-        line = word;
-      } else line = next;
-    }
-    lines.push(line);
-  }
-  return lines;
+function business() {
+  const env = (k: string) => process.env[k]?.trim() || "";
+  return {
+    legalName: env("BUSINESS_LEGAL_NAME"),
+    nit: env("BUSINESS_NIT"),
+    regime: env("BUSINESS_REGIME"),
+    address: env("BUSINESS_ADDRESS"),
+    email: env("BUSINESS_EMAIL") || site.email,
+  };
 }
+
+/** Quita emojis y caracteres de control que las fuentes no tienen. */
+const clean = (s: string) => s.replace(/\p{Extended_Pictographic}|️|‍/gu, "").replace(/[\u0000-\u001f]/g, " ");
 
 const dateFmt = new Intl.DateTimeFormat("es-CO", { dateStyle: "long", timeStyle: "short", timeZone: "America/Bogota" });
 
+type Fonts = { regular: PDFFont; bold: PDFFont; display: PDFFont; hand: PDFFont };
+
+let fontCache: Record<string, Uint8Array> | null = null;
+async function fontFiles() {
+  if (fontCache) return fontCache;
+  const dir = path.join(process.cwd(), "src", "assets", "fonts");
+  const [regular, bold, display, hand] = await Promise.all(
+    ["DMSans-Regular.ttf", "DMSans-Bold.ttf", "BricolageGrotesque-ExtraBold.ttf", "PatrickHand-Regular.ttf"].map((f) => readFile(path.join(dir, f))),
+  );
+  fontCache = { regular, bold, display, hand };
+  return fontCache;
+}
+
+/** Referencias de Effi de los artículos del pedido (columna "Ref."). */
+async function references(o: OrderWithItems) {
+  const ids = [...new Set(o.items.map((i) => i.effiArticleId))];
+  if (!ids.length) return new Map<number, string>();
+  const rows = await db.select({ id: schema.effiArticles.id, ref: schema.effiArticles.referencia }).from(schema.effiArticles).where(inArray(schema.effiArticles.id, ids));
+  return new Map(rows.map((r) => [r.id, r.ref ?? ""]));
+}
+
 export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
   const pdf = await PDFDocument.create();
-  pdf.setTitle(`Lusarte · Pedido ${o.code}`);
+  pdf.registerFontkit(fontkit);
+  const files = await fontFiles();
+  const f: Fonts = {
+    regular: await pdf.embedFont(files.regular, { subset: true }),
+    bold: await pdf.embedFont(files.bold, { subset: true }),
+    display: await pdf.embedFont(files.display, { subset: true }),
+    hand: await pdf.embedFont(files.hand, { subset: true }),
+  };
+  const biz = business();
+  const refs = await references(o);
+  const title = o.effiRemisionId ? `Remisión N.º ${o.effiRemisionId}` : `Pedido ${o.code}`;
+  pdf.setTitle(`Lusarte · ${title}`);
   pdf.setAuthor(site.name);
-  const regular = await pdf.embedFont(StandardFonts.Helvetica);
-  const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const W = 595.28;
-  const H = 841.89;
-  const M = 48;
-  let page: PDFPage = pdf.addPage([W, H]);
-  let y = H - M;
+  pdf.setSubject(`Comprobante de venta del pedido ${o.code}`);
 
-  const text = (s: string, x: number, size = 10, font = regular, color = C.carbon) => page.drawText(safe(s), { x, y, size, font, color });
-  const right = (s: string, xRight: number, size = 10, font = regular, color = C.carbon) =>
-    page.drawText(safe(s), { x: xRight - font.widthOfTextAtSize(safe(s), size), y, size, font, color });
-  const ensure = (h: number) => {
-    if (y - h > M + 40) return;
-    page = pdf.addPage([W, H]);
-    y = H - M;
+  let logo: PDFImage | null = null;
+  try {
+    logo = await pdf.embedPng(await readFile(path.join(process.cwd(), "public", "email", "logo-stacked.png")));
+  } catch {
+    // sin logo: se escribe el nombre
+  }
+  const qr = await pdf.embedPng(
+    await QRCode.toBuffer(siteUrl(`/pedido/${o.code}?t=${o.token}`), { type: "png", margin: 0, width: 300, color: { dark: "#383939ff", light: "#00000000" } }),
+  );
+
+  let page: PDFPage = pdf.addPage([W, H]);
+
+  // ─── Utilidades de dibujo (y es la línea base, desde abajo) ───
+  const text = (s: string, x: number, y: number, size: number, font: PDFFont = f.regular, color = C.carbon) =>
+    page.drawText(clean(s), { x, y, size, font, color });
+  const textRight = (s: string, xr: number, y: number, size: number, font: PDFFont = f.regular, color = C.carbon) =>
+    text(s, xr - font.widthOfTextAtSize(clean(s), size), y, size, font, color);
+  const textCenter = (s: string, xc: number, y: number, size: number, font: PDFFont = f.regular, color = C.carbon) =>
+    text(s, xc - font.widthOfTextAtSize(clean(s), size) / 2, y, size, font, color);
+  /** Rectángulo redondeado: (x, top) es la esquina superior izquierda */
+  const card = (x: number, top: number, w: number, h: number, opts: { fill?: ReturnType<typeof rgb>; border?: boolean; r?: number } = {}) => {
+    const r = opts.r ?? 10;
+    page.drawSvgPath(`M ${r} 0 H ${w - r} Q ${w} 0 ${w} ${r} V ${h - r} Q ${w} ${h} ${w - r} ${h} H ${r} Q 0 ${h} 0 ${h - r} V ${r} Q 0 0 ${r} 0 Z`, {
+      x,
+      y: top,
+      color: opts.fill,
+      borderColor: opts.border === false ? undefined : C.carbon,
+      borderWidth: opts.border === false ? 0 : 1.4,
+    });
+  };
+  const wrap = (s: string, font: PDFFont, size: number, width: number) => {
+    const lines: string[] = [];
+    for (const para of clean(s).split("\n")) {
+      let line = "";
+      for (const word of para.split(/\s+/)) {
+        const next = line ? `${line} ${word}` : word;
+        if (line && font.widthOfTextAtSize(next, size) > width) {
+          lines.push(line);
+          line = word;
+        } else line = next;
+      }
+      lines.push(line);
+    }
+    return lines;
   };
 
-  // Encabezado: logo + datos del pedido
-  try {
-    const png = await pdf.embedPng(await readFile(path.join(process.cwd(), "public", "email", "logo.png")));
-    const w = 150;
-    page.drawImage(png, { x: M, y: y - (w * png.height) / png.width, width: w, height: (w * png.height) / png.width });
-  } catch {
-    text(site.name, M, 26, bold);
-  }
-  right("Comprobante de compra", W - M, 16, bold);
-  y -= 18;
-  right(`Pedido ${o.code}`, W - M, 11, bold, C.suave);
-  y -= 14;
-  right(dateFmt.format(o.paidAt ?? o.createdAt), W - M, 9, regular, C.suave);
-  if (o.effiRemisionId) {
-    y -= 14;
-    right(`Remisión de venta N.º ${o.effiRemisionId}`, W - M, 9, bold, C.carbon);
-  }
-  y -= 40;
+  // ─── Encabezado ───
+  const headTop = H - M;
+  const headH = 104;
+  card(M, headTop, W - 2 * M, headH, { fill: C.cremaClaro });
+  // Logo sobre un cuadro lavanda, como el de la marca
+  const lx = M + 12;
+  const sq = 80;
+  card(lx, headTop - 12, sq, sq, { fill: C.lavanda, border: false, r: 12 });
+  if (logo) {
+    const lw = 64;
+    const lh = (lw * logo.height) / logo.width;
+    page.drawImage(logo, { x: lx + (sq - lw) / 2, y: headTop - 12 - sq / 2 - lh / 2, width: lw, height: lh });
+  } else textCenter(site.name, lx + sq / 2, headTop - 56, 16, f.display);
 
-  // Cliente y envío
-  const boxH = 92;
-  page.drawRectangle({ x: M, y: y - boxH, width: W - 2 * M, height: boxH, color: C.lavanda, borderColor: C.carbon, borderWidth: 1.5 });
-  const col2 = M + (W - 2 * M) / 2 + 8;
-  y -= 20;
-  text("Cliente", M + 14, 10, bold);
-  text("Envío a", col2, 10, bold);
-  const docType = LEGAL_ID_TYPES[String(o.legalIdType) as keyof typeof LEGAL_ID_TYPES] ?? "Documento";
-  const leftLines = [o.name, o.legalId ? `${docType} ${o.legalId}` : "", o.email, o.phone].filter(Boolean);
-  const rightLines = [...wrap(`${o.address}${o.addressNotes ? ` (${o.addressNotes})` : ""}`, regular, 9.5, (W - 2 * M) / 2 - 26), `${o.city}, ${o.department}`];
-  const top = y;
-  for (const l of leftLines) {
-    y -= 13.5;
-    text(l, M + 14, 9.5);
+  // Datos del negocio
+  const bx = lx + sq + 16;
+  let by = headTop - 28;
+  text("LUSARTE", bx, by, 17, f.display);
+  by -= 14;
+  if (biz.legalName) {
+    text(biz.legalName, bx, by, 8.5, f.bold);
+    by -= 12;
   }
-  y = top;
-  for (const l of rightLines.slice(0, 4)) {
-    y -= 13.5;
-    text(l, col2, 9.5);
+  const nitLine = [biz.nit && `NIT ${biz.nit}`, biz.regime].filter(Boolean).join(" · ");
+  if (nitLine) {
+    text(nitLine, bx, by, 8, f.regular, C.suave);
+    by -= 11;
   }
-  y = top - boxH + 2;
+  if (biz.address) {
+    text(biz.address, bx, by, 8, f.regular, C.suave);
+    by -= 11;
+  }
+  text(`Tel. ${site.phone} · ${biz.email}`, bx, by, 8, f.regular, C.suave);
+  by -= 11;
+  text("lusarte.net · Instagram @" + site.instagram, bx, by, 8, f.regular, C.suave);
 
-  // Productos
-  y -= 26;
-  const colQty = W - M - 150;
-  const colUnit = W - M - 80;
-  page.drawRectangle({ x: M, y: y - 7, width: W - 2 * M, height: 22, color: C.carbon });
-  text("Producto", M + 10, 9.5, bold, C.crema);
-  right("Cant.", colQty, 9.5, bold, C.crema);
-  right("Precio", colUnit, 9.5, bold, C.crema);
-  right("Total", W - M - 10, 9.5, bold, C.crema);
-  y -= 26;
-  for (const i of o.items) {
-    const name = wrap(`${i.productName}${i.optionName ? ` · ${i.optionName}` : ""}`, regular, 9.5, colQty - M - 60);
-    const note = i.note ? wrap(`Personalización: ${i.note}`, regular, 8.5, colQty - M - 60) : [];
-    ensure(16 * (name.length + note.length) + 10);
-    text(name[0], M + 10, 9.5);
-    right(String(i.quantity), colQty, 9.5);
-    right(formatCOP(i.unitPrice), colUnit, 9.5);
-    right(formatCOP(i.unitPrice * i.quantity), W - M - 10, 9.5, bold);
-    for (const l of name.slice(1)) {
-      y -= 12;
-      text(l, M + 10, 9.5);
-    }
-    for (const l of note) {
-      y -= 11.5;
-      text(l, M + 10, 8.5, regular, C.suave);
-    }
-    y -= 9;
-    page.drawLine({ start: { x: M, y }, end: { x: W - M, y }, thickness: 0.6, color: hex("#d9d3c3") });
-    y -= 14;
-  }
+  // QR al estado del pedido
+  const qrSize = 70;
+  const qrX = W - M - 14 - qrSize;
+  page.drawImage(qr, { x: qrX, y: headTop - 14 - qrSize, width: qrSize, height: qrSize });
+  textCenter("Estado del pedido", qrX + qrSize / 2, headTop - 14 - qrSize - 11, 6.5, f.regular, C.suave);
 
-  // Totales
-  ensure(90);
-  const totals: [string, string, boolean][] = [
-    ["Subtotal", formatCOP(o.subtotal), false],
-    ["Envío", formatCOP(o.shipping), false],
-    ["Total pagado", formatCOP(o.total), true],
+  // Franja del documento: número a la izquierda; pedido, fecha y estado a la derecha
+  const barTop = headTop - headH - 10;
+  const barH = 40;
+  card(M, barTop, W - 2 * M, barH, { fill: C.estrella });
+  text("COMPROBANTE DE VENTA", M + 14, barTop - 15, 7, f.bold, C.suave);
+  text(title, M + 14, barTop - 32, 15, f.display);
+  const statusLabel = o.status === "despachado" ? "Despachado" : "Pagado";
+  const sw = f.bold.widthOfTextAtSize(statusLabel, 7.5) + 18;
+  const sx = W - M - 14 - sw;
+  card(sx, barTop - 12, sw, 16, { fill: C.blanco, r: 8 });
+  textCenter(statusLabel, sx + sw / 2, barTop - 23, 7.5, f.bold);
+  const meta = `${o.effiRemisionId ? `Pedido web ${o.code} · ` : ""}${dateFmt.format(o.paidAt ?? o.createdAt)}`;
+  textRight(meta, sx - 10, barTop - 23, 8.5, f.bold);
+
+  // ─── Cliente y entrega ───
+  let y = barTop - barH - 12;
+  const colW = (W - 2 * M - 12) / 2;
+  const docType = ({ 1: "NIT", 2: "CC", 3: "Pasaporte", 4: "CE" } as Record<number, string>)[o.legalIdType ?? 0] ?? "";
+  const clientLines: [string, string][] = [
+    ["Nombre", o.name],
+    ["Documento", o.legalId ? `${docType} ${o.legalId}`.trim() : "—"],
+    ["Celular", o.phone],
+    ["Correo", o.email],
   ];
-  for (const [label, value, strong] of totals) {
-    if (strong) {
-      y -= 12;
-      page.drawRectangle({ x: W - M - 220, y: y - 9, width: 220, height: 28, color: C.estrella, borderColor: C.carbon, borderWidth: 1.5 });
+  const addr = [o.address, o.addressNotes].filter(Boolean).join(" · ");
+  const deliveryLines: [string, string][] = [
+    ["Dirección", addr || "—"],
+    ["Ciudad", `${o.city}, ${o.department}`],
+    ...(o.trackingNumber ? ([["Transportadora", `${o.carrier} · guía ${o.trackingNumber}`]] as [string, string][]) : []),
+  ];
+  const valueW = colW - 24 - 62;
+  const rowsH = (lines: [string, string][]) => lines.reduce((h, [, v]) => h + wrap(v, f.regular, 8.5, valueW).length * 11 + 3, 0);
+  const infoH = 28 + Math.max(rowsH(clientLines), rowsH(deliveryLines)) + 6;
+  const infoCard = (x: number, heading: string, lines: [string, string][]) => {
+    card(x, y, colW, infoH, { fill: C.blanco });
+    text(heading, x + 12, y - 17, 10, f.display);
+    let ly = y - 32;
+    for (const [k, v] of lines) {
+      text(k, x + 12, ly, 7.5, f.bold, C.suave);
+      for (const l of wrap(v, f.regular, 8.5, valueW)) {
+        text(l, x + 12 + 62, ly, 8.5);
+        ly -= 11;
+      }
+      ly -= 3;
     }
-    right(label, W - M - 110, strong ? 12 : 10, strong ? bold : regular);
-    right(value, W - M - 10, strong ? 12 : 10, bold);
-    y -= strong ? 30 : 17;
-  }
+  };
+  infoCard(M, "Cliente", clientLines);
+  infoCard(M + colW + 12, "Entrega", deliveryLines);
+  y -= infoH + 16;
 
-  // Pago
-  y -= 8;
-  text("Pago", M, 10, bold);
-  y -= 14;
-  text(`Wompi${o.paymentMethod ? ` · ${paymentMethod(o.paymentMethod)}` : ""} · transacción ${o.wompiTransactionId ?? "—"} · estado: aprobado`, M, 9, regular, C.suave);
+  // ─── Conceptos ───
+  const cols = { item: M + 10, ref: M + 30, desc: M + 82, qty: W - M - 196, price: W - M - 128, disc: W - M - 72, total: W - M - 10 };
+  const descW = cols.qty - 26 - cols.desc;
+  const tableHeader = () => {
+    card(M, y, W - 2 * M, 20, { fill: C.carbon, border: false, r: 6 });
+    const hy = y - 13.5;
+    for (const [s, x, al] of [
+      ["#", cols.item, "l"],
+      ["Ref.", cols.ref, "l"],
+      ["Descripción", cols.desc, "l"],
+      ["Cant.", cols.qty, "r"],
+      ["Precio ud.", cols.price, "r"],
+      ["Desc.", cols.disc, "r"],
+      ["Total", cols.total, "r"],
+    ] as const)
+      (al === "l" ? text : textRight)(s, x, hy, 7.5, f.bold, C.crema);
+    y -= 24;
+  };
+  const newPage = () => {
+    page = pdf.addPage([W, H]);
+    y = H - M;
+    text(`${title} · continuación`, M, y - 10, 9, f.bold, C.suave);
+    y -= 24;
+  };
+  tableHeader();
 
-  // Pie
-  for (const p of pdf.getPages()) {
-    p.drawLine({ start: { x: M, y: M + 22 }, end: { x: W - M, y: M + 22 }, thickness: 0.6, color: hex("#d9d3c3") });
-    p.drawText(safe(`${site.name} · ${site.tagline} · WhatsApp ${site.phone} · Instagram @${site.instagram} · lusarte.net`), {
-      x: M,
-      y: M + 8,
-      size: 8,
-      font: regular,
-      color: C.suave,
-    });
-  }
+  const concepts = [
+    ...o.items.map((i) => ({
+      ref: refs.get(i.effiArticleId) ?? "",
+      desc: `${i.productName}${i.optionName ? ` · ${i.optionName}` : ""}`,
+      note: i.note ? `Personalización: ${i.note}` : "",
+      qty: i.quantity,
+      price: i.unitPrice,
+    })),
+    ...(o.shipping > 0 ? [{ ref: "", desc: "Domicilio · envío a toda Colombia", note: "", qty: 1, price: o.shipping }] : []),
+  ];
+  concepts.forEach((c, idx) => {
+    const lines = wrap(c.desc, f.regular, 8.5, descW);
+    const notes = c.note ? wrap(c.note, f.regular, 7.5, descW) : [];
+    const rowH = 8 + lines.length * 11 + notes.length * 9.5 + 4;
+    if (y - rowH < M + 60) {
+      newPage();
+      tableHeader();
+    }
+    if (idx % 2 === 1) page.drawRectangle({ x: M, y: y - rowH + 4, width: W - 2 * M, height: rowH, color: C.cremaClaro });
+    const ry = y - 8;
+    text(String(idx + 1), cols.item, ry, 8.5, f.regular, C.suave);
+    text(c.ref, cols.ref, ry, 8, f.regular, C.suave);
+    lines.forEach((l, k) => text(l, cols.desc, ry - k * 11, 8.5));
+    notes.forEach((l, k) => text(l, cols.desc, ry - lines.length * 11 - k * 9.5 + 1, 7.5, f.regular, C.suave));
+    textRight(String(c.qty), cols.qty, ry, 8.5);
+    textRight(formatCOP(c.price), cols.price, ry, 8.5);
+    textRight(formatCOP(0), cols.disc, ry, 8.5, f.regular, C.suave);
+    textRight(formatCOP(c.price * c.qty), cols.total, ry, 8.5, f.bold);
+    y -= rowH;
+  });
+  page.drawLine({ start: { x: M, y: y + 2 }, end: { x: W - M, y: y + 2 }, thickness: 1, color: C.carbon });
+  const units = concepts.reduce((n, c) => n + c.qty, 0);
+  y -= 12;
+  textRight(`Total ítems: ${concepts.length} · Total unidades: ${units}`, W - M - 10, y, 7.5, f.regular, C.suave);
+  y -= 16;
+
+  // ─── Pago y totales ───
+  const blockH = 96;
+  // Pago, totales, observación (hasta ~90) y el agradecimiento van juntos: si no caben, a la página siguiente
+  if (y - (blockH + 12 + 90 + 22 + 30) < M + 20) newPage();
+  const leftW = W - 2 * M - 200 - 12;
+  card(M, y, leftW, blockH, { fill: C.blanco });
+  text("Pago", M + 12, y - 17, 10, f.display);
+  const pay: [string, string][] = [
+    ["Forma de pago", `Contado · ${formatCOP(o.total)}`],
+    ["Medio", `Pago en línea con Wompi${o.paymentMethod ? ` (${paymentMethod(o.paymentMethod)})` : ""}`],
+    ["Transacción", o.wompiTransactionId ?? "—"],
+    ["Impuestos", "No registra impuestos ni retenciones"],
+  ];
+  pay.forEach(([k, v], i) => {
+    text(k, M + 12, y - 33 - i * 14, 7.5, f.bold, C.suave);
+    text(v, M + 92, y - 33 - i * 14, 8.5);
+  });
+
+  const tx = W - M - 200;
+  card(tx, y, 200, blockH, { fill: C.blanco });
+  const tot: [string, string][] = [
+    ["Subtotal productos", formatCOP(o.subtotal)],
+    ["Descuento", formatCOP(0)],
+    ["Envío", formatCOP(o.shipping)],
+  ];
+  tot.forEach(([k, v], i) => {
+    text(k, tx + 12, y - 18 - i * 14, 8.5, f.regular, C.suave);
+    textRight(v, tx + 188, y - 18 - i * 14, 8.5, f.bold);
+  });
+  card(tx + 8, y - 58, 184, 30, { fill: C.estrella, r: 8 });
+  text("TOTAL", tx + 18, y - 77, 9, f.bold);
+  textRight(formatCOP(o.total), tx + 182, y - 78, 15, f.display);
+  y -= blockH + 12;
+
+  // ─── Observación y recibido ───
+  const obs = [
+    ...new Set(o.items.filter((i) => i.note).map((i) => `${i.productName}: ${i.note}`)),
+    o.shippingNote ?? "",
+    o.effiRemisionId ? "" : "Remisión de Effi pendiente.",
+  ].filter(Boolean);
+  const obsLines = obs.length ? obs.flatMap((s) => wrap(s, f.regular, 8, leftW - 24)).slice(0, 5) : ["Sin observaciones."];
+  const obsH = Math.max(70, 30 + obsLines.length * 11);
+  card(M, y, leftW, obsH, { fill: C.blanco });
+  text("Observación", M + 12, y - 17, 10, f.display);
+  obsLines.forEach((l, i) => text(l, M + 12, y - 32 - i * 11, 8, f.regular, obs.length ? C.carbon : C.suave));
+  card(tx, y, 200, obsH, { fill: C.blanco });
+  text("Recibí a satisfacción", tx + 12, y - 17, 10, f.display);
+  page.drawLine({ start: { x: tx + 14, y: y - obsH + 24 }, end: { x: tx + 186, y: y - obsH + 24 }, thickness: 0.8, color: C.suave });
+  textCenter("Nombre, documento y fecha", tx + 100, y - obsH + 12, 7, f.regular, C.suave);
+  y -= obsH + 22;
+
+  // ─── Cierre ───
+  textCenter("¡Gracias por iluminar tu vida con Lusarte!", W / 2, y, 15, f.hand);
+
+  const pages = pdf.getPages();
+  pages.forEach((p, i) => {
+    page = p;
+    page.drawLine({ start: { x: M, y: M + 14 }, end: { x: W - M, y: M + 14 }, thickness: 0.6, color: C.linea });
+    text("Comprobante de venta emitido por la tienda en línea de Lusarte. No es una factura electrónica de venta.", M, M + 3, 6.8, f.regular, C.suave);
+    textRight(`Página ${i + 1} de ${pages.length}`, W - M, M + 3, 6.8, f.regular, C.suave);
+  });
 
   return Buffer.from(await pdf.save());
 }

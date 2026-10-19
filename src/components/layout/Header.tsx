@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
-import { BagIcon, ChevronIcon, SearchIcon } from "@/components/ui/icons";
+import { CartButton } from "@/components/cart/CartButton";
+import { ChevronIcon, SearchIcon } from "@/components/ui/icons";
 import { nav } from "@/lib/site";
 import { MobileMenu } from "./MobileMenu";
 
@@ -80,16 +81,7 @@ export function Header() {
             >
               <SearchIcon className="size-5" />
             </Link>
-            <Link
-              href="/carrito"
-              className="toon toon-press relative ml-1 grid size-11 place-items-center rounded-full bg-estrella"
-              aria-label="Carrito, 0 productos"
-            >
-              <BagIcon className="size-5" strokeWidth={2.2} />
-              <span className="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-carbon text-[0.6rem] font-bold text-crema">
-                0
-              </span>
-            </Link>
+            <CartButton />
           </div>
         </div>
       </header>

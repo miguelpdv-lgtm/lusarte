@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 const links = [
   { href: "/admin", label: "Inicio" },
   { href: "/admin/productos", label: "Productos" },
+  { href: "/admin/pedidos", label: "Pedidos" },
 ];
 
 export function AdminNav() {
@@ -25,9 +26,6 @@ export function AdminNav() {
           </Link>
         );
       })}
-      <span className="hidden cursor-not-allowed rounded-full px-3 py-1.5 text-carbon/40 sm:inline" title="Llega con los pagos (fase 8)">
-        Pedidos
-      </span>
     </nav>
   );
 }

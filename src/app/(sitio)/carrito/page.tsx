@@ -1,21 +1,17 @@
 import type { Metadata } from "next";
-import { ButtonLink } from "@/components/ui/ButtonLink";
-import { WhatsAppIcon } from "@/components/ui/icons";
-import { InfoPage } from "@/components/store/InfoPage";
-import { whatsappUrl } from "@/lib/site";
+import { CartView } from "@/components/cart/CartView";
+import { Breadcrumbs } from "@/components/store/Breadcrumbs";
+import { checkoutEnabled, shippingCost } from "@/lib/shop/config";
 
 export const metadata: Metadata = { title: "Carrito", robots: { index: false } };
+export const dynamic = "force-dynamic";
 
-// TODO(fase 6): carrito real (localStorage) con tarifa fija de envío y paso al checkout con Wompi.
 export default function CarritoPage() {
   return (
-    <InfoPage title="Tu carrito" intro="Muy pronto podrás pagar en línea. Mientras tanto, haz tu pedido por WhatsApp desde cada producto.">
-      <div className="flex flex-wrap gap-3">
-        <ButtonLink href="/tienda">Ver la tienda</ButtonLink>
-        <ButtonLink href={whatsappUrl()} variant="light" target="_blank" rel="noopener noreferrer">
-          <WhatsAppIcon className="size-5" /> Pedir por WhatsApp
-        </ButtonLink>
-      </div>
-    </InfoPage>
+    <div className="mx-auto max-w-6xl px-4 pt-6 pb-20 sm:px-6 lg:px-8 lg:pt-10">
+      <Breadcrumbs items={[{ label: "Tienda", href: "/tienda" }, { label: "Carrito" }]} />
+      <h1 className="mt-3 mb-8 font-hand text-[2.5rem] leading-none sm:text-5xl">Tu carrito</h1>
+      <CartView shipping={shippingCost()} checkoutEnabled={checkoutEnabled()} />
+    </div>
   );
 }

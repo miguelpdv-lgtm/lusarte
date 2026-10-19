@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MinusIcon, PlusIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { BagIcon, MinusIcon, PlusIcon, WhatsAppIcon } from "@/components/ui/icons";
+import { cart, drawer } from "@/lib/cart/store";
 import { availableUnits, isOptionAvailable, type ProductOption } from "@/lib/catalog/types";
 import { formatCOP } from "@/lib/format";
 import { whatsappUrl } from "@/lib/site";
@@ -9,10 +10,10 @@ import { whatsappUrl } from "@/lib/site";
 const MAX_QTY = 99;
 const FEW = 3;
 
-type Props = { name: string; options: ProductOption[]; personalization: string | null };
+type Props = { name: string; slug: string; image: string | null; options: ProductOption[]; personalization: string | null };
 
-/** Presentación, cantidad, personalización y pedido. El carrito y el pago en línea llegan en la fase 6. */
-export function BuyBox({ name, options, personalization }: Props) {
+/** Presentación, cantidad, personalización y agregar al carrito (o preguntar por WhatsApp). */
+export function BuyBox({ name, slug, image, options, personalization }: Props) {
   const firstAvailable = options.find(isOptionAvailable) ?? options[0];
   const [optionId, setOptionId] = useState(firstAvailable.id);
   const [qty, setQty] = useState(1);
@@ -129,14 +130,21 @@ export function BuyBox({ name, options, personalization }: Props) {
         </div>
 
         {available ? (
-          <a
-            href={whatsappUrl(message)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="toon toon-press inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-estrella px-6 py-3 text-sm font-bold sm:flex-none"
+          <button
+            type="button"
+            onClick={() => {
+              cart.add(
+                { optionId: option.id, quantity: qty, note: personalization ? note : "", slug, productName: name, optionName: showSelector ? option.name : null, price: option.price, image },
+                units === Infinity ? null : units,
+              );
+              setQty(1);
+              setNote("");
+              drawer.open();
+            }}
+            className="toon toon-press inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-estrella px-6 py-3 text-sm font-bold sm:flex-none"
           >
-            <WhatsAppIcon className="size-5" /> Pedir por WhatsApp
-          </a>
+            <BagIcon className="size-5" strokeWidth={2.2} /> Agregar al carrito
+          </button>
         ) : (
           <a
             href={whatsappUrl(`¡Hola Lusarte! ¿Cuándo vuelve a estar disponible ${name}${showSelector ? ` (${option.name})` : ""}?`)}
@@ -148,6 +156,17 @@ export function BuyBox({ name, options, personalization }: Props) {
           </a>
         )}
       </div>
+
+      {available && (
+        <a
+          href={whatsappUrl(message)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="-mt-2 inline-flex items-center gap-1.5 justify-self-start text-sm font-semibold underline-offset-4 hover:underline"
+        >
+          <WhatsAppIcon className="size-4" /> ¿Dudas? Pregúntanos por WhatsApp
+        </a>
+      )}
     </div>
   );
 }

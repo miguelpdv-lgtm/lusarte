@@ -119,7 +119,7 @@ export default async function ProductoPage({ params }: PageProps<"/producto/[slu
               )}
             </div>
 
-            <BuyBox name={product.name} options={product.options} personalization={product.personalization} />
+            <BuyBox name={product.name} slug={product.slug} image={product.images[0]?.url ?? null} options={product.options} personalization={product.personalization} />
 
             {product.description && (
               <section aria-labelledby="descripcion" className="border-t-2 border-carbon/10 pt-6">

@@ -17,13 +17,13 @@ Lusarte es ante todo una **tienda virtual**: todo el sitio existe para que algui
 | 3. Base técnica | ✅ MySQL + migraciones · sincronización con Effi (artículos cada 15 min y ventas) |
 | 4. Panel | ✅ Estadísticas de ventas (Effi), estado de la sincronización, productos con capa web (fotos, descripción, visibilidad, precio que se envía a Effi, agrupar/separar presentaciones) |
 | 5. Tienda pública | ✅ Catálogo de Effi: 518 productos, precios y stock reales |
-| 6. Carrito, checkout y pagos | ⬜ Incluye crear la **remisión de venta en Effi** y el **PDF al admin** (`docs/EFFI.md` → Pendiente) |
+| 6. Carrito, checkout y pagos | 🟡 Hecho: carrito (localStorage + mini carrito), `/checkout`, pedidos (`orders`), Wompi Web Checkout con firma, webhook `/api/wompi/webhook`, `/pedido/[codigo]` con respaldo por API, `/admin/pedidos` (solo lectura). Falta: llaves de prueba de Wompi y pruebas en sandbox, valor real del envío, **remisión en Effi** y **PDF al admin** (`docs/EFFI.md` → Pendiente) |
 | 7 a 10 | ⬜ Pendientes |
 
 **⚠️ Lo que falta para seguir** (en orden):
 
 1. **Subir a GoDaddy** el zip nuevo y el `.sql` nuevo, y agregar el secreto `EFFI_API_KEY`.
-2. **Valor de la tarifa fija de envío** y **cuenta de Wompi** (sandbox): bloquean la fase 6.
+2. **Llaves de prueba de Wompi** (`WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET`) y la URL de eventos `https://<dominio>/api/wompi/webhook` en el dashboard. Sin llaves el checkout queda apagado y el carrito ofrece pedir por WhatsApp. **Valor del envío** (`SHIPPING_FLAT_COP`, hoy 15.000 provisional).
 3. **A qué cuenta de Effi entra el dinero de Wompi** (Nequi, Daviplata o Nubank), para la remisión.
 4. **Fotos y descripciones:** ningún artículo de Effi tiene foto ni descripción. Se cargan desde el panel (filtros "Sin foto" y "Sin descripción").
 5. **Revisar la agrupación** de presentaciones en el panel (algunos artículos están duplicados en Effi, p. ej. "MOLDE LEON").

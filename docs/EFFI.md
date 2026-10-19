@@ -37,6 +37,8 @@ Lo que se crea o cambia directamente en Effi llega a la web con la sincronizaci�
 
 ## Pendiente (fase 6, con el checkout y Wompi)
 
+- El checkout ya existe: al aprobarse un pago, `applyTransaction` (`src/lib/shop/orders.ts`) marca el pedido como pagado y descuenta el stock en la copia local `effi_articles` (la próxima sincronización trae el valor real de Effi). El punto para enganchar la remisión está marcado con `TODO(fase 6b)`. Falta el formato exacto de `POST remision_v` (la documentación de la API no está en el repo).
+
 - **Remisión de venta automática:** al aprobarse un pago, `POST api/remision_v` con `idempotency_key` = código del pedido (sin duplicados en reintentos), cliente (buscar o crear en `api/cliente`), artículos + DOMICILIO, forma de pago Contado y medio de pago electrónico (falta definir a qué cuenta bancaria de Effi entra el dinero de Wompi). Effi descuenta el inventario.
 - **PDF al admin:** la API de Effi **no entrega el PDF** de la remisión. Se generará un PDF propio con el número de remisión de Effi, cliente, productos y totales, y se enviará por correo (Resend) con el enlace a la remisión en Effi.
 - **Permisos que necesita el usuario de la API key:** Artículos (consultar, crear, modificar, anular), Artículos - Stock disponible, Ajustes de inventario (crear), Remisiones de venta (consultar, crear), Clientes (consultar, crear), Tablas maestras (consultar).

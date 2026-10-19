@@ -1,0 +1,214 @@
+import "server-only";
+import { randomBytes } from "node:crypto";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { revalidateTag } from "next/cache";
+import { z } from "zod";
+import { departments } from "@/data/colombia";
+import { lineKey, MAX_QTY, NOTE_MAX, type CartRequest, type QuotedLine } from "@/lib/cart/types";
+import { CATALOG_TAG, loadProducts, toPublicCatalog } from "@/lib/catalog/queries";
+import { availableUnits, type Product, type ProductOption } from "@/lib/catalog/types";
+import { db, schema } from "@/lib/db";
+import { shippingCost } from "./config";
+import type { WompiTransaction } from "./wompi";
+
+export type OrderStatus = "pendiente_pago" | "pagado" | "rechazado" | "despachado";
+
+export const cartRequestSchema = z
+  .array(
+    z.object({
+      optionId: z.number().int().positive(),
+      quantity: z.number().int().min(1).max(MAX_QTY),
+      note: z.string().max(NOTE_MAX).default(""),
+    }),
+  )
+  .max(100);
+
+const text = (max: number) => z.string().trim().min(1, "Este campo es obligatorio").max(max);
+
+export const customerSchema = z.object({
+  name: text(120),
+  email: z.email("Revisa el correo").max(160),
+  phone: z
+    .string()
+    .trim()
+    .transform((s) => s.replace(/[\s()-]/g, "").replace(/^\+?57/, ""))
+    .pipe(z.string().regex(/^3\d{9}$|^60\d{8}$/, "Escribe un celular de 10 dígitos")),
+  legalId: z
+    .string()
+    .trim()
+    .max(30)
+    .transform((s) => s.replace(/[.\s]/g, "") || null),
+  department: z.enum(departments, "Elige el departamento"),
+  city: text(80),
+  address: text(200),
+  addressNotes: z
+    .string()
+    .trim()
+    .max(200)
+    .transform((s) => s || null),
+  terms: z.literal("on", "Debes aceptar los términos y la política de datos"),
+});
+
+export type Customer = z.infer<typeof customerSchema>;
+
+/** Índice optionId → producto y presentación, sobre el catálogo público. */
+function indexOptions(catalog: Product[]) {
+  const map = new Map<number, { product: Product; option: ProductOption }>();
+  for (const product of catalog) for (const option of product.options) map.set(option.id, { product, option });
+  return map;
+}
+
+/** Precios y disponibilidad vigentes para las líneas del carrito (para mostrar). */
+export function quoteLines(catalog: Product[], lines: CartRequest): QuotedLine[] {
+  const index = indexOptions(catalog);
+  return lines.map((l) => {
+    const hit = index.get(l.optionId);
+    const units = hit ? availableUnits(hit.option) : 0;
+    return {
+      key: lineKey(l),
+      ok: units > 0,
+      price: hit?.option.price ?? 0,
+      max: units === Infinity ? null : units,
+      productName: hit?.product.name ?? "",
+      optionName: hit && hit.product.options.length > 1 ? hit.option.name : null,
+      slug: hit?.product.slug ?? "",
+      image: hit?.product.images[0]?.url ?? null,
+    };
+  });
+}
+
+export class CartError extends Error {}
+
+/**
+ * Crea el pedido en pendiente_pago con precios y stock leídos ahora mismo (sin caché).
+ * Lanza CartError si algo del carrito ya no se puede vender.
+ */
+export async function createOrder(customer: Customer, lines: CartRequest) {
+  if (lines.length === 0) throw new CartError("Tu carrito está vacío.");
+  const admin = await loadProducts();
+  const index = indexOptions(toPublicCatalog(admin));
+  const effiIdBy = new Map(admin.flatMap((p) => p.options.map((o) => [o.id, o.effiArticleId] as const)));
+
+  // Varias líneas de la misma presentación (con distinta personalización) comparten el stock
+  const totals = new Map<number, number>();
+  for (const l of lines) totals.set(l.optionId, (totals.get(l.optionId) ?? 0) + l.quantity);
+
+  for (const [optionId, qty] of totals) {
+    const hit = index.get(optionId);
+    if (!hit) throw new CartError("Un producto de tu carrito ya no está a la venta. Revisa el carrito.");
+    const units = availableUnits(hit.option);
+    const label = `${hit.product.name}${hit.product.options.length > 1 ? ` (${hit.option.name})` : ""}`;
+    if (units === 0) throw new CartError(`${label} se agotó. Quítalo del carrito para continuar.`);
+    if (qty > units) throw new CartError(`De ${label} solo quedan ${units}. Ajusta la cantidad en el carrito.`);
+  }
+
+  const items = lines.map((l) => {
+    const { product, option } = index.get(l.optionId)!;
+    return {
+      productId: product.id,
+      optionId: option.id,
+      effiArticleId: effiIdBy.get(option.id)!,
+      productName: product.name,
+      optionName: product.options.length > 1 ? option.name : "",
+      unitPrice: option.price,
+      quantity: l.quantity,
+      note: l.note.trim() || null,
+    };
+  });
+  const subtotal = items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+  const shipping = shippingCost();
+  const token = randomBytes(24).toString("base64url");
+
+  const code = await db.transaction(async (tx) => {
+    const [res] = await tx.insert(schema.orders).values({ ...customer, token, subtotal, shipping, total: subtotal + shipping });
+    const id = res.insertId;
+    const code = `LUS-${String(id).padStart(6, "0")}`;
+    await tx.update(schema.orders).set({ code }).where(eq(schema.orders.id, id));
+    await tx.insert(schema.orderItems).values(items.map((i) => ({ ...i, orderId: id })));
+    return code;
+  });
+
+  return { code, token, total: subtotal + shipping };
+}
+
+export async function getOrder(code: string) {
+  const [order] = await db.select().from(schema.orders).where(eq(schema.orders.code, code)).limit(1);
+  if (!order) return null;
+  const items = await db.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, order.id)).orderBy(schema.orderItems.id);
+  return { ...order, items };
+}
+
+export type OrderWithItems = NonNullable<Awaited<ReturnType<typeof getOrder>>>;
+
+export async function listOrders(statuses?: OrderStatus[]) {
+  const q = db.select().from(schema.orders).orderBy(desc(schema.orders.createdAt)).limit(200);
+  return statuses ? q.where(inArray(schema.orders.status, statuses)) : q;
+}
+
+/**
+ * Aplica el estado de una transacción de Wompi al pedido. Idempotente: si Wompi repite el evento,
+ * o el webhook y la página de confirmación llegan a la vez, solo uno hace el cambio.
+ */
+export async function applyTransaction(t: WompiTransaction) {
+  const [order] = await db.select().from(schema.orders).where(eq(schema.orders.code, t.reference)).limit(1);
+  if (!order) return null;
+
+  if (t.status === "APPROVED" && (t.amount_in_cents !== order.total * 100 || t.currency !== "COP")) {
+    console.error(`Wompi: el monto de ${t.reference} no coincide (${t.amount_in_cents} ${t.currency}, esperado ${order.total * 100} COP)`);
+    return order.status;
+  }
+
+  const payment = { wompiTransactionId: t.id, wompiStatus: t.status, paymentMethod: t.payment_method_type ?? null };
+
+  if (t.status === "APPROVED") {
+    const changed = await db.transaction(async (tx) => {
+      const [res] = await tx
+        .update(schema.orders)
+        .set({ ...payment, status: "pagado", paidAt: new Date() })
+        .where(and(eq(schema.orders.id, order.id), inArray(schema.orders.status, ["pendiente_pago", "rechazado"])));
+      if (res.affectedRows !== 1) return false;
+
+      // Descuenta en la copia local de Effi para que la tienda no venda lo que ya no hay.
+      // La próxima sincronización trae el stock real de Effi (que lo descuenta con la remisión).
+      const items = await tx.select().from(schema.orderItems).where(eq(schema.orderItems.orderId, order.id));
+      let alert = false;
+      for (const i of items) {
+        await tx
+          .update(schema.effiArticles)
+          .set({ stock: sql`${schema.effiArticles.stock} - ${i.quantity}` })
+          .where(and(eq(schema.effiArticles.id, i.effiArticleId), sql`${schema.effiArticles.gestionStock} > 1`));
+        const [a] = await tx
+          .select({ stock: schema.effiArticles.stock, gestion: schema.effiArticles.gestionStock })
+          .from(schema.effiArticles)
+          .where(eq(schema.effiArticles.id, i.effiArticleId));
+        if (a && a.gestion > 1 && a.stock < 0) alert = true;
+      }
+      if (alert) await tx.update(schema.orders).set({ stockAlert: true }).where(eq(schema.orders.id, order.id));
+      return true;
+    });
+    if (changed) {
+      try {
+        revalidateTag(CATALOG_TAG, { expire: 0 });
+      } catch {
+        // Fuera de una petición (scripts) no se puede invalidar; el caché vence solo
+      }
+      // TODO(fase 6b): crear la remisión de venta en Effi y avisar al admin (docs/EFFI.md → Pendiente)
+    }
+    return "pagado";
+  }
+
+  if (t.status === "DECLINED" || t.status === "VOIDED" || t.status === "ERROR") {
+    await db
+      .update(schema.orders)
+      .set({ ...payment, status: "rechazado" })
+      .where(and(eq(schema.orders.id, order.id), eq(schema.orders.status, "pendiente_pago")));
+    return order.status === "pendiente_pago" ? "rechazado" : order.status;
+  }
+
+  // PENDING: guardar la transacción para poder consultarla después
+  await db
+    .update(schema.orders)
+    .set(payment)
+    .where(and(eq(schema.orders.id, order.id), eq(schema.orders.status, "pendiente_pago")));
+  return order.status;
+}

@@ -1,5 +1,7 @@
+import { MiniCart } from "@/components/cart/MiniCart";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { checkoutEnabled } from "@/lib/shop/config";
 
 /** Páginas públicas: header, contenido y footer. El panel (/admin) tiene su propio layout. */
 export default function SitioLayout({ children }: LayoutProps<"/">) {
@@ -16,6 +18,7 @@ export default function SitioLayout({ children }: LayoutProps<"/">) {
         {children}
       </main>
       <Footer />
+      <MiniCart checkoutEnabled={checkoutEnabled()} />
     </>
   );
 }

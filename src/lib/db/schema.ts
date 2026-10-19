@@ -137,3 +137,59 @@ export const adminUsers = mysqlTable("admin_users", {
   sessionVersion: int().notNull().default(1),
   createdAt: timestamp().notNull().defaultNow(),
 });
+
+/**
+ * Pedido de la tienda. El código (LUS-000123) es también la referencia del pago en Wompi.
+ * pendiente_pago → pagado → despachado, o pendiente_pago → rechazado (se puede reintentar y pasar a pagado).
+ */
+export const orders = mysqlTable(
+  "orders",
+  {
+    id: int().autoincrement().primaryKey(),
+    code: varchar({ length: 20 }).unique(),
+    /** Secreto del link de seguimiento (/pedido/<código>?t=<token>) */
+    token: varchar({ length: 64 }).notNull(),
+    status: varchar({ length: 20 }).notNull().default("pendiente_pago"),
+    name: varchar({ length: 120 }).notNull(),
+    email: varchar({ length: 160 }).notNull(),
+    phone: varchar({ length: 30 }).notNull(),
+    legalId: varchar({ length: 30 }),
+    department: varchar({ length: 60 }).notNull(),
+    city: varchar({ length: 80 }).notNull(),
+    address: varchar({ length: 200 }).notNull(),
+    addressNotes: varchar({ length: 200 }),
+    subtotal: int().notNull(),
+    shipping: int().notNull(),
+    total: int().notNull(),
+    wompiTransactionId: varchar({ length: 60 }),
+    wompiStatus: varchar({ length: 20 }),
+    paymentMethod: varchar({ length: 30 }),
+    paidAt: timestamp(),
+    /** Se vendió más de lo que había en stock (dos pagos casi al tiempo): revisar con la clienta */
+    stockAlert: boolean().notNull().default(false),
+    createdAt: timestamp().notNull().defaultNow(),
+    updatedAt: timestamp().notNull().defaultNow().onUpdateNow(),
+  },
+  (t) => [index("orders_status_idx").on(t.status, t.createdAt)],
+);
+
+/** Línea del pedido: nombre y precio copiados al momento de la compra. */
+export const orderItems = mysqlTable(
+  "order_items",
+  {
+    id: int().autoincrement().primaryKey(),
+    orderId: int()
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    productId: int(),
+    optionId: int(),
+    effiArticleId: int().notNull(),
+    productName: varchar({ length: 160 }).notNull(),
+    optionName: varchar({ length: 80 }).notNull(),
+    unitPrice: int().notNull(),
+    quantity: int().notNull(),
+    /** Respuesta a la pregunta de personalización */
+    note: varchar({ length: 300 }),
+  },
+  (t) => [index("order_items_order_idx").on(t.orderId)],
+);

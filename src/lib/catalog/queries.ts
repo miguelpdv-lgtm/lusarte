@@ -70,23 +70,26 @@ export async function loadProducts(): Promise<AdminProduct[]> {
   }));
 }
 
-/** Catálogo público: visibles, con categoría de tienda y con al menos una presentación a la venta. */
-export const getCatalog = unstable_cache(
-  async (): Promise<Product[]> =>
-    (await loadProducts()).flatMap((p) => {
-      const options = p.options.filter((o) => !o.hidden && o.price > 0);
-      if (!p.visible || !p.category || options.length === 0) return [];
-      return [
-        {
-          ...p,
-          category: p.category,
-          options: options.map(({ id, name, price, compareAtPrice, stock, soldOut }) => ({ id, name, price, compareAtPrice, stock, soldOut })),
-        },
-      ];
-    }),
-  ["catalogo-publico"],
-  { tags: [CATALOG_TAG], revalidate: 300 },
-);
+/** Filtro de la tienda: visibles, con categoría de tienda y con al menos una presentación a la venta. */
+export function toPublicCatalog(list: AdminProduct[]): Product[] {
+  return list.flatMap((p) => {
+    const options = p.options.filter((o) => !o.hidden && o.price > 0);
+    if (!p.visible || !p.category || options.length === 0) return [];
+    return [
+      {
+        ...p,
+        category: p.category,
+        options: options.map(({ id, name, price, compareAtPrice, stock, soldOut }) => ({ id, name, price, compareAtPrice, stock, soldOut })),
+      },
+    ];
+  });
+}
+
+/** Catálogo público (en caché). Para cobrar se usa loadProducts() directo: precios y stock sin caché. */
+export const getCatalog = unstable_cache(async (): Promise<Product[]> => toPublicCatalog(await loadProducts()), ["catalogo-publico"], {
+  tags: [CATALOG_TAG],
+  revalidate: 300,
+});
 
 export async function getProduct(slug: string) {
   return (await getCatalog()).find((p) => p.slug === slug) ?? null;

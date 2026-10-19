@@ -73,7 +73,8 @@ export default async function PedidosAdmin({ searchParams }: PageProps<"/admin/p
                 <Link href={`/admin/pedidos/${o.code}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3 hover:bg-lavanda/40">
                   <span className="font-bold tabular-nums">{o.code}</span>
                   <span className="min-w-0 flex-1 truncate">
-                    {o.name} · {o.city}
+                    {o.name} · {o.neighborhood ? `${o.neighborhood}, ` : ""}
+                    {o.city}
                   </span>
                   {when && o.status !== "entregado" && (
                     <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${when === "hoy" ? "bg-estrella" : "bg-white"} border border-carbon/30`}>

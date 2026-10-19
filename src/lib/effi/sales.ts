@@ -108,7 +108,7 @@ function remisionBody(o: OrderWithItems, cliente: number) {
     id_pais_cliente: COLOMBIA,
     id_provincia_cliente: o.effiProvinceId,
     id_ciudad_cliente: o.effiCityId,
-    direccion_cliente: clip(o.address, 200),
+    direccion_cliente: clip(`${o.address}${o.neighborhood ? `, barrio ${o.neighborhood}` : ""}`, 200),
     referencia_cliente: o.addressNotes ?? "",
     observacion: clip(header(o), 255),
     articulo: lines.map((l) => l.articulo),

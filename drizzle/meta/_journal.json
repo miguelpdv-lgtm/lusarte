@@ -43,6 +43,13 @@
       "when": 1792426787576,
       "tag": "0005_envios_local_contraentrega",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1792429858361,
+      "tag": "0006_barrio_zona",
+      "breakpoints": true
     }
   ]
 }

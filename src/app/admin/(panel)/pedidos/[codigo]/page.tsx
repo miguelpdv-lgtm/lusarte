@@ -39,7 +39,8 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
         : confirmed
           ? ["confirmacion", "venta"]
           : [];
-  const address = `${order.address}${order.addressNotes ? ` (${order.addressNotes})` : ""}, ${order.city}, ${order.department}`;
+  const address = `${order.address}${order.addressNotes ? ` (${order.addressNotes})` : ""}${order.neighborhood ? `, barrio ${order.neighborhood}` : ""}, ${order.city}, ${order.department}`;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${order.address}, ${order.neighborhood ? `${order.neighborhood}, ` : ""}${order.city}, ${order.department}, Colombia`)}`;
   const greeting = `¡Hola ${order.name.split(" ")[0]}! Te escribimos de Lusarte por tu pedido ${order.code}.`;
 
   return (
@@ -52,7 +53,9 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
         <span className={`rounded-full px-3 py-1 text-sm font-bold ${s.tint}`}>{s.label}</span>
       </div>
       <p className="-mt-3 text-sm">
-        <strong>{pickup ? "Recoge en el punto de entrega" : local ? "Domicilio Lusarte" : "Envío nacional (flete al cobro)"}</strong>
+        <strong>
+          {pickup ? "Recoge en el punto de entrega" : local ? `Domicilio Lusarte${order.deliveryZone ? ` · zona ${order.deliveryZone}` : ""}` : "Envío nacional (flete al cobro)"}
+        </strong>
         {local && order.scheduledFor && ` · programada para ${describeDay(order.scheduledFor)} (${formatDay(order.scheduledFor)})`}
         {" · "}
         {cod ? <strong>Contraentrega: cobrar {formatCOP(order.total)}</strong> : "Pagado en línea"}
@@ -142,7 +145,12 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
           </a>{" "}
           · {order.phone}
         </p>
-        <p>{address}</p>
+        <p>
+          {address}{" "}
+          <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+            Abrir en Google Maps
+          </a>
+        </p>
         <a
           href={`https://wa.me/57${order.phone}?text=${encodeURIComponent(greeting)}`}
           target="_blank"

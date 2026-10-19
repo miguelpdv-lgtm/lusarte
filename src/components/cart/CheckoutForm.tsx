@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useState, type ReactNode } from "react";
-import { citiesFor, placeOrder, shippingFor, type CheckoutState } from "@/app/(sitio)/checkout-actions";
+import { barriosFor, citiesFor, nearestBarrioTo, placeOrder, shippingFor, type CheckoutState } from "@/app/(sitio)/checkout-actions";
 import type { Delivery, DeliveryOption } from "@/lib/shop/shipping";
 import { cartSubtotal, useCart } from "@/lib/cart/store";
 import { lineKey } from "@/lib/cart/types";
@@ -36,6 +36,26 @@ export function CheckoutForm({ departments, idTypes }: Props) {
   const [cities, setCities] = useState<string[]>([]);
   const [city, setCity] = useState(v.city ?? "");
   const [options, setOptions] = useState<DeliveryOption[] | null>(null);
+  const [barrios, setBarrios] = useState<{ id: number; name: string }[]>([]);
+  const [barrio, setBarrio] = useState(v.barrio ?? "");
+  const [locating, setLocating] = useState<"" | "buscando" | "error">("");
+  const [nearby, setNearby] = useState<{ id: number; name: string; meters: number }[]>([]);
+  const norm = (s: string) =>
+    s
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  // Nombre exacto; si no, el único barrio que contiene lo escrito ("juan mina" → "Corregimiento Juan Mina")
+  const matched = (() => {
+    const q = norm(barrio);
+    if (q.length < 3) return null;
+    const exact = barrios.find((b) => norm(b.name) === q);
+    if (exact) return exact;
+    const partial = barrios.filter((b) => norm(b.name).includes(q));
+    return partial.length === 1 ? partial[0] : null;
+  })();
+  const barrioId = matched?.id ?? null;
   const [delivery, setDelivery] = useState<Delivery>((v.delivery as Delivery) || "domicilio");
   const [paymentType, setPaymentType] = useState<"wompi" | "contraentrega">(v.paymentType === "contraentrega" ? "contraentrega" : "wompi");
   const quote = options ? (options.find((o) => o.delivery === delivery) ?? options[0]) : null;
@@ -47,12 +67,38 @@ export function CheckoutForm({ departments, idTypes }: Props) {
   useEffect(() => {
     if (!departmentId || !city.trim()) return;
     let alive = true;
-    const t = setTimeout(() => shippingFor(Number(departmentId), city).then((q) => alive && setOptions(q)), 250);
+    const t = setTimeout(() => shippingFor(Number(departmentId), city, barrioId).then((q) => alive && setOptions(q)), 250);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [departmentId, city, barrioId]);
+
+  // Barrios del municipio (Barranquilla y Soledad)
+  useEffect(() => {
+    if (!departmentId || !city.trim()) return;
+    let alive = true;
+    const t = setTimeout(() => barriosFor(Number(departmentId), city).then((list) => alive && setBarrios(list)), 250);
     return () => {
       alive = false;
       clearTimeout(t);
     };
   }, [departmentId, city]);
+
+  function locateMe() {
+    if (!navigator.geolocation) return setLocating("error");
+    setLocating("buscando");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const list = await nearestBarrioTo(Number(departmentId), city, pos.coords.latitude, pos.coords.longitude);
+        setNearby(list);
+        if (list[0]) setBarrio(list[0].name);
+        setLocating(list.length ? "" : "error");
+      },
+      () => setLocating("error"),
+      { enableHighAccuracy: true, timeout: 10_000 },
+    );
+  }
 
   // Municipios del departamento elegido, para autocompletar
   useEffect(() => {
@@ -160,6 +206,58 @@ export function CheckoutForm({ departments, idTypes }: Props) {
               ))}
             </datalist>
           </Field>
+          {barrios.length > 0 && (
+            <div className="grid gap-1.5 sm:col-span-2">
+              <Field
+                label="Barrio"
+                error={f.barrioId}
+                hint="Escribe y elige de la lista. ¿No encuentras el tuyo? Elige el barrio más cercano."
+              >
+                <input
+                  name="barrio"
+                  list="barrios"
+                  autoComplete="off"
+                  value={barrio}
+                  onChange={(e) => {
+                    setBarrio(e.target.value);
+                    setNearby([]);
+                  }}
+                  aria-invalid={!!f.barrioId || (!!barrio && !barrioId)}
+                  placeholder="Ej. El Prado"
+                  className={inputClass}
+                />
+                <datalist id="barrios">
+                  {barrios.map((b) => (
+                    <option key={b.id} value={b.name} />
+                  ))}
+                </datalist>
+              </Field>
+              <input type="hidden" name="barrioId" value={barrioId ?? ""} />
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                <button type="button" onClick={locateMe} className="cursor-pointer font-bold underline underline-offset-4">
+                  {locating === "buscando" ? "Buscando tu ubicación…" : "📍 Usar mi ubicación"}
+                </button>
+                {locating === "error" && <span className="text-alerta">No pudimos ubicarte: elige tu barrio en la lista.</span>}
+                {barrio && !barrioId && <span className="text-alerta">Elige un barrio de la lista (o el más cercano).</span>}
+                {matched && norm(matched.name) !== norm(barrio) && <span className="text-carbon-suave">Barrio: {matched.name}</span>}
+                {nearby.length > 1 && (
+                  <span className="text-carbon-suave">
+                    ¿O es{" "}
+                    {nearby.slice(1).map((b, i) => (
+                      <span key={b.id}>
+                        {i > 0 && " o "}
+                        <button type="button" onClick={() => setBarrio(b.name)} className="cursor-pointer font-semibold underline">
+                          {b.name}
+                        </button>
+                      </span>
+                    ))}
+                    ?
+                  </span>
+                )}
+              </div>
+              <p className="text-[0.7rem] text-carbon-suave">Barrios: Alcaldía de Barranquilla y © colaboradores de OpenStreetMap.</p>
+            </div>
+          )}
           <Field label="Dirección" error={f.address} className="sm:col-span-2">
             <input name="address" autoComplete="street-address" required defaultValue={v.address} aria-invalid={!!f.address} placeholder="Calle 10 # 20-30" className={inputClass} />
           </Field>
@@ -190,7 +288,9 @@ export function CheckoutForm({ departments, idTypes }: Props) {
                     <span className="flex-1">
                       <span className="flex justify-between gap-3 font-bold">
                         {o.title}
-                        <span className="shrink-0 tabular-nums">{o.delivery === "nacional" ? "Al cobro" : o.price ? formatCOP(o.price) : "Gratis"}</span>
+                        <span className="shrink-0 tabular-nums">
+                          {o.delivery === "nacional" ? "Al cobro" : !o.available ? "—" : o.price ? formatCOP(o.price) : "Gratis"}
+                        </span>
                       </span>
                       <span className="block text-sm text-carbon-suave">{o.estimate}</span>
                     </span>
@@ -298,7 +398,7 @@ export function CheckoutForm({ departments, idTypes }: Props) {
 
         <button
           type="submit"
-          disabled={pending || blocked || !quote || !!state.payUrl || !!state.orderUrl}
+          disabled={pending || blocked || !quote || !quote.available || !!state.payUrl || !!state.orderUrl}
           className="toon toon-press cursor-pointer rounded-full bg-estrella px-6 py-3 text-sm font-bold disabled:cursor-wait disabled:opacity-60"
         >
           {state.payUrl
@@ -309,6 +409,10 @@ export function CheckoutForm({ departments, idTypes }: Props) {
                 ? "Creando tu pedido…"
                 : !quote
                   ? "Elige tu ciudad para continuar"
+                  : !quote.available
+                    ? quote.needsBarrio && !barrioId
+                      ? "Elige tu barrio para continuar"
+                      : "Elige recoger o escríbenos por WhatsApp"
                   : cod
                     ? "Enviar pedido · pagas al recibir"
                     : `Pagar ${formatCOP(total)}`}

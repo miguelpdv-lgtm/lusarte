@@ -5,6 +5,7 @@ import type { CartRequest, QuotedLine } from "@/lib/cart/types";
 import { getCatalog } from "@/lib/catalog/queries";
 import { checkoutEnabled } from "@/lib/shop/config";
 import { CartError, cartRequestSchema, createOrder, customerSchema, quoteLines } from "@/lib/shop/orders";
+import { barriosOf, hasBarrios, nearestBarrios } from "@/lib/shop/barrios";
 import { cityNames, findCity, findDepartment } from "@/lib/shop/places";
 import { deliveryOptions, type DeliveryOption } from "@/lib/shop/shipping";
 import { checkoutUrl } from "@/lib/shop/wompi";
@@ -55,7 +56,8 @@ export async function placeOrder(_prev: CheckoutState, form: FormData): Promise<
   try {
     const paymentType = values.paymentType === "contraentrega" ? "contraentrega" : "wompi";
     const delivery = values.delivery === "recoger" ? "recoger" : values.delivery === "nacional" ? "nacional" : "domicilio";
-    const order = await createOrder(customer.data, lines, paymentType, delivery);
+    const barrioId = Number(values.barrioId) || null;
+    const order = await createOrder(customer.data, lines, paymentType, delivery, barrioId);
     if (paymentType === "contraentrega") return { orderUrl: `/pedido/${order.code}?t=${order.token}` };
     const c = customer.data;
     const payUrl = checkoutUrl({
@@ -78,9 +80,25 @@ export async function citiesFor(departmentId: number): Promise<string[]> {
   return Number.isInteger(departmentId) ? cityNames(departmentId) : [];
 }
 
-/** Opciones de entrega (domicilio, recoger o nacional) para el municipio elegido; null si el municipio no es válido. */
-export async function shippingFor(departmentId: number, city: string): Promise<DeliveryOption[] | null> {
+/** Opciones de entrega (domicilio, recoger o nacional) para el municipio y barrio elegidos; null si el municipio no es válido. */
+export async function shippingFor(departmentId: number, city: string, barrioId: number | null = null): Promise<DeliveryOption[] | null> {
   if (!Number.isInteger(departmentId) || !findDepartment(departmentId)) return null;
   const place = findCity(departmentId, city);
-  return place ? deliveryOptions(place.id) : null;
+  return place ? deliveryOptions(place.id, barrioId) : null;
+}
+
+/** Barrios del municipio (Barranquilla y Soledad); [] si el municipio no los tiene. */
+export async function barriosFor(departmentId: number, city: string): Promise<{ id: number; name: string }[]> {
+  const place = Number.isInteger(departmentId) ? findCity(departmentId, city) : null;
+  if (!place || !hasBarrios(place.name)) return [];
+  return barriosOf(place.name)
+    .map((b) => ({ id: b.id, name: b.name }))
+    .sort((a, b) => a.name.localeCompare(b.name, "es"));
+}
+
+/** Barrios más cercanos a la ubicación del comprador ("Usar mi ubicación"). */
+export async function nearestBarrioTo(departmentId: number, city: string, lat: number, lng: number) {
+  const place = Number.isInteger(departmentId) ? findCity(departmentId, city) : null;
+  if (!place || !hasBarrios(place.name) || !Number.isFinite(lat) || !Number.isFinite(lng)) return [];
+  return nearestBarrios(place.name, [lat, lng], 3).map((b) => ({ id: b.id, name: b.name, meters: b.meters }));
 }

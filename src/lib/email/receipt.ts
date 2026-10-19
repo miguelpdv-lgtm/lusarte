@@ -205,6 +205,7 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
   const addr = [o.address, o.addressNotes].filter(Boolean).join(" · ");
   const deliveryLines: [string, string][] = [
     ["Dirección", addr || "—"],
+    ...(o.neighborhood ? ([["Barrio", o.neighborhood]] as [string, string][]) : []),
     ["Ciudad", `${o.city}, ${o.department}`],
     ...(o.shippingZone !== "nacional"
       ? ([

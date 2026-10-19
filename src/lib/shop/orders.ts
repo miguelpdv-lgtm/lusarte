@@ -11,6 +11,7 @@ import { db, schema } from "@/lib/db";
 import { createRemision } from "@/lib/effi/sales";
 import { sendOrderEmail } from "@/lib/email/order-emails";
 import type { EmailKind } from "@/lib/email/templates";
+import { findBarrio } from "./barrios";
 import { findCity, findDepartment } from "./places";
 import { localDeliveryDate } from "./calendar";
 import { deliveryOptions, getShippingSettings, scheduleOf, type Delivery } from "./shipping";
@@ -134,7 +135,13 @@ function sendLater(code: string, kinds: EmailKind[], { remision = false } = {}) 
  * Pago en línea: queda en pendiente_pago. Contraentrega: queda por_confirmar hasta que la clienta lo confirme
  * en el panel (ahí se aparta el stock y se crea la remisión). Lanza CartError si algo no se puede vender.
  */
-export async function createOrder(customer: Customer, lines: CartRequest, paymentType: PaymentType = "wompi", delivery: Delivery = "domicilio") {
+export async function createOrder(
+  customer: Customer,
+  lines: CartRequest,
+  paymentType: PaymentType = "wompi",
+  delivery: Delivery = "domicilio",
+  barrioId: number | null = null,
+) {
   if (lines.length === 0) throw new CartError("Tu carrito está vacío.");
   const admin = await loadProducts();
   const index = indexOptions(toPublicCatalog(admin));
@@ -167,8 +174,11 @@ export async function createOrder(customer: Customer, lines: CartRequest, paymen
     };
   });
   const subtotal = items.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
-  const options = await deliveryOptions(customer.effiCityId);
+  const options = await deliveryOptions(customer.effiCityId, barrioId);
   const quote = options.find((o) => o.delivery === delivery) ?? options[0];
+  if (!quote.available)
+    throw new CartError(quote.needsBarrio ? quote.estimate : "Esa forma de entrega no está disponible para tu dirección.");
+  const barrio = barrioId ? findBarrio(barrioId) : null;
   if (paymentType === "contraentrega" && !quote.cod) throw new CartError("El pago contraentrega no está disponible para tu ciudad.");
   const shipping = quote.price;
   const cod = paymentType === "contraentrega";
@@ -182,6 +192,8 @@ export async function createOrder(customer: Customer, lines: CartRequest, paymen
       shipping,
       total: subtotal + shipping,
       shippingZone: quote.delivery === "domicilio" ? "local" : quote.delivery,
+      neighborhood: barrio && barrio.city.toLowerCase() === customer.city.toLowerCase() ? barrio.name : null,
+      deliveryZone: quote.zoneName ?? null,
       paymentType,
       status: cod ? "por_confirmar" : "pendiente_pago",
     });

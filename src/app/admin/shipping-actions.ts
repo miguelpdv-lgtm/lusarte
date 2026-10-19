@@ -15,6 +15,7 @@ export type ShippingForm = {
     closedDates: string;
     windows: string;
     pickup: { enabled: boolean; note: string };
+    zones: { id: string; name: string; color: string; price: number; cod: boolean; polygon: [number, number][] }[];
   };
 };
 
@@ -57,6 +58,14 @@ export async function saveShippingAction(_prev: ShippingFormState, form: FormDat
       closedDates,
       windows: lines(data.local.windows),
       pickup: { enabled: !!data.local.pickup.enabled, note: String(data.local.pickup.note ?? "").trim().slice(0, 200) },
+      zones: (data.local.zones ?? []).map((z, i) => ({
+        id: String(z.id || `zona-${i + 1}`).slice(0, 40),
+        name: String(z.name ?? "").trim().slice(0, 60) || `Zona ${i + 1}`,
+        color: /^#[0-9a-f]{6}$/i.test(z.color) ? z.color : "#9a7aae",
+        price: Math.round(Number(z.price) || 0),
+        cod: !!z.cod,
+        polygon: z.polygon.map(([a, b]) => [Number(a), Number(b)] as [number, number]),
+      })),
     },
   } satisfies ShippingSettings);
   if (!parsed.success) return { error: `Revisa los valores: ${parsed.error.issues[0]?.message ?? "dato inválido"}` };

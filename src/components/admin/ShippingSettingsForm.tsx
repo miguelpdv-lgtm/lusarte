@@ -1,11 +1,22 @@
 "use client";
 
-import { useActionState, useEffect, useState, type ReactNode } from "react";
+import dynamic from "next/dynamic";
+import { useActionState, useEffect, useMemo, useState, type ReactNode } from "react";
+import { zoneIndexFor, type LatLng } from "@/lib/shop/geo";
+import type { MapBarrio } from "./ZonesMap";
 import { citiesFor } from "@/app/(sitio)/checkout-actions";
 import { saveShippingAction, type ShippingForm, type ShippingFormState } from "@/app/admin/shipping-actions";
 import { inputClass } from "./Field";
 
 type Dept = { id: number; name: string };
+
+// El mapa usa el navegador (Leaflet): sin render en el servidor
+const ZonesMap = dynamic(() => import("./ZonesMap").then((m) => m.ZonesMap), {
+  ssr: false,
+  loading: () => <div className="grid h-[30rem] place-items-center rounded-xl border-2 border-carbon/30 text-sm text-carbon-suave">Cargando mapa…</div>,
+});
+
+const ZONE_COLORS = ["#9a7aae", "#8aa9c1", "#aaa96c", "#d39a5b", "#c46b7c", "#5b8f7a", "#c9b458", "#7c6fc4"];
 
 const DAYS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
@@ -62,12 +73,47 @@ function DeptSelect({ departments, value, onChange }: { departments: Dept[]; val
 
 const money = "w-full rounded-xl border-2 border-carbon/80 bg-white px-3 py-2.5 text-right tabular-nums outline-none focus:shadow-[3px_3px_0_var(--color-carbon)]";
 
-export function ShippingSettingsForm({ initial, departments, upcomingHolidays }: { initial: ShippingForm; departments: Dept[]; upcomingHolidays: string[] }) {
+export function ShippingSettingsForm({
+  initial,
+  departments,
+  upcomingHolidays,
+  barrios,
+}: {
+  initial: ShippingForm;
+  departments: Dept[];
+  upcomingHolidays: string[];
+  barrios: MapBarrio[];
+}) {
   const [data, setData] = useState<ShippingForm>(initial);
   const [state, action, pending] = useActionState<ShippingFormState, FormData>(saveShippingAction, {});
   const rowErr = state.rowErrors ?? {};
 
   const setLocal = (patch: Partial<ShippingForm["local"]>) => setData((d) => ({ ...d, local: { ...d.local, ...patch } }));
+  type ZoneRow = ShippingForm["local"]["zones"][number];
+  const zones = data.local.zones;
+  const setZones = (fn: (z: ZoneRow[]) => ZoneRow[]) => setData((d) => ({ ...d, local: { ...d.local, zones: fn(d.local.zones) } }));
+  const editZone = (id: string, patch: Partial<ZoneRow>) => setZones((zs) => zs.map((z) => (z.id === id ? { ...z, ...patch } : z)));
+  const moveZone = (i: number, dir: -1 | 1) =>
+    setZones((zs) => {
+      const next = [...zs];
+      const j = i + dir;
+      if (j < 0 || j >= next.length) return zs;
+      [next[i], next[j]] = [next[j], next[i]];
+      return next;
+    });
+  // Barrios por zona (con la prioridad actual) y los que quedan sin zona
+  const coverage = useMemo(() => {
+    const polys = zones.map((z) => z.polygon as LatLng[]);
+    const counts = zones.map(() => 0);
+    const outside: string[] = [];
+    for (const b of barrios) {
+      const i = zoneIndexFor([b.lat, b.lng], polys);
+      if (i >= 0) counts[i]++;
+      else outside.push(`${b.name} (${b.city})`);
+    }
+    return { counts, outside };
+  }, [zones, barrios]);
+
   const editCity = (i: number, patch: Partial<ShippingForm["local"]["cities"][number]>) =>
     setLocal({ cities: data.local.cities.map((c, k) => (k === i ? { ...c, ...patch } : c)) });
 
@@ -75,7 +121,10 @@ export function ShippingSettingsForm({ initial, departments, upcomingHolidays }:
     <form action={action} className="grid gap-6">
       <input type="hidden" name="data" value={JSON.stringify(data)} />
 
-      <Section title="Ciudades con domicilio Lusarte" hint="Entrega propia (no transportadora). Aquí se elige la franja al despachar y se puede ofrecer pago contraentrega.">
+      <Section
+        title="Ciudades con domicilio Lusarte"
+        hint="Entrega propia (no transportadora). En Barranquilla y Soledad la tarifa sale de las zonas del mapa (la de esta tabla no se usa); en las demás ciudades, de esta tabla. Contraentrega se ofrece si la ciudad y la zona lo permiten."
+      >
         <div className="grid gap-3">
           {data.local.cities.map((c, i) => (
             <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_8rem_auto_auto] sm:items-center">
@@ -98,6 +147,62 @@ export function ShippingSettingsForm({ initial, departments, upcomingHolidays }:
           >
             + Agregar ciudad
           </button>
+        </div>
+      </Section>
+
+      <Section
+        title="Zonas de domicilio en Barranquilla y Soledad"
+        hint="El comprador elige su barrio y paga la tarifa de la zona donde cae. Dibuja o ajusta las zonas en el mapa (botones de la izquierda: dibujar, editar puntos, mover, borrar). Si una zona se cruza con otra, manda la que está más arriba en la lista."
+      >
+        <ZonesMap
+          zones={zones}
+          barrios={barrios}
+          onGeometry={(id, polygon) => editZone(id, { polygon })}
+          onRemove={(id) => setZones((zs) => zs.filter((z) => z.id !== id))}
+          onCreate={(polygon) =>
+            setZones((zs) => [
+              ...zs,
+              {
+                id: `zona-${Date.now().toString(36)}`,
+                name: `Zona ${zs.length + 1}`,
+                color: ZONE_COLORS[zs.length % ZONE_COLORS.length],
+                price: zs.at(-1)?.price ?? 8000,
+                cod: true,
+                polygon,
+              },
+            ])
+          }
+        />
+        <div className="grid gap-2">
+          {zones.map((z, i) => (
+            <div key={z.id} className="grid items-center gap-2 rounded-xl bg-white p-2 sm:grid-cols-[auto_auto_1fr_8rem_auto_auto_auto]">
+              <span className="text-sm font-bold tabular-nums text-carbon-suave">{i + 1}.</span>
+              <input type="color" value={z.color} onChange={(e) => editZone(z.id, { color: e.target.value })} aria-label="Color" className="h-9 w-10 cursor-pointer rounded" />
+              <input value={z.name} maxLength={60} onChange={(e) => editZone(z.id, { name: e.target.value })} aria-label="Nombre de la zona" className={inputClass} />
+              <input type="number" min={0} step={500} value={z.price} onChange={(e) => editZone(z.id, { price: Number(e.target.value) })} aria-label="Tarifa" className={money} />
+              <label className="flex items-center gap-1.5 text-sm font-semibold">
+                <input type="checkbox" checked={z.cod} onChange={(e) => editZone(z.id, { cod: e.target.checked })} className="size-4 accent-carbon" /> Contraentrega
+              </label>
+              <span className="text-xs text-carbon-suave">{coverage.counts[i]} barrios</span>
+              <span className="flex gap-1">
+                <button type="button" onClick={() => moveZone(i, -1)} disabled={i === 0} aria-label="Subir prioridad" className="cursor-pointer rounded px-1.5 disabled:opacity-30">
+                  ↑
+                </button>
+                <button type="button" onClick={() => moveZone(i, 1)} disabled={i === zones.length - 1} aria-label="Bajar prioridad" className="cursor-pointer rounded px-1.5 disabled:opacity-30">
+                  ↓
+                </button>
+                <button type="button" onClick={() => setZones((zs) => zs.filter((x) => x.id !== z.id))} className="cursor-pointer px-1.5 text-sm font-semibold text-alerta">
+                  Quitar
+                </button>
+              </span>
+            </div>
+          ))}
+          {zones.length === 0 && <p className="text-sm text-carbon-suave">No hay zonas: dibuja una en el mapa.</p>}
+          <p className={`text-sm ${coverage.outside.length ? "font-semibold text-alerta" : "text-carbon-suave"}`}>
+            {coverage.outside.length
+              ? `${coverage.outside.length} barrios sin zona (no tienen domicilio automático): ${coverage.outside.slice(0, 12).join(", ")}${coverage.outside.length > 12 ? "…" : ""}`
+              : `Los ${barrios.length} barrios tienen zona.`}
+          </p>
         </div>
       </Section>
 

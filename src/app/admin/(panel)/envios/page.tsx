@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ShippingSettingsForm } from "@/components/admin/ShippingSettingsForm";
 import { requireAdmin } from "@/lib/auth/session";
 import { colombianHolidays, describeDay, formatDay, localDeliveryDate } from "@/lib/shop/calendar";
+import { allBarrios } from "@/lib/shop/barrios";
 import { departmentOptions } from "@/lib/shop/places";
 import { getShippingSettings, scheduleOf } from "@/lib/shop/shipping";
 
@@ -38,6 +39,7 @@ export default async function EnviosAdmin() {
       <ShippingSettingsForm
         departments={departments}
         upcomingHolidays={upcoming}
+        barrios={allBarrios().map(({ id, name, city, lat, lng }) => ({ id, name, city, lat, lng }))}
         initial={{
           local: {
             cities: s.local.cities.map((c) => ({ departmentId: c.departmentId, city: c.name, price: c.price, cod: c.cod })),
@@ -47,6 +49,7 @@ export default async function EnviosAdmin() {
             closedDates: s.local.closedDates.join("\n"),
             windows: s.local.windows.join("\n"),
             pickup: s.local.pickup,
+            zones: s.local.zones.map((z) => ({ ...z, polygon: z.polygon.map(([a, b]) => [a, b] as [number, number]) })),
           },
         }}
       />

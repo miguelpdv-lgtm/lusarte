@@ -131,6 +131,7 @@ export default async function PedidoPage({ params, searchParams }: PageProps<"/p
             {order.address}
             {order.addressNotes && ` (${order.addressNotes})`}
             <br />
+            {order.neighborhood && `Barrio ${order.neighborhood}, `}
             {order.city}, {order.department}
           </p>
         </div>

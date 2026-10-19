@@ -60,7 +60,12 @@ function deliveryLine(o: OrderWithItems) {
   return `Despachamos en 1 a 3 días hábiles. Cuando salga, te escribimos con la transportadora y el número de guía. ${FLETE}`;
 }
 
-const addressLines = (o: OrderWithItems) => [o.name, o.phone, `${o.address}${o.addressNotes ? ` (${o.addressNotes})` : ""}`, `${o.city}, ${o.department}`];
+const addressLines = (o: OrderWithItems) => [
+  o.name,
+  o.phone,
+  `${o.address}${o.addressNotes ? ` (${o.addressNotes})` : ""}`,
+  `${o.neighborhood ? `Barrio ${o.neighborhood}, ` : ""}${o.city}, ${o.department}`,
+];
 const addressHtml = (o: OrderWithItems) => addressLines(o).map(esc).join("<br>");
 
 /** 1. Confirmación de compra (cliente) */
@@ -119,7 +124,7 @@ export function newSaleEmail(o: OrderWithItems): Rendered {
         isPickup(o)
           ? `<strong>Para recoger</strong>${o.scheduledFor ? ` ${esc(deliveryDay(o))}` : ""}: coordinar por WhatsApp.`
           : isLocal(o)
-            ? `<strong>Domicilio Lusarte</strong>${o.scheduledFor ? ` ${esc(deliveryDay(o))}` : ""}.`
+            ? `<strong>Domicilio Lusarte</strong>${o.deliveryZone ? ` · zona ${esc(o.deliveryZone)}` : ""}${o.scheduledFor ? ` ${esc(deliveryDay(o))}` : ""}.`
             : "<strong>Envío nacional</strong> por transportadora, flete al cobro.",
       ),
       o.stockAlert ? box("<strong>Revisar inventario:</strong> se vendió más de lo que había en stock (dos pagos casi al tiempo).") : "",

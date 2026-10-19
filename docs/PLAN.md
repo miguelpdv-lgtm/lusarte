@@ -21,6 +21,7 @@ Lusarte es ante todo una **tienda virtual**: todo el sitio existe para que algui
 | 7. Correos | ✅ Brevo con la marca (tema claro/oscuro), registro en `email_log`, vista previa y reenvío en el panel (`docs/CORREOS.md`). Falta la API key y autenticar `lusarte.net` en Brevo |
 | 8. Despacho | ✅ Formulario Despachar (transportadora, guía, rastreo, nota) → correo al cliente; corrección de guía y reenvío; seguimiento en `/pedido/[codigo]` |
 | Envíos (2026-10-19) | ✅ Políticas de Lusarte: domicilio por ciudad (Panel → Envíos) con hora de corte, días y festivos; recoger en el punto de entrega; contraentrega "por confirmar" en ciudades locales; envío nacional con flete al cobro. Panel con pestañas Despacho local / nacional. Páginas `/envios-y-devoluciones` y `/como-comprar` con el texto de la dueña |
+| Zonas por barrio (2026-10-19) | ✅ Barranquilla y Soledad: 402 barrios (`src/data/barrios.json`, generado con `scripts/barrios.py` desde datos abiertos de la Alcaldía y OpenStreetMap). La dueña dibuja zonas con tarifa en el mapa de Panel → Envíos (Leaflet + Geoman); el comprador elige su barrio (o "Usar mi ubicación") y paga la tarifa de su zona |
 | 9 y 10 | ⬜ Pendientes |
 
 **⚠️ Lo que falta para seguir** (en orden):

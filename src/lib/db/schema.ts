@@ -170,6 +170,10 @@ export const orders = mysqlTable(
     effiProvinceId: int(),
     effiCityId: int(),
     address: varchar({ length: 200 }).notNull(),
+    /** Barrio (Barranquilla y Soledad: de la lista; define la zona y la tarifa del domicilio) */
+    neighborhood: varchar({ length: 100 }),
+    /** Zona de domicilio en la que cae el barrio (nombre al momento de la compra) */
+    deliveryZone: varchar({ length: 60 }),
     addressNotes: varchar({ length: 200 }),
     subtotal: int().notNull(),
     shipping: int().notNull(),

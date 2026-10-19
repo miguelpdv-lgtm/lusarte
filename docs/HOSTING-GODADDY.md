@@ -19,10 +19,16 @@ Resumen de lo que exige la plataforma (guía oficial de GoDaddy, recibida el 202
 
 Se incluyen `package.json`, `package-lock.json`, `next.config.ts`, `tsconfig.json`, `postcss.config.mjs`, `src/`, `public/` y `drizzle/`. **No se incluyen las fotos** (`public/assets/uploads/`): viven solo en el disco de GoDaddy y subirlas en el zip podría pisar las de producción. Tampoco se incluyen `node_modules`, `.next`, `.env*`, `.local`, `data` ni `docs`.
 
-## Cambios de esquema en producción
+## Cambios de esquema en producción (automáticos)
 
-Generar la migración en local (`npm run db:generate`) y aplicar su SQL desde la interfaz de la base de GoDaddy, sin pisar los datos.
+**No se importan `.sql` para cambiar el esquema.** Al arrancar, el servidor aplica las migraciones pendientes de `drizzle/` (`src/instrumentation.ts` → `src/lib/db/migrate.ts`): solo las que faltan según `__drizzle_migrations`, con un candado de MySQL para que la vista previa y producción no migren a la vez. Nunca borran datos.
+
+1. En local: cambiar `src/lib/db/schema.ts` y generar la migración (`npm run db:generate`). Revisar el SQL generado: no debe borrar columnas o tablas con datos sin un plan.
+2. Subir el zip nuevo: al arrancar, la app migra sola. El log dice "Migraciones de la base al día" (o el error, y la app arranca igual).
+3. `AUTO_MIGRATE=0` lo desactiva.
+
+**Importar `.sql` desde la interfaz de GoDaddy solo la primera vez** (base vacía): `lusarte-base.sql` borra y recrea **todas** las tablas (pedidos, fotos asociadas, ediciones del panel). Con la tienda en uso, nunca.
 
 ## Exportar el zip
 
-`npm run zip:godaddy` → `.local/deploy/lusarte-godaddy.zip` (código fuente, sin fotos). La base va aparte: `.local/deploy/lusarte-base.sql`, que se importa desde la interfaz con la app ya corriendo.
+`npm run zip:godaddy` → `.local/deploy/lusarte-godaddy.zip` (código fuente, sin fotos). La base va aparte: `.local/deploy/lusarte-base.sql`, que se importa **solo la primera vez**, desde la interfaz y con la app ya corriendo.

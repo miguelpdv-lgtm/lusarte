@@ -1,12 +1,7 @@
-// Aplica las migraciones de /drizzle. Uso: npm run db:migrate
-import { migrate } from "drizzle-orm/mysql2/migrator";
-import { createDb } from "../src/lib/db/client";
+// Aplica las migraciones de /drizzle. Uso: npm run db:migrate (el servidor también lo hace solo al arrancar).
+import { runMigrations } from "../src/lib/db/migrate";
 
-async function main() {
-  const { db, pool } = createDb();
-  await migrate(db, { migrationsFolder: "./drizzle" });
-  console.log("Migraciones aplicadas");
-  await pool.end();
-}
-
-main();
+runMigrations().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

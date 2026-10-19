@@ -17,7 +17,7 @@ Resumen de lo que exige la plataforma (guía oficial de GoDaddy, recibida el 202
 
 ## Armar el zip
 
-Se incluyen `package.json`, `package-lock.json`, `next.config.ts`, `tsconfig.json`, `postcss.config.mjs`, `src/`, `public/` y `drizzle/`, más las fotos en `public/assets/uploads/`. No se incluyen `node_modules`, `.next`, `.env*`, `.local`, `data` ni `docs`.
+Se incluyen `package.json`, `package-lock.json`, `next.config.ts`, `tsconfig.json`, `postcss.config.mjs`, `src/`, `public/` y `drizzle/`. **No se incluyen las fotos** (`public/assets/uploads/`): viven solo en el disco de GoDaddy y subirlas en el zip podría pisar las de producción. Tampoco se incluyen `node_modules`, `.next`, `.env*`, `.local`, `data` ni `docs`.
 
 ## Cambios de esquema en producción
 
@@ -25,4 +25,4 @@ Generar la migración en local (`npm run db:generate`) y aplicar su SQL desde la
 
 ## Exportar el zip
 
-`npm run zip:godaddy` → `.local/deploy/lusarte-godaddy.zip` (código fuente + fotos de `.local/uploads` en `public/assets/uploads/`). La base va aparte: `.local/deploy/lusarte-base.sql`, que se importa desde la interfaz con la app ya corriendo.
+`npm run zip:godaddy` → `.local/deploy/lusarte-godaddy.zip` (código fuente, sin fotos). La base va aparte: `.local/deploy/lusarte-base.sql`, que se importa desde la interfaz con la app ya corriendo.

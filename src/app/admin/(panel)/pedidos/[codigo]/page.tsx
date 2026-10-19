@@ -4,19 +4,26 @@ import { notFound } from "next/navigation";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { requireAdmin } from "@/lib/auth/session";
 import { formatCOP } from "@/lib/format";
-import { getOrder } from "@/lib/shop/orders";
+import { resendEmail } from "@/app/admin/order-actions";
+import { ShipForm } from "@/components/admin/ShipForm";
+import { emailStatus } from "@/lib/email/order-emails";
+import { EMAIL_LABELS, type EmailKind } from "@/lib/email/templates";
+import { getOrder, usedCarriers } from "@/lib/shop/orders";
 import { statusInfo } from "@/lib/shop/status";
 
 export const metadata: Metadata = { title: "Pedido" };
 
 const dateFmt = new Intl.DateTimeFormat("es-CO", { dateStyle: "long", timeStyle: "short", timeZone: "America/Bogota" });
 
-// TODO(fase 8): botón Despachar (transportadora, guía, link de rastreo) y correo al cliente.
 export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/[codigo]">) {
   await requireAdmin();
   const order = await getOrder((await params).codigo);
   if (!order) notFound();
   const s = statusInfo(order.status);
+  const [carriers, emails] = await Promise.all([usedCarriers(), emailStatus(order.id)]);
+  const canShip = order.status === "pagado" || order.status === "despachado";
+  const kinds: EmailKind[] =
+    order.status === "rechazado" ? ["pago_fallido"] : order.status === "despachado" ? ["confirmacion", "venta", "despacho"] : canShip ? ["confirmacion", "venta"] : [];
   const address = `${order.address}${order.addressNotes ? ` (${order.addressNotes})` : ""}, ${order.city}, ${order.department}`;
   const greeting = `¡Hola ${order.name.split(" ")[0]}! Te escribimos de Lusarte por tu pedido ${order.code}.`;
 
@@ -33,6 +40,21 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
         <p role="alert" className="toon rounded-2xl bg-alerta px-4 py-3 text-sm font-bold text-crema">
           Se vendió más de lo que había en stock (dos pagos casi al tiempo). Revisa el inventario en Effi o escríbele al cliente.
         </p>
+      )}
+
+      {canShip && (
+        <section className={`toon grid gap-4 rounded-[1.25rem] p-5 ${order.status === "pagado" ? "toon-shadow bg-estrella/40" : "bg-crema-claro"}`}>
+          <div>
+            <h2 className="font-display text-lg font-extrabold">{order.status === "pagado" ? "Despachar" : "Despacho"}</h2>
+            {order.shippedAt && <p className="text-sm text-carbon-suave">Despachado el {dateFmt.format(order.shippedAt)}. Puedes corregir la guía.</p>}
+          </div>
+          <ShipForm
+            code={order.code!}
+            carriers={carriers}
+            shipped={order.status === "despachado"}
+            initial={{ carrier: order.carrier, trackingNumber: order.trackingNumber, trackingUrl: order.trackingUrl, shippingNote: order.shippingNote }}
+          />
+        </section>
       )}
 
       <section className="toon grid gap-2 rounded-[1.25rem] bg-crema-claro p-5 text-sm">
@@ -97,6 +119,46 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
           {order.paymentMethod && ` · ${order.paymentMethod}`}
         </p>
       </section>
+
+      {kinds.length > 0 && (
+        <section className="toon grid gap-3 rounded-[1.25rem] bg-crema-claro p-5 text-sm">
+          <h2 className="font-display text-lg font-extrabold">Correos</h2>
+          <ul className="grid gap-3">
+            {kinds.map((kind) => {
+              const log = emails.get(kind);
+              const state = !log
+                ? { label: "Pendiente", tint: "bg-carbon/10" }
+                : log.status === "enviado"
+                  ? { label: "Enviado", tint: "bg-oliva/50" }
+                  : log.status === "sin_configurar"
+                    ? { label: "Brevo sin configurar", tint: "bg-miel/60" }
+                    : { label: "Falló", tint: "bg-alerta text-crema" };
+              return (
+                <li key={kind} className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="font-semibold">{EMAIL_LABELS[kind]}</span>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${state.tint}`}>{state.label}</span>
+                  {log && (
+                    <span className="text-xs text-carbon-suave">
+                      {dateFmt.format(log.createdAt)} · {log.recipient}
+                    </span>
+                  )}
+                  <span className="ml-auto flex gap-3">
+                    <a href={`/admin/pedidos/${order.code}/correo/${kind}`} target="_blank" className="font-semibold underline-offset-4 hover:underline">
+                      Ver
+                    </a>
+                    <form action={resendEmail.bind(null, order.code!, kind)}>
+                      <button type="submit" className="cursor-pointer font-semibold underline-offset-4 hover:underline">
+                        {log ? "Reenviar" : "Enviar"}
+                      </button>
+                    </form>
+                  </span>
+                  {log?.error && log.status !== "enviado" && <p className="w-full text-xs text-alerta">{log.error}</p>}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

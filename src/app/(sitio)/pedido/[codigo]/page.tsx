@@ -18,7 +18,7 @@ const statusCopy = {
   pendiente_pago: { title: "Estamos confirmando tu pago", text: "Wompi aún no nos confirma el pago. Si ya pagaste, recarga esta página en unos minutos.", tint: "bg-miel/60" },
   pagado: { title: "¡Gracias por tu compra!", text: "Recibimos tu pago. Te escribiremos cuando despachemos tu pedido, con la transportadora y el número de guía.", tint: "bg-oliva/40" },
   rechazado: { title: "El pago no se completó", text: "Tu banco o Wompi no aprobaron el pago y no se te cobró nada. Puedes intentarlo de nuevo desde el carrito.", tint: "bg-lavanda" },
-  despachado: { title: "Tu pedido va en camino", text: "Ya lo despachamos.", tint: "bg-cielo/40" },
+  despachado: { title: "Tu pedido va en camino", text: "Ya lo despachamos. Con estos datos puedes seguirlo en la página de la transportadora.", tint: "bg-cielo/40" },
 } as const;
 
 export default async function PedidoPage({ params, searchParams }: PageProps<"/pedido/[codigo]">) {
@@ -48,6 +48,24 @@ export default async function PedidoPage({ params, searchParams }: PageProps<"/p
       <p className="eyebrow text-carbon-suave">Pedido {order.code}</p>
       <h1 className="mt-2 font-hand text-[2.5rem] leading-none text-balance sm:text-5xl">{copy.title}</h1>
       <p className={`toon mt-6 rounded-2xl px-4 py-3 font-semibold ${copy.tint}`}>{copy.text}</p>
+
+      {status === "despachado" && order.trackingNumber && (
+        <section className="toon toon-shadow mt-6 grid gap-1 rounded-[1.75rem] bg-crema-claro p-5 sm:p-6">
+          <h2 className="font-display text-xl font-extrabold">Seguimiento</h2>
+          <p>
+            Transportadora: <strong>{order.carrier}</strong>
+          </p>
+          <p>
+            Número de guía: <strong className="select-all">{order.trackingNumber}</strong>
+          </p>
+          {order.shippingNote && <p className="mt-2 text-sm text-carbon-suave">{order.shippingNote}</p>}
+          {order.trackingUrl && (
+            <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" className="toon toon-press mt-3 justify-self-start rounded-full bg-estrella px-5 py-2.5 text-sm font-bold">
+              Rastrear mi envío
+            </a>
+          )}
+        </section>
+      )}
 
       <section className="toon mt-8 grid gap-4 rounded-[1.75rem] bg-crema-claro p-5 sm:p-6">
         <h2 className="font-display text-xl font-extrabold">Resumen</h2>

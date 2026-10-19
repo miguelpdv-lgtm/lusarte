@@ -2,7 +2,7 @@
 
 > Actualizado: 2026-10-08 · Estado: **Fases 1, 4 y 5 hechas en local**; la fase 3 queda a medias hasta que exista el hosting (GoDaddy, se compra el 2026-10-08).
 >
-> **Decisiones fijas:** dominio `lusarte.net` · pagos con **Wompi** (Colombia, COP) · Next.js + MySQL, portable entre hostings (hosting por comprar; mientras tanto, previews en Vercel) · correos con **Resend**.
+> **Decisiones fijas:** dominio `lusarte.net` · pagos con **Wompi** (Colombia, COP) · Next.js + MySQL, portable entre hostings (hosting por comprar; mientras tanto, previews en Vercel) · correos con **Brevo** (antes Resend).
 
 Lusarte es ante todo una **tienda virtual**: todo el sitio existe para que alguien encuentre un producto, lo pague en línea y lo reciba en su casa. La landing y las páginas informativas acompañan, pero la prioridad es el recorrido catálogo → carrito → pago → despacho.
 
@@ -18,7 +18,9 @@ Lusarte es ante todo una **tienda virtual**: todo el sitio existe para que algui
 | 4. Panel | ✅ Estadísticas de ventas (Effi), estado de la sincronización, productos con capa web (fotos, descripción, visibilidad, precio que se envía a Effi, agrupar/separar presentaciones) |
 | 5. Tienda pública | ✅ Catálogo de Effi: 518 productos, precios y stock reales |
 | 6. Carrito, checkout y pagos | 🟡 Hecho: carrito (localStorage + mini carrito), `/checkout`, pedidos (`orders`), Wompi Web Checkout con firma, webhook `/api/wompi/webhook`, `/pedido/[codigo]` con respaldo por API, `/admin/pedidos` (solo lectura). Falta: llaves de prueba de Wompi y pruebas en sandbox, valor real del envío, **remisión en Effi** y **PDF al admin** (`docs/EFFI.md` → Pendiente) |
-| 7 a 10 | ⬜ Pendientes |
+| 7. Correos | ✅ Brevo con la marca (tema claro/oscuro), registro en `email_log`, vista previa y reenvío en el panel (`docs/CORREOS.md`). Falta la API key y autenticar `lusarte.net` en Brevo |
+| 8. Despacho | ✅ Formulario Despachar (transportadora, guía, rastreo, nota) → correo al cliente; corrección de guía y reenvío; seguimiento en `/pedido/[codigo]` |
+| 9 y 10 | ⬜ Pendientes |
 
 **⚠️ Lo que falta para seguir** (en orden):
 
@@ -28,7 +30,7 @@ Lusarte es ante todo una **tienda virtual**: todo el sitio existe para que algui
 4. **Fotos y descripciones:** ningún artículo de Effi tiene foto ni descripción. Se cargan desde el panel (filtros "Sin foto" y "Sin descripción").
 5. **Revisar la agrupación** de presentaciones en el panel (algunos artículos están duplicados en Effi, p. ej. "MOLDE LEON").
 6. **"Molde Cactus"** no tiene categoría en Effi: está oculto hasta que se le asigne.
-7. **Resend + DNS de `lusarte.net`** para los correos (venta al admin con PDF, despacho).
+7. **Brevo:** `BREVO_API_KEY`, `ADMIN_EMAIL` y los registros DNS de `lusarte.net` (DKIM, DMARC, SPF) según `docs/CORREOS.md`. El PDF de la remisión al admin queda para cuando exista la remisión en Effi.
 8. **Textos provisionales** (nosotros, envíos, términos, privacidad) y datos legales (razón social, NIT, ciudad: la sucursal de Effi está en Barranquilla).
 9. **API key de Effi:** vence a los 360 días (renovar en Administración → Usuarios). El panel muestra el error si Effi la rechaza.
 

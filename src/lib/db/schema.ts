@@ -167,6 +167,12 @@ export const orders = mysqlTable(
     paidAt: timestamp(),
     /** Se vendió más de lo que había en stock (dos pagos casi al tiempo): revisar con la clienta */
     stockAlert: boolean().notNull().default(false),
+    /** Despacho: transportadora libre, guía, link de rastreo opcional y nota para el cliente */
+    carrier: varchar({ length: 80 }),
+    trackingNumber: varchar({ length: 80 }),
+    trackingUrl: varchar({ length: 500 }),
+    shippingNote: varchar({ length: 500 }),
+    shippedAt: timestamp(),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp().notNull().defaultNow().onUpdateNow(),
   },
@@ -192,4 +198,25 @@ export const orderItems = mysqlTable(
     note: varchar({ length: 300 }),
   },
   (t) => [index("order_items_order_idx").on(t.orderId)],
+);
+
+/** Correos enviados por pedido: evita duplicados, muestra en el panel si salió y permite reenviar. */
+export const emailLog = mysqlTable(
+  "email_log",
+  {
+    id: int().autoincrement().primaryKey(),
+    orderId: int()
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    /** confirmacion | venta | despacho | pago_fallido */
+    kind: varchar({ length: 20 }).notNull(),
+    recipient: varchar({ length: 500 }).notNull(),
+    /** enviado | fallido | sin_configurar */
+    status: varchar({ length: 20 }).notNull(),
+    /** messageId de Brevo */
+    providerId: varchar({ length: 200 }),
+    error: varchar({ length: 500 }),
+    createdAt: timestamp().notNull().defaultNow(),
+  },
+  (t) => [index("email_log_order_idx").on(t.orderId, t.kind)],
 );

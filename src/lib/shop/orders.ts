@@ -2,12 +2,15 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { departments } from "@/data/colombia";
 import { lineKey, MAX_QTY, NOTE_MAX, type CartRequest, type QuotedLine } from "@/lib/cart/types";
 import { CATALOG_TAG, loadProducts, toPublicCatalog } from "@/lib/catalog/queries";
 import { availableUnits, type Product, type ProductOption } from "@/lib/catalog/types";
 import { db, schema } from "@/lib/db";
+import { sendOrderEmail } from "@/lib/email/order-emails";
+import type { EmailKind } from "@/lib/email/templates";
 import { shippingCost } from "./config";
 import type { WompiTransaction } from "./wompi";
 
@@ -78,6 +81,17 @@ export function quoteLines(catalog: Product[], lines: CartRequest): QuotedLine[]
 }
 
 export class CartError extends Error {}
+
+/** Envía correos después de responder (no hacen esperar a Wompi ni al cliente). */
+function sendLater(code: string, kinds: EmailKind[]) {
+  const run = () => Promise.all(kinds.map((k) => sendOrderEmail(code, k)));
+  try {
+    after(run);
+  } catch {
+    // Fuera de una petición (scripts): se envían de una vez
+    void run();
+  }
+}
 
 /**
  * Crea el pedido en pendiente_pago con precios y stock leídos ahora mismo (sin caché).
@@ -192,17 +206,20 @@ export async function applyTransaction(t: WompiTransaction) {
       } catch {
         // Fuera de una petición (scripts) no se puede invalidar; el caché vence solo
       }
-      // TODO(fase 6b): crear la remisión de venta en Effi y avisar al admin (docs/EFFI.md → Pendiente)
+      // TODO(fase 6b): crear la remisión de venta en Effi (docs/EFFI.md → Pendiente)
+      sendLater(order.code!, ["confirmacion", "venta"]);
     }
     return "pagado";
   }
 
   if (t.status === "DECLINED" || t.status === "VOIDED" || t.status === "ERROR") {
-    await db
+    const [res] = await db
       .update(schema.orders)
       .set({ ...payment, status: "rechazado" })
       .where(and(eq(schema.orders.id, order.id), eq(schema.orders.status, "pendiente_pago")));
-    return order.status === "pendiente_pago" ? "rechazado" : order.status;
+    if (res.affectedRows !== 1) return order.status;
+    sendLater(order.code!, ["pago_fallido"]);
+    return "rechazado";
   }
 
   // PENDING: guardar la transacción para poder consultarla después
@@ -211,4 +228,48 @@ export async function applyTransaction(t: WompiTransaction) {
     .set(payment)
     .where(and(eq(schema.orders.id, order.id), eq(schema.orders.status, "pendiente_pago")));
   return order.status;
+}
+
+export const shipmentSchema = z.object({
+  carrier: text(80),
+  trackingNumber: text(80),
+  trackingUrl: z
+    .string()
+    .trim()
+    .max(500)
+    .refine((s) => s === "" || /^https?:\/\/[^\s]+\.[^\s]+/.test(s), "Pega el link completo (empieza con https://)")
+    .transform((s) => s || null),
+  shippingNote: z
+    .string()
+    .trim()
+    .max(500)
+    .transform((s) => s || null),
+});
+
+export type Shipment = z.infer<typeof shipmentSchema>;
+
+/**
+ * Marca el pedido como despachado (o corrige los datos de la guía si ya lo estaba).
+ * Devuelve si es el primer despacho, para enviar el correo solo esa vez de forma automática.
+ */
+export async function shipOrder(code: string, data: Shipment) {
+  const [order] = await db.select().from(schema.orders).where(eq(schema.orders.code, code)).limit(1);
+  if (!order) throw new CartError("No encontramos el pedido.");
+  if (order.status !== "pagado" && order.status !== "despachado") throw new CartError("Solo se pueden despachar pedidos pagados.");
+  const first = order.status === "pagado";
+  await db
+    .update(schema.orders)
+    .set({ ...data, status: "despachado", shippedAt: order.shippedAt ?? new Date() })
+    .where(eq(schema.orders.id, order.id));
+  return { first };
+}
+
+/** Transportadoras ya usadas, para autocompletar. */
+export async function usedCarriers() {
+  const list = await db
+    .selectDistinct({ carrier: schema.orders.carrier })
+    .from(schema.orders)
+    .where(sql`${schema.orders.carrier} is not null`)
+    .limit(50);
+  return list.map((r) => r.carrier!).sort((a, b) => a.localeCompare(b));
 }

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/session";
+import { createRemision, noteShipment } from "@/lib/effi/sales";
 import { sendOrderEmail } from "@/lib/email/order-emails";
 import type { EmailKind } from "@/lib/email/templates";
 import { CartError, getOrder, shipmentSchema, shipOrder } from "@/lib/shop/orders";
@@ -19,6 +20,7 @@ export async function ship(code: string, _prev: ShipState, form: FormData): Prom
   }
   try {
     const { first } = await shipOrder(code, parsed.data);
+    await noteShipment(code);
     const notify = first || form.get("notify") === "on";
     if (notify) await sendOrderEmail(code, "despacho", { force: !first });
     revalidatePath(`/admin/pedidos/${code}`);
@@ -43,5 +45,12 @@ export async function resendEmail(code: string, kind: EmailKind) {
   const order = await getOrder(code);
   if (!order || !RESENDABLE[order.status]?.includes(kind)) return;
   await sendOrderEmail(code, kind, { force: true });
+  revalidatePath(`/admin/pedidos/${code}`);
+}
+
+/** Crea (o reintenta) la remisión en Effi de un pedido pagado. */
+export async function retryRemision(code: string) {
+  await requireAdmin();
+  await createRemision(code);
   revalidatePath(`/admin/pedidos/${code}`);
 }

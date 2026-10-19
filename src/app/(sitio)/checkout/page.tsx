@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { CheckoutForm } from "@/components/cart/CheckoutForm";
 import { Breadcrumbs } from "@/components/store/Breadcrumbs";
 import { checkoutEnabled, shippingCost, wompiConfig } from "@/lib/shop/config";
+import { LEGAL_ID_TYPES } from "@/lib/shop/orders";
+import { departmentOptions } from "@/lib/shop/places";
 
 export const metadata: Metadata = { title: "Pagar", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -19,7 +21,7 @@ export default function CheckoutPage() {
           Modo de pruebas de Wompi: usa las tarjetas de prueba, no se cobra dinero real.
         </p>
       )}
-      <CheckoutForm shipping={shippingCost()} />
+      <CheckoutForm shipping={shippingCost()} departments={departmentOptions()} idTypes={LEGAL_ID_TYPES} />
     </div>
   );
 }

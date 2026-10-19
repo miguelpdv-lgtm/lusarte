@@ -13,6 +13,7 @@ export type Email = {
   /** Etiqueta para filtrar en el panel de Brevo */
   tag: string;
   replyTo?: Recipient;
+  attachments?: { name: string; content: Buffer }[];
 };
 
 export class EmailNotConfigured extends Error {}
@@ -53,6 +54,7 @@ export async function sendEmail(email: Email): Promise<string> {
       htmlContent: email.html,
       textContent: email.text,
       tags: [email.tag],
+      ...(email.attachments?.length ? { attachment: email.attachments.map((a) => ({ name: a.name, content: a.content.toString("base64") })) } : {}),
     }),
     cache: "no-store",
     signal: AbortSignal.timeout(15_000),

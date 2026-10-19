@@ -4,14 +4,15 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { after } from "next/server";
 import { z } from "zod";
-import { departments } from "@/data/colombia";
 import { lineKey, MAX_QTY, NOTE_MAX, type CartRequest, type QuotedLine } from "@/lib/cart/types";
 import { CATALOG_TAG, loadProducts, toPublicCatalog } from "@/lib/catalog/queries";
 import { availableUnits, type Product, type ProductOption } from "@/lib/catalog/types";
 import { db, schema } from "@/lib/db";
+import { createRemision } from "@/lib/effi/sales";
 import { sendOrderEmail } from "@/lib/email/order-emails";
 import type { EmailKind } from "@/lib/email/templates";
 import { shippingCost } from "./config";
+import { findCity, findDepartment } from "./places";
 import type { WompiTransaction } from "./wompi";
 
 export type OrderStatus = "pendiente_pago" | "pagado" | "rechazado" | "despachado";
@@ -28,29 +29,44 @@ export const cartRequestSchema = z
 
 const text = (max: number) => z.string().trim().min(1, "Este campo es obligatorio").max(max);
 
-export const customerSchema = z.object({
-  name: text(120),
-  email: z.email("Revisa el correo").max(160),
-  phone: z
-    .string()
-    .trim()
-    .transform((s) => s.replace(/[\s()-]/g, "").replace(/^\+?57/, ""))
-    .pipe(z.string().regex(/^3\d{9}$|^60\d{8}$/, "Escribe un celular de 10 dígitos")),
-  legalId: z
-    .string()
-    .trim()
-    .max(30)
-    .transform((s) => s.replace(/[.\s]/g, "") || null),
-  department: z.enum(departments, "Elige el departamento"),
-  city: text(80),
-  address: text(200),
-  addressNotes: z
-    .string()
-    .trim()
-    .max(200)
-    .transform((s) => s || null),
-  terms: z.literal("on", "Debes aceptar los términos y la política de datos"),
-});
+/** Tipos de documento de Effi (t_dni) que se aceptan en el checkout. */
+export const LEGAL_ID_TYPES = { "2": "Cédula de ciudadanía", "4": "Cédula de extranjería", "1": "NIT", "3": "Pasaporte" } as const;
+
+export const customerSchema = z
+  .object({
+    name: text(120),
+    email: z.email("Revisa el correo").max(160),
+    phone: z
+      .string()
+      .trim()
+      .transform((s) => s.replace(/[\s()-]/g, "").replace(/^\+?57/, ""))
+      .pipe(z.string().regex(/^3\d{9}$|^60\d{8}$/, "Escribe un celular de 10 dígitos")),
+    legalIdType: z.enum(Object.keys(LEGAL_ID_TYPES) as ["2", "4", "1", "3"], "Elige el tipo de documento").transform(Number),
+    legalId: z
+      .string()
+      .trim()
+      .transform((s) => s.replace(/[.\s-]/g, "").toUpperCase())
+      .pipe(z.string().regex(/^[0-9A-Z]{5,15}$/, "Escribe tu número de documento, sin puntos")),
+    departmentId: z.coerce.number<string>("Elige el departamento").int().positive("Elige el departamento"),
+    city: text(80),
+    address: text(200),
+    addressNotes: z
+      .string()
+      .trim()
+      .max(200)
+      .transform((s) => s || null),
+    terms: z.literal("on", "Debes aceptar los términos y la política de datos"),
+  })
+  .superRefine((c, ctx) => {
+    if (c.legalIdType !== 3 && !/^\d+$/.test(c.legalId)) ctx.addIssue({ code: "custom", path: ["legalId"], message: "Escribe solo números" });
+    if (!findDepartment(c.departmentId)) ctx.addIssue({ code: "custom", path: ["departmentId"], message: "Elige el departamento" });
+    else if (!findCity(c.departmentId, c.city)) ctx.addIssue({ code: "custom", path: ["city"], message: "Elige un municipio de la lista" });
+  })
+  .transform(({ departmentId, city, ...c }) => {
+    const dept = findDepartment(departmentId)!;
+    const place = findCity(departmentId, city)!;
+    return { ...c, department: dept.name, city: place.name, effiProvinceId: dept.id, effiCityId: place.id };
+  });
 
 export type Customer = z.infer<typeof customerSchema>;
 
@@ -82,9 +98,15 @@ export function quoteLines(catalog: Product[], lines: CartRequest): QuotedLine[]
 
 export class CartError extends Error {}
 
-/** Envía correos después de responder (no hacen esperar a Wompi ni al cliente). */
-function sendLater(code: string, kinds: EmailKind[]) {
-  const run = () => Promise.all(kinds.map((k) => sendOrderEmail(code, k)));
+/**
+ * Después de responder (no hace esperar a Wompi ni al cliente): con un pago aprobado, primero la remisión
+ * en Effi y luego los correos, que ya llevan su número.
+ */
+function sendLater(code: string, kinds: EmailKind[], { remision = false } = {}) {
+  const run = async () => {
+    if (remision) await createRemision(code);
+    await Promise.all(kinds.map((k) => sendOrderEmail(code, k)));
+  };
   try {
     after(run);
   } catch {
@@ -206,8 +228,7 @@ export async function applyTransaction(t: WompiTransaction) {
       } catch {
         // Fuera de una petición (scripts) no se puede invalidar; el caché vence solo
       }
-      // TODO(fase 6b): crear la remisión de venta en Effi (docs/EFFI.md → Pendiente)
-      sendLater(order.code!, ["confirmacion", "venta"]);
+      sendLater(order.code!, ["confirmacion", "venta"], { remision: true });
     }
     return "pagado";
   }

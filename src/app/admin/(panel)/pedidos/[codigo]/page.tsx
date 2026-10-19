@@ -4,11 +4,12 @@ import { notFound } from "next/navigation";
 import { WhatsAppIcon } from "@/components/ui/icons";
 import { requireAdmin } from "@/lib/auth/session";
 import { formatCOP } from "@/lib/format";
-import { resendEmail } from "@/app/admin/order-actions";
+import { resendEmail, retryRemision } from "@/app/admin/order-actions";
+import { remisionesMode } from "@/lib/effi/sales";
 import { ShipForm } from "@/components/admin/ShipForm";
 import { emailStatus } from "@/lib/email/order-emails";
 import { EMAIL_LABELS, type EmailKind } from "@/lib/email/templates";
-import { getOrder, usedCarriers } from "@/lib/shop/orders";
+import { getOrder, LEGAL_ID_TYPES, usedCarriers } from "@/lib/shop/orders";
 import { statusInfo } from "@/lib/shop/status";
 
 export const metadata: Metadata = { title: "Pedido" };
@@ -61,7 +62,7 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
         <h2 className="font-display text-lg font-extrabold">Cliente</h2>
         <p>
           <strong>{order.name}</strong>
-          {order.legalId && ` · CC ${order.legalId}`}
+          {order.legalId && ` · ${LEGAL_ID_TYPES[String(order.legalIdType) as keyof typeof LEGAL_ID_TYPES] ?? "Documento"} ${order.legalId}`}
         </p>
         <p>
           <a href={`mailto:${order.email}`} className="underline">
@@ -109,6 +110,37 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
           </div>
         </dl>
       </section>
+
+      {canShip && (
+        <section className="toon grid gap-2 rounded-[1.25rem] bg-crema-claro p-5 text-sm">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-lg font-extrabold">Effi</h2>
+            <a href={`/admin/pedidos/${order.code}/comprobante`} target="_blank" className="font-semibold underline-offset-4 hover:underline">
+              Comprobante en PDF
+            </a>
+          </div>
+          {order.effiRemisionId ? (
+            <p>
+              Remisión de venta <strong>N.º {order.effiRemisionId}</strong>. El inventario ya se descontó en Effi.
+              {order.trackingNumber && " La guía quedó anotada en su observación."}
+            </p>
+          ) : (
+            <>
+              <p className="font-semibold text-alerta">Sin remisión en Effi.</p>
+              {order.effiRemisionError && <p className="text-xs text-carbon-suave">{order.effiRemisionError}</p>}
+              {remisionesMode().on ? (
+                <form action={retryRemision.bind(null, order.code!)}>
+                  <button type="submit" className="toon toon-press cursor-pointer rounded-full bg-estrella px-4 py-2 font-bold">
+                    Crear remisión en Effi
+                  </button>
+                </form>
+              ) : (
+                <p className="text-xs text-carbon-suave">Créala a mano en Effi si es una venta real.</p>
+              )}
+            </>
+          )}
+        </section>
+      )}
 
       <section className="toon grid gap-1 rounded-[1.25rem] bg-crema-claro p-5 text-sm">
         <h2 className="font-display text-lg font-extrabold">Pago</h2>

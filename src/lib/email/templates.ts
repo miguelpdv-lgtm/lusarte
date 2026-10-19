@@ -17,7 +17,7 @@ const PAYMENT_METHODS: Record<string, string> = {
   BANCOLOMBIA_QR: "QR Bancolombia",
   DAVIPLATA: "Daviplata",
 };
-const paymentMethod = (m: string) => PAYMENT_METHODS[m] ?? m.toLowerCase().replace(/_/g, " ");
+export const paymentMethod = (m: string) => PAYMENT_METHODS[m] ?? m.toLowerCase().replace(/_/g, " ");
 const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? name;
 const orderLink = (o: OrderWithItems) => siteUrl(`/pedido/${o.code}?t=${o.token}`);
 const lineName = (i: OrderWithItems["items"][number]) => `${i.productName}${i.optionName ? ` · ${i.optionName}` : ""}`;
@@ -59,6 +59,7 @@ export function confirmationEmail(o: OrderWithItems): Rendered {
       itemsHtml(o),
       h2("Lo enviamos a"),
       box(addressHtml(o)),
+      p("Te adjuntamos el comprobante de tu compra en PDF.", true),
       button(orderLink(o), "Ver mi pedido"),
       p(`¿Algo no está bien? Responde este correo o escríbenos por <a href="https://wa.me/${site.whatsapp}" target="_blank">WhatsApp</a>.`, true),
     ].join(""),
@@ -82,12 +83,15 @@ export function newSaleEmail(o: OrderWithItems): Rendered {
       h2("Productos"),
       itemsHtml(o),
       h2("Cliente y envío"),
-      box(`${addressHtml(o)}<br>${esc(o.email)}${o.legalId ? `<br>CC ${esc(o.legalId)}` : ""}`),
+      box(`${addressHtml(o)}<br>${esc(o.email)}${o.legalId ? `<br>Documento ${esc(o.legalId)}` : ""}`),
+      o.effiRemisionId
+        ? p(`<strong>Remisión de venta en Effi: N.º ${o.effiRemisionId}</strong>. El inventario ya se descontó. Adjuntamos el comprobante en PDF.`)
+        : box(`<strong>No se creó la remisión en Effi.</strong> ${esc(o.effiRemisionError ?? "")}<br>Créala desde el panel (botón "Crear remisión") o a mano en Effi.`),
       p(`Referencia de Wompi: ${esc(o.wompiTransactionId ?? "—")}`, true),
       button(panel, "Despachar en el panel"),
     ].join(""),
   });
-  const text = `${title}\n\n${o.name} pagó ${formatCOP(o.total)}.${o.stockAlert ? "\nREVISAR INVENTARIO: se vendió más de lo que había en stock." : ""}\n\nProductos:\n${itemsText(o)}\n\nCliente y envío:\n${addressLines(o).join("\n")}\n${o.email}${o.legalId ? `\nCC ${o.legalId}` : ""}\n\nWompi: ${o.wompiTransactionId ?? "—"}\nDespachar: ${panel}${textFooter(reason)}`;
+  const text = `${title}\n\n${o.name} pagó ${formatCOP(o.total)}.${o.stockAlert ? "\nREVISAR INVENTARIO: se vendió más de lo que había en stock." : ""}\n\nProductos:\n${itemsText(o)}\n\nCliente y envío:\n${addressLines(o).join("\n")}\n${o.email}${o.legalId ? `\nDocumento ${o.legalId}` : ""}\n\n${o.effiRemisionId ? `Remisión de venta en Effi: N.º ${o.effiRemisionId}` : `NO SE CREÓ LA REMISIÓN EN EFFI: ${o.effiRemisionError ?? ""}`}\nWompi: ${o.wompiTransactionId ?? "—"}\nDespachar: ${panel}${textFooter(reason)}`;
   return { subject: `Nueva venta ${o.code} · ${formatCOP(o.total)}`, html, text };
 }
 

@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect, type ReactNode } from "react";
-import { placeOrder, type CheckoutState } from "@/app/(sitio)/checkout-actions";
-import { departments } from "@/data/colombia";
+import { useActionState, useEffect, useState, type ReactNode } from "react";
+import { citiesFor, placeOrder, type CheckoutState } from "@/app/(sitio)/checkout-actions";
 import { cartSubtotal, useCart } from "@/lib/cart/store";
 import { lineKey } from "@/lib/cart/types";
 import { formatCOP } from "@/lib/format";
@@ -22,7 +21,9 @@ function Field({ label, error, hint, className = "", children }: { label: string
   );
 }
 
-export function CheckoutForm({ shipping }: { shipping: number }) {
+type Props = { shipping: number; departments: { id: number; name: string }[]; idTypes: Record<string, string> };
+
+export function CheckoutForm({ shipping, departments, idTypes }: Props) {
   const lines = useCart();
   const quote = useQuote(lines);
   const [state, action, pending] = useActionState<CheckoutState, FormData>(placeOrder, {});
@@ -30,6 +31,18 @@ export function CheckoutForm({ shipping }: { shipping: number }) {
   const subtotal = cartSubtotal(lines);
   const v = state.values ?? {};
   const f = state.fields ?? {};
+  const [departmentId, setDepartmentId] = useState(v.departmentId ?? "");
+  const [cities, setCities] = useState<string[]>([]);
+
+  // Municipios del departamento elegido, para autocompletar
+  useEffect(() => {
+    if (!departmentId) return;
+    let alive = true;
+    citiesFor(Number(departmentId)).then((list) => alive && setCities(list));
+    return () => {
+      alive = false;
+    };
+  }, [departmentId]);
 
   // Pedido creado: al pago en Wompi
   useEffect(() => {
@@ -66,26 +79,58 @@ export function CheckoutForm({ shipping }: { shipping: number }) {
           <Field label="Celular" error={f.phone}>
             <input name="phone" type="tel" inputMode="tel" autoComplete="tel-national" required defaultValue={v.phone} aria-invalid={!!f.phone} className={inputClass} />
           </Field>
-          <Field label="Cédula (opcional)" error={f.legalId} className="sm:col-span-2">
-            <input name="legalId" inputMode="numeric" defaultValue={v.legalId} aria-invalid={!!f.legalId} className={`${inputClass} sm:max-w-xs`} />
+          <Field label="Tipo de documento" error={f.legalIdType}>
+            <select name="legalIdType" required defaultValue={v.legalIdType ?? "2"} aria-invalid={!!f.legalIdType} className={inputClass}>
+              {Object.entries(idTypes).map(([id, label]) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Número de documento" error={f.legalId} hint="Lo necesitamos para registrar tu compra.">
+            <input name="legalId" inputMode="numeric" autoComplete="off" required defaultValue={v.legalId} aria-invalid={!!f.legalId} className={inputClass} />
           </Field>
         </fieldset>
 
         <fieldset className="toon grid gap-4 rounded-[1.75rem] bg-crema-claro p-5 sm:grid-cols-2 sm:p-6">
           <legend className="sr-only">Dirección de envío</legend>
           <h2 className="font-display text-xl font-extrabold sm:col-span-2">¿A dónde lo enviamos?</h2>
-          <Field label="Departamento" error={f.department}>
-            <select name="department" required defaultValue={v.department ?? ""} aria-invalid={!!f.department} className={inputClass}>
+          <Field label="Departamento" error={f.departmentId}>
+            <select
+              name="departmentId"
+              required
+              value={departmentId}
+              onChange={(e) => setDepartmentId(e.target.value)}
+              aria-invalid={!!f.departmentId}
+              className={inputClass}
+            >
               <option value="" disabled>
                 Elige…
               </option>
               {departments.map((d) => (
-                <option key={d}>{d}</option>
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
               ))}
             </select>
           </Field>
-          <Field label="Ciudad o municipio" error={f.city}>
-            <input name="city" autoComplete="address-level2" required defaultValue={v.city} aria-invalid={!!f.city} className={inputClass} />
+          <Field label="Ciudad o municipio" error={f.city} hint={departmentId ? "Escribe y elige de la lista." : "Primero elige el departamento."}>
+            <input
+              name="city"
+              list="municipios"
+              autoComplete="off"
+              required
+              disabled={!departmentId}
+              defaultValue={v.city}
+              aria-invalid={!!f.city}
+              className={`${inputClass} disabled:opacity-50`}
+            />
+            <datalist id="municipios">
+              {cities.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
           </Field>
           <Field label="Dirección" error={f.address} className="sm:col-span-2">
             <input name="address" autoComplete="street-address" required defaultValue={v.address} aria-invalid={!!f.address} placeholder="Calle 10 # 20-30" className={inputClass} />

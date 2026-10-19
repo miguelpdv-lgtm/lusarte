@@ -53,3 +53,6 @@ next-env.d.ts
 
 # zips de despliegue sueltos
 /*.zip
+
+# documentación privada de la API de Effi (no se publica)
+/Effi_API_documentacion.md

@@ -6,11 +6,14 @@ import { wompiConfig } from "./config";
 
 const sha256 = (s: string) => createHash("sha256").update(s).digest("hex");
 
+/** Tipo de documento de Effi (t_dni) → tipo de Wompi */
+const WOMPI_ID_TYPES: Record<number, string> = { 1: "NIT", 2: "CC", 3: "PP", 4: "CE" };
+
 type CheckoutInput = {
   reference: string;
   amount: number;
   redirectUrl: string;
-  customer: { email: string; name: string; phone: string; legalId?: string | null };
+  customer: { email: string; name: string; phone: string; legalId?: string | null; legalIdType?: number | null };
   shipping: { address: string; city: string; region: string; name: string; phone: string };
 };
 
@@ -40,7 +43,7 @@ export function checkoutUrl(input: CheckoutInput) {
   });
   if (input.customer.legalId) {
     params.set("customer-data:legal-id", input.customer.legalId);
-    params.set("customer-data:legal-id-type", "CC");
+    params.set("customer-data:legal-id-type", WOMPI_ID_TYPES[input.customer.legalIdType ?? 2] ?? "CC");
   }
   return `https://checkout.wompi.co/p/?${params}`;
 }

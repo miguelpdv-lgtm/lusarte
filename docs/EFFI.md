@@ -35,11 +35,21 @@ Lo que se crea o cambia directamente en Effi llega a la web con la sincronizaci�
 | Impuestos | Ningún artículo tiene impuestos |
 | Integración ecommerce | 1 "Lusarte" (Ecommerce genérico) |
 
-## Pendiente (fase 6, con el checkout y Wompi)
+## Remisiones de la tienda (`src/lib/effi/sales.ts`)
 
-- El checkout ya existe: al aprobarse un pago, `applyTransaction` (`src/lib/shop/orders.ts`) marca el pedido como pagado y descuenta el stock en la copia local `effi_articles` (la próxima sincronización trae el valor real de Effi). El punto para enganchar la remisión está marcado con `TODO(fase 6b)`. Falta el formato exacto de `POST remision_v` (la documentación de la API no está en el repo).
+Cada pedido pagado crea su **remisión de venta** en Effi, igual a las que la clienta registra a mano:
 
-- **Remisión de venta automática:** al aprobarse un pago, `POST api/remision_v` con `idempotency_key` = código del pedido (sin duplicados en reintentos), cliente (buscar o crear en `api/cliente`), artículos + DOMICILIO, forma de pago Contado y medio de pago electrónico (falta definir a qué cuenta bancaria de Effi entra el dinero de Wompi). Effi descuenta el inventario.
-- **PDF al admin:** la API de Effi **no entrega el PDF** de la remisión. Se generará un PDF propio con el número de remisión de Effi, cliente, productos y totales, y se enviará por correo (Resend) con el enlace a la remisión en Effi.
-- **Permisos que necesita el usuario de la API key:** Artículos (consultar, crear, modificar, anular), Artículos - Stock disponible, Ajustes de inventario (crear), Remisiones de venta (consultar, crear), Clientes (consultar, crear), Tablas maestras (consultar).
-- No hay ambiente de pruebas en Effi: las pruebas de remisión crean documentos reales que luego hay que anular (`DELETE api/remision_v`).
+1. **Cliente:** se busca por número de documento (el checkout lo pide con su tipo: CC, CE, NIT o pasaporte); si no existe, se crea con correo, celular y dirección.
+2. **Remisión** (`POST remision_v`): sucursal, bodega y caja 1; centro de costos 1 "Whatsapp"; los artículos del pedido (cada presentación es un artículo de Effi) más **DOMICILIO** (artículo 492) con el valor del envío; forma de pago Contado; medio **Transferencia bancaria** (5) a la cuenta **Nequi** (1), que es a donde Wompi transfiere. Dirección con los ids de Effi del departamento y el municipio (el checkout los elige de `src/data/colombia-effi.json`, generado con `scripts/effi-colombia.ts`). Observación: `Pedido web LUS-000123 · Wompi <transacción>`; la personalización va en la observación de cada concepto.
+3. **Idempotente:** la `idempotency_key` es el código del pedido; si Wompi repite el aviso o se reintenta, Effi responde 409 con la remisión ya creada y no se duplica.
+4. **Al despachar** desde el panel, la transportadora y la guía se agregan a la observación de la remisión (`PUT remision_v`).
+5. Los correos de confirmación y de venta nueva llevan el número de remisión y un **comprobante en PDF** propio (`src/lib/email/receipt.ts`): la API de Effi **no entrega** el PDF ni un enlace de la remisión. El panel también lo descarga ("Comprobante en PDF").
+
+**Cuándo se crean:** solo con Wompi en **producción** (llave `pub_prod_…`). Con llaves de prueba no se crean, para que una compra de prueba no registre una venta real; el pedido muestra "Sin remisión" y el motivo. `EFFI_REMISIONES=siempre` las fuerza y `EFFI_REMISIONES=nunca` las apaga.
+
+**Si falla** (por ejemplo, sin existencias en Effi o la API key vencida): el pago no se afecta, el error queda en el pedido, el aviso de venta lo dice y el panel muestra **Crear remisión en Effi** para reintentar (o se crea a mano).
+
+**Pruebas:** Effi no tiene ambiente de pruebas. Las del 2026-10-19 dejaron las remisiones **931 y 932 anuladas** (autorizadas por el usuario), con el cliente CONSUMIDOR FINAL para no crear clientes.
+
+- **Permisos que necesita el usuario de la API key:** Artículos (consultar, crear, modificar, anular), Artículos - Stock disponible, Ajustes de inventario (crear), Notas de remisión de venta (consultar, crear, modificar, anular), Clientes (consultar, crear), Tablas maestras (consultar).
+- La documentación completa de la API está en `Effi_API_documentacion.md` (raíz del proyecto, fuera del repo por `.gitignore`).

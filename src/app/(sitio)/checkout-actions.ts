@@ -5,6 +5,7 @@ import type { CartRequest, QuotedLine } from "@/lib/cart/types";
 import { getCatalog } from "@/lib/catalog/queries";
 import { checkoutEnabled } from "@/lib/shop/config";
 import { CartError, cartRequestSchema, createOrder, customerSchema, quoteLines } from "@/lib/shop/orders";
+import { cityNames } from "@/lib/shop/places";
 import { checkoutUrl } from "@/lib/shop/wompi";
 
 /** Precios y disponibilidad vigentes del carrito (catálogo en caché: solo para mostrar). */
@@ -55,7 +56,7 @@ export async function placeOrder(_prev: CheckoutState, form: FormData): Promise<
       reference: order.code,
       amount: order.total,
       redirectUrl: `${await origin()}/pedido/${order.code}?t=${order.token}`,
-      customer: { email: c.email, name: c.name, phone: c.phone, legalId: c.legalId },
+      customer: { email: c.email, name: c.name, phone: c.phone, legalId: c.legalId, legalIdType: c.legalIdType },
       shipping: { address: c.address, city: c.city, region: c.department, name: c.name, phone: c.phone },
     });
     return { payUrl };
@@ -64,4 +65,9 @@ export async function placeOrder(_prev: CheckoutState, form: FormData): Promise<
     console.error("No se pudo crear el pedido:", e);
     return { values, error: "Algo falló al crear tu pedido. Inténtalo de nuevo en un momento o escríbenos por WhatsApp." };
   }
+}
+
+/** Municipios del departamento elegido (para autocompletar en el checkout). */
+export async function citiesFor(departmentId: number): Promise<string[]> {
+  return Number.isInteger(departmentId) ? cityNames(departmentId) : [];
 }

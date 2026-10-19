@@ -2,6 +2,7 @@ import "server-only";
 import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { getOrder, type OrderWithItems } from "@/lib/shop/orders";
+import { receiptPdf } from "./receipt";
 import { adminRecipients, EmailNotConfigured, sendEmail, type Recipient } from "./brevo";
 import { confirmationEmail, newSaleEmail, paymentFailedEmail, shippedEmail, type EmailKind, type Rendered } from "./templates";
 
@@ -44,7 +45,9 @@ export async function sendOrderEmail(code: string, kind: EmailKind, { force = fa
       return;
     }
     try {
-      const providerId = await sendEmail({ ...build[kind](order), to, tag: kind });
+      const attachments =
+        kind === "confirmacion" || kind === "venta" ? [{ name: `Lusarte-${order.code}.pdf`, content: await receiptPdf(order) }] : undefined;
+      const providerId = await sendEmail({ ...build[kind](order), to, tag: kind, attachments });
       await log("enviado", { providerId });
     } catch (e) {
       if (e instanceof EmailNotConfigured) await log("sin_configurar", { error: e.message });

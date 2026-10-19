@@ -154,8 +154,13 @@ export const orders = mysqlTable(
     email: varchar({ length: 160 }).notNull(),
     phone: varchar({ length: 30 }).notNull(),
     legalId: varchar({ length: 30 }),
+    /** Tipo de documento en Effi (t_dni): 1 NIT, 2 CC, 3 pasaporte, 4 CE */
+    legalIdType: int(),
     department: varchar({ length: 60 }).notNull(),
     city: varchar({ length: 80 }).notNull(),
+    /** Ids de Effi del departamento y el municipio (dirección del cliente en la remisión) */
+    effiProvinceId: int(),
+    effiCityId: int(),
     address: varchar({ length: 200 }).notNull(),
     addressNotes: varchar({ length: 200 }),
     subtotal: int().notNull(),
@@ -173,6 +178,11 @@ export const orders = mysqlTable(
     trackingUrl: varchar({ length: 500 }),
     shippingNote: varchar({ length: 500 }),
     shippedAt: timestamp(),
+    /** Remisión de venta creada en Effi al aprobarse el pago (sucursal 1) */
+    effiClient: int(),
+    effiRemisionId: int(),
+    /** Último error al crear la remisión (null si salió bien o no se ha intentado) */
+    effiRemisionError: varchar({ length: 500 }),
     createdAt: timestamp().notNull().defaultNow(),
     updatedAt: timestamp().notNull().defaultNow().onUpdateNow(),
   },

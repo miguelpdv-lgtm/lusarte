@@ -11,7 +11,7 @@ const moldesNavidad = moldes.subcategories.find((s) => s.slug === "navidad-2026"
 export function SeasonBanner() {
   return (
     <section aria-labelledby="temporada" className="px-4 pb-16 sm:px-6 md:pb-20 lg:px-8 lg:pb-28">
-      <div className="toon relative mx-auto flex max-w-5xl flex-col gap-6 overflow-hidden rounded-[1.75rem] bg-carbon px-6 py-8 text-crema shadow-[6px_6px_0_0_var(--color-miel)] md:flex-row md:items-center md:gap-8 md:rounded-[2rem] md:px-12 md:py-12">
+      <div className="toon relative mx-auto flex max-w-6xl flex-col gap-6 overflow-hidden rounded-[1.75rem] bg-carbon px-6 py-8 text-crema shadow-[6px_6px_0_0_var(--color-miel)] md:flex-row md:items-center md:gap-8 md:rounded-[2rem] md:px-12 md:py-12">
         <div className="pattern pointer-events-none absolute inset-0 text-crema/[0.06]" aria-hidden="true" />
 
         {/* En celular la estrella se asoma por la esquina; en escritorio va a la izquierda */}

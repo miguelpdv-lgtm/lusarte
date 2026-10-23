@@ -39,9 +39,9 @@ const steps = [
 
 export function StepsGuide() {
   return (
-    <section aria-labelledby="pasos" className="px-4 py-12 sm:px-6 md:py-16 lg:px-8">
-      {/* Tarjeta verde suave, con título manuscrito subrayado y garabato de vela */}
-      <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-oliva/45 px-5 py-9 sm:px-10 md:py-12">
+    // Franja verde suave a todo el ancho con bordes ondulados, con título manuscrito subrayado y garabato de vela
+    <section aria-labelledby="pasos" className="wave-y bg-oliva/45">
+      <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 md:py-24 lg:px-8">
         <div className="flex items-start justify-between gap-6">
           <div>
             <h2 id="pasos" className="font-hand text-[2rem] leading-tight sm:text-4xl lg:text-[2.75rem]">

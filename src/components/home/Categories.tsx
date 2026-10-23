@@ -22,7 +22,7 @@ export function Categories() {
       <SectionHeading id="categorias" title="¿Qué quieres encender hoy?" />
 
       {/* Celular: tarjetas horizontales (ícono a la izquierda). Desde sm: ícono arriba, en grilla. */}
-      <ul className="mx-auto mt-8 grid max-w-5xl gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
+      <ul className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         {categories.map((cat, i) => (
           <li key={cat.slug}>
             <Link

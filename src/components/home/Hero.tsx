@@ -3,16 +3,17 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 import { ArrowIcon } from "@/components/ui/icons";
 import { LusarteArch } from "./LusarteArch";
 
-/** Hero "Arco": el ícono de la marca con stickers a la izquierda y el texto con el botón a la tienda a la derecha. */
+/** Hero "Arco": el ícono de la marca con stickers a la izquierda y el texto con el botón a la tienda a la derecha.
+ * Fondo lavanda con borde ondulado abajo, como el header. */
 export function Hero() {
   return (
-    <section className="relative isolate overflow-hidden bg-crema-claro">
-      {/* Puntos lavanda de fondo */}
+    <section className="wave-bottom relative isolate overflow-hidden bg-lavanda">
+      {/* Puntos crema de fondo */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[radial-gradient(var(--color-lavanda)_2.2px,transparent_2.6px)] bg-size-[26px_26px]"
+        className="absolute inset-0 -z-10 bg-[radial-gradient(var(--color-crema-claro)_2.2px,transparent_2.6px)] opacity-70 bg-size-[26px_26px]"
       />
-      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-4 pt-10 pb-16 sm:px-6 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:pt-16 lg:pb-24">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-4 pt-14 pb-20 sm:px-6 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:pt-20 lg:pb-28">
         <div className="relative mx-auto aspect-square w-full max-w-[300px] sm:max-w-[380px] lg:max-w-[440px]">
           <LusarteArch className="size-full overflow-visible drop-shadow-[8px_8px_0_var(--color-carbon)]" />
           <Image

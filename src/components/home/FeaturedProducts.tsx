@@ -8,7 +8,7 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
   if (!products.length) return null;
   return (
     <section aria-labelledby="destacados" className="wave-y bg-lavanda/45">
-      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 md:py-20 lg:px-8 lg:py-24">
+      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 md:py-20 lg:px-8 lg:py-24">
         <SectionHeading id="destacados" title="Lo más querido de la casa" />
         <p className="eyebrow mt-4 text-center text-[0.65rem] text-carbon-suave md:hidden" aria-hidden="true">
           Desliza para ver más →

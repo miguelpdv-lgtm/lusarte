@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db, schema } from "@/lib/db";
 import { allBarrios, convexHull, findBarrio, hasBarrios, inflate, inPolygon, type Barrio, type LatLng } from "./barrios";
 import { describeDay, localDeliveryDate, type LocalSchedule } from "./calendar";
+import soledad from "@/data/zonas-soledad.json";
 
 // Envíos configurables desde el panel (Panel → Envíos), guardados en settings["envios"]:
 // - Ciudades locales (domicilio propio): contraentrega sí/no, horario con hora de corte, y la opción de recoger en el
@@ -52,13 +53,23 @@ export type Zone = ShippingSettings["local"]["zones"][number];
 const ZONE_COLORS = ["#9a7aae", "#8aa9c1", "#aaa96c", "#d39a5b", "#c46b7c", "#5b8f7a", "#c9b458", "#7c6fc4"];
 
 /**
- * Zonas iniciales: una por localidad oficial de Barranquilla y una para Soledad (envolvente de sus barrios).
+ * Zonas iniciales. Soledad: las 5 zonas de la lista de Lusarte (src/data/zonas-soledad.json, de scripts/zonas-soledad.py),
+ * primero porque las envolventes de Barranquilla se meten en Soledad. Barranquilla: una por localidad oficial.
  * Son un punto de partida: la dueña las redibuja y les pone su tarifa en Panel → Envíos.
  */
 export function initialZones() {
+  const sol = soledad.zones.map((z, i) => ({
+    id: `soledad-${i + 1}`,
+    name: z.name,
+    color: z.color,
+    price: z.price,
+    cod: true,
+    polygon: z.polygon as LatLng[],
+  }));
   const groups = new Map<string, LatLng[]>();
   for (const b of allBarrios()) {
-    const area = b.city === "Soledad" ? "Soledad" : b.area?.split(",")[0]?.trim().replace(/^Suroriental$/, "Suroriente");
+    if (b.city === "Soledad") continue;
+    const area = b.area?.split(",")[0]?.trim().replace(/^Suroriental$/, "Suroriente");
     if (!area) continue;
     groups.set(area, [...(groups.get(area) ?? []), [b.lat, b.lng]]);
   }
@@ -69,8 +80,8 @@ export function initialZones() {
       .filter((b) => b.city === "Barranquilla")
       .map((b) => [b.lat, b.lng] as LatLng),
   );
-  const order = ["Riomar", "Norte - Centro Historico", "Suroccidente", "Suroriente", "Metropolitana", "Soledad", "Resto de Barranquilla"];
-  return order
+  const order = ["Riomar", "Norte - Centro Historico", "Suroccidente", "Suroriente", "Metropolitana", "Resto de Barranquilla"];
+  const baq = order
     .filter((name) => (groups.get(name)?.length ?? 0) >= 3)
     .map((name, i) => ({
       id: `zona-${i + 1}`,
@@ -80,6 +91,7 @@ export function initialZones() {
       cod: true,
       polygon: inflate(convexHull(groups.get(name)!)).map(([la, ln]) => [Math.round(la * 1e6) / 1e6, Math.round(ln * 1e6) / 1e6] as LatLng),
     }));
+  return [...sol, ...baq];
 }
 
 /** Zona de un barrio (la primera que lo contiene) o null. */

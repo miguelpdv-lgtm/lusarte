@@ -5,7 +5,7 @@ import { requireAdmin } from "@/lib/auth/session";
 import { colombianHolidays, describeDay, formatDay, localDeliveryDate } from "@/lib/shop/calendar";
 import { allBarrios } from "@/lib/shop/barrios";
 import { departmentOptions } from "@/lib/shop/places";
-import { getShippingSettings, scheduleOf } from "@/lib/shop/shipping";
+import { getShippingSettings, initialZones, scheduleOf } from "@/lib/shop/shipping";
 
 export const metadata: Metadata = { title: "Envíos" };
 
@@ -40,6 +40,7 @@ export default async function EnviosAdmin() {
         departments={departments}
         upcomingHolidays={upcoming}
         barrios={allBarrios().map(({ id, name, city, lat, lng }) => ({ id, name, city, lat, lng }))}
+        suggestedZones={initialZones()}
         initial={{
           local: {
             cities: s.local.cities.map((c) => ({ departmentId: c.departmentId, city: c.name, price: c.price, cod: c.cod })),

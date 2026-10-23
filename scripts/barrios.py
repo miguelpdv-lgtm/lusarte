@@ -8,6 +8,7 @@
 #   sectores (place=neighbourhood|suburb|quarter). Para Barranquilla solo se agregan los que no están ya en la lista oficial.
 #
 # Uso: python scripts/barrios.py
+# Después: python scripts/zonas-soledad.py (vuelve a agregar los lugares de la lista de Soledad y rehace sus zonas).
 import json, re, time, unicodedata, urllib.error, urllib.request, urllib.parse
 
 # Área metropolitana (sur, oeste, norte, este): evita otros municipios llamados "Soledad" en el mundo

@@ -78,11 +78,14 @@ export function ShippingSettingsForm({
   departments,
   upcomingHolidays,
   barrios,
+  suggestedZones,
 }: {
   initial: ShippingForm;
   departments: Dept[];
   upcomingHolidays: string[];
   barrios: MapBarrio[];
+  /** Zonas de partida (Barranquilla por localidad y las 5 de Soledad), para volver a ellas */
+  suggestedZones: ShippingForm["local"]["zones"];
 }) {
   const [data, setData] = useState<ShippingForm>(initial);
   const [state, action, pending] = useActionState<ShippingFormState, FormData>(saveShippingAction, {});
@@ -198,6 +201,17 @@ export function ShippingSettingsForm({
             </div>
           ))}
           {zones.length === 0 && <p className="text-sm text-carbon-suave">No hay zonas: dibuja una en el mapa.</p>}
+          <button
+            type="button"
+            onClick={() => {
+              if (window.confirm("¿Reemplazar las zonas del mapa por las sugeridas (Barranquilla por localidad y las 5 zonas de Soledad)? Se aplica al guardar.")) {
+                setZones(() => suggestedZones);
+              }
+            }}
+            className="cursor-pointer justify-self-start text-sm font-bold underline-offset-4 hover:underline"
+          >
+            Cargar zonas sugeridas
+          </button>
           <p className={`text-sm ${coverage.outside.length ? "font-semibold text-alerta" : "text-carbon-suave"}`}>
             {coverage.outside.length
               ? `${coverage.outside.length} barrios sin zona (no tienen domicilio automático): ${coverage.outside.slice(0, 12).join(", ")}${coverage.outside.length > 12 ? "…" : ""}`

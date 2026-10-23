@@ -33,7 +33,6 @@
   --animate-marquee: marquee 40s linear infinite;
   --animate-llama: llama 1.6s ease-in-out infinite;
   --animate-humo: humo 1.6s ease-out forwards;
-  --animate-brillo: brillo 1.4s ease-in-out infinite;
 
   @keyframes float {
     0%,
@@ -71,23 +70,6 @@
     }
     75% {
       transform: scale(0.97, 1.04) skewX(1deg);
-    }
-  }
-
-  /* Halo de la llama del ícono del hero */
-  @keyframes brillo {
-    0%,
-    100% {
-      transform: scale(1);
-      opacity: 0.85;
-    }
-    35% {
-      transform: scale(1.14);
-      opacity: 0.6;
-    }
-    70% {
-      transform: scale(0.93);
-      opacity: 0.95;
     }
   }
 

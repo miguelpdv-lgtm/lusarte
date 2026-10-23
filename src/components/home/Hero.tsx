@@ -1,48 +1,44 @@
 import Image from "next/image";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { ArrowIcon } from "@/components/ui/icons";
-import { LusarteArch } from "./LusarteArch";
 
-/** Hero "Arco": el ícono de la marca con stickers a la izquierda y el texto con el botón a la tienda a la derecha.
- * Fondo lavanda con borde ondulado abajo, como el header. */
+// Foto provisional (generada con IA a partir de fotos reales de los productos). Para cambiarla, reemplazar
+// public/hero/hero-panoramica.webp por otra panorámica 21:9 con los productos a la derecha y la pared libre a la izquierda.
+const photo = { src: "/hero/hero-panoramica.webp", width: 2400, height: 1018 };
+
+/** Hero de foto: panorámica de producto a todo el ancho, texto a la izquierda y borde ondulado abajo, como el header.
+ *  Por debajo de 1280 px (no cabe el texto junto a los productos) el texto va arriba sobre el color de la pared
+ *  y la foto debajo, recortada sobre los productos. */
 export function Hero() {
   return (
-    <section className="wave-bottom relative isolate overflow-hidden bg-lavanda">
-      {/* Puntos crema de fondo */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[radial-gradient(var(--color-crema-claro)_2.2px,transparent_2.6px)] opacity-70 bg-size-[26px_26px]"
-      />
-      <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-4 pt-14 pb-20 sm:px-6 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:pt-20 lg:pb-28">
-        <div className="relative mx-auto aspect-square w-full max-w-[300px] sm:max-w-[380px] lg:max-w-[440px]">
-          <LusarteArch className="size-full overflow-visible drop-shadow-[8px_8px_0_var(--color-carbon)]" />
-          <Image
-            src="/brand/sticker-estrella.webp"
-            alt=""
-            width={720}
-            height={701}
-            className="pointer-events-none absolute -right-[4%] top-[6%] w-[20%] drop-shadow-[3px_4px_0_rgba(56,57,57,0.25)] [--r:8deg] motion-safe:animate-float"
-          />
-          <Image
-            src="/brand/sticker-fosforo.webp"
-            alt=""
-            width={720}
-            height={470}
-            className="pointer-events-none absolute -left-[7%] top-[20%] sm:-left-[14%] w-[30%] [transform:rotate(-24deg)] drop-shadow-[3px_4px_0_rgba(56,57,57,0.25)] [--r:-24deg] motion-safe:animate-float-slow"
-          />
-        </div>
-
-        <div className="flex flex-col items-center text-center">
-          <h1 className="max-w-[18ch] text-balance font-display text-3xl font-extrabold leading-[1.1] sm:text-4xl lg:text-[2.6rem]">
+    <section className="wave-bottom relative isolate overflow-hidden bg-[#c9b0c6] xl:h-[min(calc(100vw*9/21),780px)]">
+      <div className="mx-auto max-w-6xl px-4 pt-12 pb-8 sm:px-6 sm:pt-14 lg:px-8 xl:flex xl:h-full xl:items-center xl:pt-12 xl:pb-16">
+        <div className="max-w-xl xl:max-w-[34rem]">
+          <p className="eyebrow text-carbon/75">Hecho a mano en Barranquilla</p>
+          <h1 className="mt-4 text-balance font-display text-[2.3rem] font-extrabold leading-[1.04] tracking-tight sm:text-5xl xl:text-[3.3rem]">
             Velas hechas a mano e insumos para crear las tuyas
           </h1>
           <p className="mt-5 max-w-md text-base leading-relaxed text-carbon/85 sm:text-lg">
             Ceras, fragancias, moldes y recipientes. Domicilio en Barranquilla y Soledad, y envíos a toda Colombia.
           </p>
-          <ButtonLink href="/tienda" className="mt-7">
+          <ButtonLink href="/tienda" className="mt-7 px-7 py-3.5 text-base">
             Ver la tienda <ArrowIcon className="size-4" />
           </ButtonLink>
         </div>
+      </div>
+
+      <div className="relative aspect-[4/3] sm:aspect-[2/1] xl:absolute xl:inset-0 xl:-z-10 xl:aspect-auto">
+        {/* Funde el bloque de color con la pared de la foto (solo en la versión apilada) */}
+        <div aria-hidden="true" className="absolute inset-x-0 top-0 z-10 h-20 bg-linear-to-b from-[#c9b0c6] to-transparent xl:hidden" />
+        <Image
+          src={photo.src}
+          alt="Vela con rosa de cera encendida, bolsa de cera de vaso, vela verde y vela de osito sobre una mesa de madera"
+          width={photo.width}
+          height={photo.height}
+          priority
+          sizes="100vw"
+          className="size-full object-cover object-[85%_50%] xl:object-right"
+        />
       </div>
     </section>
   );

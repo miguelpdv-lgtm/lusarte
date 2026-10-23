@@ -13,7 +13,8 @@ export function business() {
     nit: env("BUSINESS_NIT"),
     regime: env("BUSINESS_REGIME"),
     address: env("BUSINESS_ADDRESS"),
-    email: env("BUSINESS_EMAIL") || site.email,
+    // Sin correo de contacto: los textos y el comprobante solo muestran teléfono y WhatsApp
+    email: env("BUSINESS_EMAIL"),
     phone: site.phone,
     whatsapp: site.whatsapp,
     domain: site.url.replace(/^https?:\/\//, ""),

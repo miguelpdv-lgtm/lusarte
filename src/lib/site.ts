@@ -1,7 +1,7 @@
 import { categoryHref, insumos, navidad, velas } from "@/data/catalog";
 
-// Contacto tomado del catálogo de la clienta (bit.ly/Lusartecatalogo).
-// TODO(clienta): confirmar el correo (lusarte.net aún no tiene buzón) y el link de Facebook.
+// Contacto tomado del catálogo de la clienta (bit.ly/Lusartecatalogo). Lusarte no tiene correo de contacto ni Facebook:
+// se atiende por WhatsApp e Instagram.
 export const site = {
   name: "Lusarte",
   tagline: "Iluminando tu vida",
@@ -11,7 +11,6 @@ export const site = {
   whatsapp: "573024296320", // formato internacional sin "+"
   phone: "302 429 6320",
   instagram: "lus_arte",
-  email: "hola@lusarte.net",
 } as const;
 
 export function whatsappUrl(message = "¡Hola Lusarte! Quiero hacer un pedido.") {

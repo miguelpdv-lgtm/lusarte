@@ -24,7 +24,7 @@ export default function TerminosPage() {
         {b.domain} es la tienda en línea de <strong>{b.tradeName}</strong>, nombre comercial de <strong>{b.legalName}</strong>
         {b.nit && `, identificada con NIT ${b.nit}`}
         {b.regime && ` (${b.regime})`}
-        {b.address && `, con domicilio en ${b.address}`}. Teléfono y WhatsApp: {b.phone}. Correo: {b.email}.
+        {b.address && `, con domicilio en ${b.address}`}. Teléfono y WhatsApp: {b.phone}.{b.email && ` Correo: ${b.email}.`}
       </p>
       <p>Al hacer un pedido aceptas estos términos y la <Link href="/privacidad">política de tratamiento de datos</Link>.</p>
 
@@ -98,7 +98,8 @@ export default function TerminosPage() {
 
       <h2>9. Peticiones, quejas y reclamos</h2>
       <p>
-        Escríbenos por <a href={whatsappUrl("¡Hola Lusarte! Tengo una petición, queja o reclamo sobre mi pedido.")}>WhatsApp al {b.phone}</a> o al correo {b.email}{" "}
+        Escríbenos por <a href={whatsappUrl("¡Hola Lusarte! Tengo una petición, queja o reclamo sobre mi pedido.")}>WhatsApp al {b.phone}</a>
+        {b.email && ` o al correo ${b.email}`}{" "}
         con el código de tu pedido. Respondemos dentro de los 15 días hábiles siguientes. Si no quedas conforme, puedes acudir a la Superintendencia de Industria y
         Comercio (www.sic.gov.co).
       </p>

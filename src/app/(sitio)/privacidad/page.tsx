@@ -26,7 +26,7 @@ export default function PrivacidadPage() {
       <p>
         <strong>{b.legalName}</strong>
         {b.nit && `, NIT ${b.nit}`}, con el nombre comercial <strong>{b.tradeName}</strong>
-        {b.address && `, domicilio en ${b.address}`}. Teléfono y WhatsApp: {b.phone}. Correo: {b.email}. Sitio web: {b.domain}.
+        {b.address && `, domicilio en ${b.address}`}. Teléfono y WhatsApp: {b.phone}.{b.email && ` Correo: ${b.email}.`} Sitio web: {b.domain}.
       </p>
 
       <h2>2. Qué datos recogemos</h2>
@@ -82,7 +82,7 @@ export default function PrivacidadPage() {
 
       <h2>7. Cómo ejercerlos</h2>
       <p>
-        Escríbenos al correo {b.email} o por <a href={whatsappUrl("¡Hola Lusarte! Quiero hacer una solicitud sobre mis datos personales.")}>WhatsApp al {b.phone}</a>, con
+        Escríbenos {b.email && `al correo ${b.email} o `}por <a href={whatsappUrl("¡Hola Lusarte! Quiero hacer una solicitud sobre mis datos personales.")}>WhatsApp al {b.phone}</a>, con
         tu nombre, documento, lo que solicitas y un medio para responderte.
       </p>
       <ul>

@@ -157,7 +157,7 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
     text(biz.address, bx, by, 8, f.regular, C.suave);
     by -= 11;
   }
-  text(`Tel. ${site.phone} · ${biz.email}`, bx, by, 8, f.regular, C.suave);
+  text(biz.email ? `Tel. ${site.phone} · ${biz.email}` : `Tel. ${site.phone} · WhatsApp`, bx, by, 8, f.regular, C.suave);
   by -= 11;
   text("lusarte.net · Instagram @" + site.instagram, bx, by, 8, f.regular, C.suave);
 

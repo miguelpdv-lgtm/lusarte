@@ -91,7 +91,7 @@ export async function storeStatus(): Promise<StatusItem[]> {
       : "Se activa solo al poner las llaves de producción de Wompi (o con SEO_INDEX=1).",
   });
 
-  const legal = ["BUSINESS_LEGAL_NAME", "BUSINESS_NIT", "BUSINESS_ADDRESS", "BUSINESS_EMAIL"].filter((k) => !env(k));
+  const legal = ["BUSINESS_LEGAL_NAME", "BUSINESS_NIT", "BUSINESS_ADDRESS"].filter((k) => !env(k));
   items.push({
     label: "Datos legales",
     value: legal.length ? "Incompletos" : "Completos",

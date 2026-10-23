@@ -21,6 +21,9 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
             <Link href="/" target="_blank" className="hidden font-semibold underline-offset-4 hover:underline sm:inline">
               Ver tienda
             </Link>
+            <Link href="/admin/cuenta" className="font-semibold underline-offset-4 hover:underline">
+              Mi cuenta
+            </Link>
             <form action={logout}>
               <button type="submit" title={admin.email} className="cursor-pointer font-semibold underline-offset-4 hover:underline">
                 Salir

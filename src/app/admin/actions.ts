@@ -71,6 +71,50 @@ export async function login(_prev: LoginState, form: FormData): Promise<LoginSta
   redirect("/admin");
 }
 
+// ─── Cuenta ───
+
+export type AccountState = { error?: string; ok?: string };
+
+/** Cambia el correo de ingreso y/o la contraseña. Pide la contraseña actual y cierra las demás sesiones abiertas. */
+export async function updateAccount(_prev: AccountState, form: FormData): Promise<AccountState> {
+  const admin = await requireAdmin();
+  const now = Date.now();
+  const key = `cuenta:${admin.id}`;
+  if (blocked(key, LIMITS.ip, now)) return { error: "Demasiados intentos. Espera 15 minutos e inténtalo de nuevo." };
+
+  const current = String(form.get("current") ?? "").slice(0, 200);
+  const email = String(form.get("email") ?? "").trim().toLowerCase().slice(0, 160);
+  const password = String(form.get("password") ?? "").slice(0, 200);
+  const confirm = String(form.get("confirm") ?? "").slice(0, 200);
+
+  const [user] = await db.select().from(schema.adminUsers).where(eq(schema.adminUsers.id, admin.id));
+  if (!user || !(await verifyPassword(current, user.passwordHash))) {
+    fail(key, now);
+    return { error: "La contraseña actual no es correcta." };
+  }
+  attempts.delete(key);
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "Escribe un correo válido." };
+  if (password && password.length < 12) return { error: "La contraseña nueva debe tener al menos 12 caracteres." };
+  if (password !== confirm) return { error: "La contraseña nueva y su confirmación no coinciden." };
+  if (password && password === current) return { error: "La contraseña nueva es igual a la actual." };
+  if (email === user.email && !password) return { error: "No hay cambios: escribe un correo o una contraseña nueva." };
+
+  if (email !== user.email) {
+    const [taken] = await db.select({ id: schema.adminUsers.id }).from(schema.adminUsers).where(eq(schema.adminUsers.email, email));
+    if (taken) return { error: "Ese correo ya lo usa otro usuario del panel." };
+  }
+
+  const sessionVersion = user.sessionVersion + 1;
+  await db
+    .update(schema.adminUsers)
+    .set({ email, sessionVersion, ...(password ? { passwordHash: await hashPassword(password) } : {}) })
+    .where(eq(schema.adminUsers.id, user.id));
+  // Las demás sesiones (otros navegadores) quedan cerradas; esta sigue abierta con la versión nueva
+  await startSession({ id: user.id, sessionVersion });
+  return { ok: password ? "Listo: guardamos tu contraseña nueva. Las sesiones abiertas en otros equipos se cerraron." : "Listo: guardamos tu correo de ingreso." };
+}
+
 export async function logout() {
   await endSession();
   redirect("/admin/ingresar");

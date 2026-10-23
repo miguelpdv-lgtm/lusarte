@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { updateTag } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { verifyPassword } from "@/lib/auth/password";
+import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { endSession, requireAdmin, startSession } from "@/lib/auth/session";
 import { CATALOG_TAG } from "@/lib/catalog/queries";
 import { db, schema } from "@/lib/db";
@@ -13,37 +13,56 @@ import { deleteImage, ImageError, mediaUrl, saveImage } from "@/lib/storage";
 
 // ─── Login ───
 
-// Freno a la fuerza bruta: 5 intentos fallidos por IP cada 15 minutos (un solo proceso Node).
+// Freno a la fuerza bruta (un solo proceso Node): 5 intentos fallidos por IP y 10 por cuenta cada 15 minutos.
+// El de la cuenta no depende de la IP: x-forwarded-for lo puede inventar quien ataca para estrenar IP en cada intento.
 const attempts = new Map<string, { count: number; until: number }>();
 const WINDOW = 15 * 60 * 1000;
+const LIMITS = { ip: 5, email: 10 };
+
+function blocked(key: string, limit: number, now: number) {
+  const r = attempts.get(key);
+  return !!r && r.until > now && r.count >= limit;
+}
+
+function fail(key: string, now: number) {
+  const r = attempts.get(key);
+  const fresh = !r || r.until <= now;
+  attempts.set(key, { count: fresh ? 1 : r.count + 1, until: fresh ? now + WINDOW : r.until });
+  // Que el mapa no crezca sin fin con IPs inventadas
+  if (attempts.size > 5000) for (const [k, v] of attempts) if (v.until <= now) attempts.delete(k);
+}
+
+// Hash de relleno: sin usuario también se calcula scrypt, para que el tiempo de respuesta no delate qué correos existen
+const DUMMY_HASH = hashPassword("relleno-sin-usuario");
 
 export type LoginState = { error?: string };
 
 export async function login(_prev: LoginState, form: FormData): Promise<LoginState> {
-  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const ip = `ip:${(await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "local"}`;
+  const email = String(form.get("email") ?? "").trim().toLowerCase().slice(0, 254);
+  const password = String(form.get("password") ?? "").slice(0, 200);
+  const account = `email:${email}`;
   const now = Date.now();
-  const record = attempts.get(ip);
-  if (record && record.until > now && record.count >= 5) {
+  if (blocked(ip, LIMITS.ip, now) || blocked(account, LIMITS.email, now)) {
     return { error: "Demasiados intentos. Espera 15 minutos e inténtalo de nuevo." };
   }
 
-  const email = String(form.get("email") ?? "").trim().toLowerCase();
-  const password = String(form.get("password") ?? "");
   let user: typeof schema.adminUsers.$inferSelect | undefined;
   try {
     [user] = email ? await db.select().from(schema.adminUsers).where(eq(schema.adminUsers.email, email)) : [];
   } catch {
     return { error: "No se pudo consultar la base de datos. Recarga esta página para ver qué falta en el servidor." };
   }
-  const ok = user ? await verifyPassword(password, user.passwordHash) : false;
+  const ok = await verifyPassword(password, user?.passwordHash ?? (await DUMMY_HASH));
 
   if (!user || !ok) {
-    const fresh = !record || record.until <= now;
-    attempts.set(ip, { count: fresh ? 1 : record.count + 1, until: fresh ? now + WINDOW : record.until });
+    fail(ip, now);
+    fail(account, now);
     return { error: "Correo o contraseña incorrectos." };
   }
 
   attempts.delete(ip);
+  attempts.delete(account);
   try {
     await startSession(user);
   } catch {

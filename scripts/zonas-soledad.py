@@ -43,7 +43,7 @@ ZONES = [
         "hipodromo", "centro", "cachimbero", "salamanca", "el ferrocarril", "costa hermosa", "vista hermosa",
         "cruz de mayo", "la loma", "pumarejo",
     ]),
-    ("Soledad 3 · Metropolitana y Suroccidental", "#d39a5b", 10000, [
+    ("Soledad 3 · Metropolitana", "#d39a5b", 10000, [
         "ciudadela metropolitana", "altos de la metropolitana", "soledad 2000", "el manantial", "los almendros",
         "altos de los almendros", "reserva de los almendros", "almendros campestre", "antonio narino", "villa adela",
         "las gaviotas", "los cusules", "ciudad camelot", "villa carmen",

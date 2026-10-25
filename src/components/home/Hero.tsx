@@ -23,7 +23,7 @@ export async function Hero() {
 
   return (
     <section className="wave-bottom relative isolate overflow-hidden bg-[#c9b0c6] xl:h-[min(calc(100vw*9/21),780px)]">
-      <div className="mx-auto max-w-6xl px-5 pt-16 pb-6 sm:px-6 sm:pb-8 lg:px-8 xl:flex xl:h-full xl:items-center xl:pt-12 xl:pb-16">
+      <div className="mx-auto max-w-6xl px-5 pt-24 pb-10 sm:px-6 sm:pt-20 sm:pb-10 lg:px-8 xl:flex xl:h-full xl:items-center xl:pt-12 xl:pb-16">
         <div className="mx-auto max-w-xl text-center xl:mx-0 xl:max-w-[34rem] xl:text-left">
           <p className="eyebrow text-carbon/75">Hecho a mano en Barranquilla</p>
           <h1 className="mt-3 text-balance font-display text-[2.15rem] font-extrabold leading-[1.05] tracking-tight sm:text-5xl xl:text-[3.3rem]">

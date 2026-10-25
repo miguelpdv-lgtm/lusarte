@@ -3,7 +3,8 @@ import { and, desc, eq } from "drizzle-orm";
 import { db, schema } from "@/lib/db";
 import { getOrder, type OrderWithItems } from "@/lib/shop/orders";
 import { receiptPdf } from "./receipt";
-import { adminRecipients, EmailNotConfigured, sendEmail, type Recipient } from "./brevo";
+import { saleNoticeRecipients } from "./admin-emails";
+import { EmailNotConfigured, sendEmail, type Recipient } from "./brevo";
 import { confirmationEmail, newSaleEmail, paymentFailedEmail, receivedEmail, shippedEmail, type EmailKind, type Rendered } from "./templates";
 
 const build: Record<EmailKind, (o: OrderWithItems) => Rendered> = {
@@ -14,8 +15,8 @@ const build: Record<EmailKind, (o: OrderWithItems) => Rendered> = {
   pago_fallido: paymentFailedEmail,
 };
 
-function recipients(kind: EmailKind, o: OrderWithItems): Recipient[] {
-  return kind === "venta" ? adminRecipients() : [{ email: o.email, name: o.name }];
+async function recipients(kind: EmailKind, o: OrderWithItems): Promise<Recipient[]> {
+  return kind === "venta" ? (await saleNoticeRecipients()).to : [{ email: o.email, name: o.name }];
 }
 
 /**
@@ -36,13 +37,13 @@ export async function sendOrderEmail(code: string, kind: EmailKind, { force = fa
       if (sent) return;
     }
 
-    const to = recipients(kind, order);
+    const to = await recipients(kind, order);
     const recipient = to.map((r) => r.email).join(", ") || "(sin destinatario)";
     const log = (status: string, extra: { providerId?: string; error?: string } = {}) =>
       db.insert(schema.emailLog).values({ orderId: order.id, kind, recipient: recipient.slice(0, 500), status, ...extra, error: extra.error?.slice(0, 500) });
 
     if (to.length === 0) {
-      await log("fallido", { error: "No hay destinatario (configura ADMIN_EMAIL)" });
+      await log("fallido", { error: "No hay destinatario (ponlo en Panel → Mi cuenta → Avisos de venta)" });
       return;
     }
     try {

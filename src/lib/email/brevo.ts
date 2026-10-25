@@ -28,13 +28,18 @@ export function emailConfig() {
   };
 }
 
-/** Correos que reciben el aviso de venta nueva (ADMIN_EMAIL, separados por coma). */
-export function adminRecipients(): Recipient[] {
-  return (process.env.ADMIN_EMAIL ?? "")
-    .split(",")
+/** "a@x.com, b@y.com" → destinatarios válidos (ignora lo que no parece un correo). */
+export function parseEmails(list: string): Recipient[] {
+  return list
+    .split(/[,;\s]+/)
     .map((e) => e.trim())
     .filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))
     .map((email) => ({ email }));
+}
+
+/** Correos de ADMIN_EMAIL (separados por coma). El panel puede reemplazarlos: ver admin-emails.ts. */
+export function adminRecipients(): Recipient[] {
+  return parseEmails(process.env.ADMIN_EMAIL ?? "");
 }
 
 /** Envía un correo. Devuelve el messageId de Brevo; lanza si falla. */

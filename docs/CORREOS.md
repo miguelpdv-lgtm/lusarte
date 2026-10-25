@@ -5,7 +5,7 @@ Los correos transaccionales salen por la API de Brevo (`src/lib/email/brevo.ts`)
 | Correo | Para | Cuándo |
 |---|---|---|
 | Confirmación de compra | Cliente | Wompi aprueba el pago |
-| Nueva venta | `ADMIN_EMAIL` (admite varios) | Wompi aprueba el pago |
+| Nueva venta | Panel → Mi cuenta → Avisos de venta, o si está vacío `ADMIN_EMAIL` (admite varios) | Wompi aprueba el pago |
 | Tu pedido va en camino | Cliente | Se despacha desde el panel (o "Enviar de nuevo" al corregir la guía) |
 | Pago no completado | Cliente | Wompi rechaza el pago |
 
@@ -24,7 +24,7 @@ Si un correo falla, el pago y el despacho no se afectan: queda "Falló" en el pa
 3. Esperar a que Brevo marque el dominio como **Autenticado**.
 4. **Remitentes → Agregar remitente**: `pedidos@lusarte.net`, nombre "Lusarte".
 5. **SMTP y API → API Keys → Generar**: pegarla en `BREVO_API_KEY` (en GoDaddy, en los Secrets de la app).
-6. Llenar `ADMIN_EMAIL` con el correo de la clienta y, si se quiere recibir las respuestas de los clientes en otro buzón, `EMAIL_REPLY_TO`.
+6. Llenar `ADMIN_EMAIL` con el correo de la clienta (o, más fácil, ponerlo en Panel → Mi cuenta → Avisos de venta: lo del panel tiene prioridad sobre `ADMIN_EMAIL`) y, si se quiere recibir las respuestas de los clientes en otro buzón, `EMAIL_REPLY_TO`.
 7. Probar: con un pedido de prueba pagado, revisar en Gmail y Outlook que llegue a la bandeja principal ("Mostrar original" en Gmail debe decir `SPF: PASS`, `DKIM: PASS`, `DMARC: PASS`).
 
 ## Para no caer en spam

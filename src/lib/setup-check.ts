@@ -65,12 +65,18 @@ export async function storeStatus(): Promise<StatusItem[]> {
   }
 
   const brevo = !!env("BREVO_API_KEY");
-  const admin = env("ADMIN_EMAIL");
+  const { saleNoticeRecipients } = await import("@/lib/email/admin-emails");
+  const notice = await saleNoticeRecipients();
+  const admin = notice.to.map((r) => r.email).join(", ");
   items.push({
     label: "Correos (Brevo)",
     value: brevo ? `Activos · avisos de venta a ${admin || "nadie"}` : "Sin configurar",
     ok: brevo && !!admin,
-    hint: !brevo ? "Falta BREVO_API_KEY: los clientes no reciben correos." : !admin ? "Falta ADMIN_EMAIL: nadie recibe el aviso de venta nueva." : undefined,
+    hint: !brevo
+      ? "Falta BREVO_API_KEY: los clientes no reciben correos."
+      : !admin
+        ? "Nadie recibe el aviso de venta nueva: pon un correo en Mi cuenta → Avisos de venta."
+        : `Se cambia en Mi cuenta → Avisos de venta${notice.source === "env" ? " (hoy viene de ADMIN_EMAIL en GoDaddy)" : ""}.`,
   });
 
   const rem = remisionesMode();

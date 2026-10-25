@@ -32,8 +32,8 @@ export default async function PortadaAdmin() {
         title="Foto en celular (opcional)"
         hint={
           mobile
-            ? "Va debajo del texto, recortada casi cuadrada. Deja los productos en el centro."
-            : "Sin foto propia, en celular se usa la de computador recortada sobre los productos (así se ve abajo). Si subes una, que sea casi cuadrada y con los productos en el centro."
+            ? "Va debajo del texto, recortada horizontal (16:10). Deja los productos en el centro."
+            : "Sin foto propia, en celular se usa la de computador recortada sobre los productos (así se ve abajo). Si subes una, que sea horizontal y con los productos en el centro."
         }
         current={mobile ?? desktop}
         aspect={HERO_MOBILE_ASPECT}

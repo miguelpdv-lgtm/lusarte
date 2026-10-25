@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 import { slugify } from "@/lib/slug";
@@ -17,6 +17,25 @@ export const FILE_PATTERN = /^[a-z0-9-]+\.webp$/;
 
 // La carpeta viene de una variable de entorno: que el empaquetador no intente rastrear su contenido
 const uploadsDir = () => path.resolve(/*turbopackIgnore: true*/ process.cwd(), process.env.UPLOADS_DIR || "public/assets/uploads");
+
+/** Carpeta de fotos relativa a la app, y si GoDaddy la conserva al publicar un zip (solo public/assets y private). */
+export function uploadsLocation() {
+  const rel = path.relative(process.cwd(), uploadsDir()).split(path.sep).join("/");
+  return { rel, persistent: /^(public\/assets|private)(\/|$)/.test(rel) };
+}
+
+/** Archivos (de los guardados en la base) que ya no están en el disco. */
+export async function missingImages(files: string[]) {
+  const checks = await Promise.all(
+    files.map((f) =>
+      access(path.join(uploadsDir(), f)).then(
+        () => null,
+        () => f,
+      ),
+    ),
+  );
+  return checks.filter((f): f is string => f !== null);
+}
 
 export const mediaUrl = (file: string) => `/media/${file}`;
 

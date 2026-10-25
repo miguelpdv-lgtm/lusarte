@@ -91,6 +91,8 @@ export async function storeStatus(): Promise<StatusItem[]> {
       : "Se activa solo al poner las llaves de producción de Wompi (o con SEO_INDEX=1).",
   });
 
+  items.push(await photosStatus());
+
   const legal = ["BUSINESS_LEGAL_NAME", "BUSINESS_NIT", "BUSINESS_ADDRESS"].filter((k) => !env(k));
   items.push({
     label: "Datos legales",
@@ -99,4 +101,37 @@ export async function storeStatus(): Promise<StatusItem[]> {
     hint: legal.length ? `Faltan ${legal.join(", ")}: se usan en los términos, la privacidad y el comprobante.` : undefined,
   });
   return items;
+}
+
+/** Fotos del panel: que la carpeta sobreviva a publicar un zip nuevo y que no falte ninguna en el disco. */
+async function photosStatus(): Promise<StatusItem> {
+  const { uploadsLocation, missingImages } = await import("@/lib/storage");
+  const { getHeroSettings } = await import("@/lib/home/hero");
+  const { schema } = await import("@/lib/db");
+  const label = "Fotos del panel";
+  const where = uploadsLocation();
+  if (!where.persistent && process.env.NODE_ENV === "production") {
+    return {
+      label,
+      value: "Se borrarán al publicar",
+      ok: false,
+      hint: `Se guardan en ${where.rel}, que GoDaddy borra con cada zip nuevo. En las variables de GoDaddy deja UPLOADS_DIR vacía o pon public/assets/uploads.`,
+    };
+  }
+  try {
+    const hero = await getHeroSettings();
+    const rows = await db.select({ file: schema.productImages.file }).from(schema.productImages);
+    const files = [...rows.map((r) => r.file), hero.desktop?.file, hero.mobile?.file].filter((f): f is string => !!f);
+    const missing = await missingImages(files);
+    if (missing.length)
+      return {
+        label,
+        value: `Faltan ${missing.length} de ${files.length}`,
+        ok: false,
+        hint: `Estas fotos están en la base pero no en el servidor (${where.rel}), así que no se ven: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}. Vuelve a subirlas desde el panel.`,
+      };
+    return { label, value: files.length === 1 ? "1 guardada" : files.length ? `${files.length} guardadas` : "Ninguna todavía", ok: true, hint: `En ${where.rel}: se conservan al publicar un zip nuevo.` };
+  } catch {
+    return { label, value: "Sin revisar", ok: false, hint: "No se pudo leer la base de datos." };
+  }
 }

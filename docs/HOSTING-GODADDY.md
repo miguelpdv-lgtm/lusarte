@@ -32,3 +32,11 @@ Se incluyen `package.json`, `package-lock.json`, `next.config.ts`, `tsconfig.jso
 ## Exportar el zip
 
 `npm run zip:godaddy` → `.local/deploy/lusarte-godaddy.zip` (código fuente, sin fotos). La base va aparte: `.local/deploy/lusarte-base.sql`, que se importa **solo la primera vez**, desde la interfaz y con la app ya corriendo.
+
+## Desplegar y cambiar secretos con la API de GoDaddy
+
+Con un token personal de GoDaddy (en las sesiones de Claude está en la variable `API_DADDY`). Base: `https://api.godaddy.com/v1/hosting`, cabecera `Authorization: Bearer <token>`. App de Lusarte: `NODEJS-c350paergo`.
+
+- **Desplegar un zip:** `POST /apps/{id}/imports` (multipart, campo `file`) → esperar `GET /apps/{id}/imports/{importId}` en `COMPLETED` → `POST /apps/{id}/deployments` con cuerpo `{}` (sin cuerpo responde 411) → esperar `GET /apps/{id}/deployments/{deploymentId}` en `COMPLETED`. Publica directo en lusarte.net.
+- **Cambiar un secreto:** `PATCH /apps/{id}/secrets?variant=PUBLISH` (y `PREVIEW`), `Content-Type: application/json-patch+json`, cuerpo `[{"op":"replace","path":"/ADMIN_EMAIL","value":"..."}]`. La app lee los secretos al arrancar: luego `POST /apps/{id}/restarts` con `{"variant":"PUBLISH"}` (y `PREVIEW`).
+- **Revisar:** `GET /apps/{id}/status` y `GET /apps/{id}/logs?target=PUBLISH&variant=PUBLISH`. Listar apps exige `?appType=NODEJS`.

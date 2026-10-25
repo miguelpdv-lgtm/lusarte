@@ -68,7 +68,7 @@ export default async function PedidoPage({ params, searchParams }: PageProps<"/p
           : null;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 pt-8 pb-20 sm:px-6 lg:px-8 lg:pt-12">
+    <div className="mx-auto max-w-3xl px-4 pt-12 pb-20 sm:px-6 lg:px-8 lg:pt-14">
       {paid && <ClearCart />}
       <p className="eyebrow text-carbon-suave">Pedido {order.code}</p>
       <h1 className="mt-2 font-hand text-[2.5rem] leading-none text-balance sm:text-5xl">{copy.title}</h1>

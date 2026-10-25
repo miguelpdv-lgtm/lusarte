@@ -88,7 +88,7 @@ export default async function ProductoPage({ params }: PageProps<"/producto/[slu
 
   return (
     <>
-      <div className="mx-auto max-w-7xl px-4 pt-6 pb-16 sm:px-6 lg:px-8 lg:pt-10">
+      <div className="mx-auto max-w-7xl px-4 pt-12 pb-16 sm:px-6 lg:px-8">
         <Breadcrumbs
           items={[
             { label: "Tienda", href: "/tienda" },

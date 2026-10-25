@@ -12,22 +12,22 @@ const photo = { src: "/hero/hero-panoramica.webp", width: 2400, height: 1018 };
 export function Hero() {
   return (
     <section className="wave-bottom relative isolate overflow-hidden bg-[#c9b0c6] xl:h-[min(calc(100vw*9/21),780px)]">
-      <div className="mx-auto max-w-6xl px-4 pt-12 pb-8 sm:px-6 sm:pt-14 lg:px-8 xl:flex xl:h-full xl:items-center xl:pt-12 xl:pb-16">
+      <div className="mx-auto max-w-6xl px-4 pt-16 pb-4 sm:px-6 sm:pb-8 lg:px-8 xl:flex xl:h-full xl:items-center xl:pt-12 xl:pb-16">
         <div className="max-w-xl xl:max-w-[34rem]">
           <p className="eyebrow text-carbon/75">Hecho a mano en Barranquilla</p>
-          <h1 className="mt-4 text-balance font-display text-[2.3rem] font-extrabold leading-[1.04] tracking-tight sm:text-5xl xl:text-[3.3rem]">
+          <h1 className="mt-3 text-balance font-display text-[2.3rem] font-extrabold leading-[1.04] tracking-tight sm:text-5xl xl:text-[3.3rem]">
             Velas hechas a mano e insumos para crear las tuyas
           </h1>
-          <p className="mt-5 max-w-md text-base leading-relaxed text-carbon/85 sm:text-lg">
+          <p className="mt-4 max-w-md text-base leading-relaxed text-carbon/85 sm:text-lg">
             Ceras, fragancias, moldes y recipientes. Domicilio en Barranquilla y Soledad, y envíos a toda Colombia.
           </p>
-          <ButtonLink href="/tienda" className="mt-7 px-7 py-3.5 text-base">
+          <ButtonLink href="/tienda" className="mt-6 px-7 py-3.5 text-base">
             Ver la tienda <ArrowIcon className="size-4" />
           </ButtonLink>
         </div>
       </div>
 
-      <div className="relative aspect-[4/3] sm:aspect-[2/1] xl:absolute xl:inset-0 xl:-z-10 xl:aspect-auto">
+      <div className="relative aspect-[6/5] sm:aspect-[2/1] xl:absolute xl:inset-0 xl:-z-10 xl:aspect-auto">
         {/* Funde el bloque de color con la pared de la foto (solo en la versión apilada) */}
         <div aria-hidden="true" className="absolute inset-x-0 top-0 z-10 h-20 bg-linear-to-b from-[#c9b0c6] to-transparent xl:hidden" />
         <Image
@@ -37,7 +37,7 @@ export function Hero() {
           height={photo.height}
           priority
           sizes="100vw"
-          className="size-full object-cover object-[85%_50%] xl:object-right"
+          className="size-full object-cover object-[88%_50%] sm:object-[85%_50%] xl:object-right"
         />
       </div>
     </section>

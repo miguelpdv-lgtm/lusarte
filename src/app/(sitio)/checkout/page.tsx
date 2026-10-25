@@ -13,7 +13,7 @@ export default function CheckoutPage() {
   // Sin llaves de Wompi se sigue pidiendo por WhatsApp desde el carrito
   if (!checkoutEnabled()) redirect("/carrito");
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-6 pb-20 sm:px-6 lg:px-8 lg:pt-10">
+    <div className="mx-auto max-w-6xl px-4 pt-12 pb-20 sm:px-6 lg:px-8">
       <Breadcrumbs items={[{ label: "Carrito", href: "/carrito" }, { label: "Pagar" }]} />
       <h1 className="mt-3 mb-8 font-hand text-[2.5rem] leading-none sm:text-5xl">Finaliza tu compra</h1>
       {wompiConfig()?.sandbox && (

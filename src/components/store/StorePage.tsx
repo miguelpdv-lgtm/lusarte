@@ -30,7 +30,7 @@ export async function StorePage({ path, title, intro, crumbs, scope, filters, ch
 
   return (
     <>
-      <header className={`wave-bottom ${tint} px-4 pt-8 pb-14 sm:px-6 sm:pt-10 lg:px-8`}>
+      <header className={`wave-bottom ${tint} px-4 pt-12 pb-14 sm:px-6 lg:px-8`}>
         <div className="mx-auto max-w-7xl">
           <Breadcrumbs items={crumbs} />
           <h1 className="mt-3 font-hand text-[2.5rem] leading-none text-balance sm:text-5xl">{title}</h1>

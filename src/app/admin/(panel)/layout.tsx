@@ -12,12 +12,12 @@ export default async function PanelLayout({ children }: LayoutProps<"/admin">) {
   return (
     <div className="flex flex-1 flex-col bg-crema">
       <header className="sticky top-0 z-30 border-b-3 border-carbon bg-crema-claro">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:flex-nowrap">
           <Link href="/admin" aria-label="Inicio del panel" className="shrink-0">
             <Logo className="h-7 w-auto text-carbon" />
           </Link>
           <AdminNav />
-          <div className="ml-auto flex items-center gap-3 text-sm">
+          <div className="ml-auto flex items-center gap-3 text-sm whitespace-nowrap">
             <Link href="/" target="_blank" className="hidden font-semibold underline-offset-4 hover:underline sm:inline">
               Ver tienda
             </Link>

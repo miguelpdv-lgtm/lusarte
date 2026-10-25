@@ -8,12 +8,14 @@ const links = [
   { href: "/admin/productos", label: "Productos" },
   { href: "/admin/pedidos", label: "Pedidos" },
   { href: "/admin/envios", label: "Envíos" },
+  { href: "/admin/portada", label: "Portada" },
 ];
 
 export function AdminNav() {
   const path = usePathname();
   return (
-    <nav aria-label="Panel" className="flex gap-1 text-sm font-bold">
+    // En celular va en su propia fila (order-last) y se desliza de lado si no cabe
+    <nav aria-label="Panel" className="order-last -mx-4 flex w-[calc(100%+2rem)] gap-1 overflow-x-auto px-4 text-sm font-bold whitespace-nowrap md:order-none md:mx-0 md:w-auto md:overflow-visible md:px-0">
       {links.map((l) => {
         const active = l.href === "/admin" ? path === "/admin" : path.startsWith(l.href);
         return (

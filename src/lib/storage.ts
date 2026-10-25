@@ -22,14 +22,14 @@ export const mediaUrl = (file: string) => `/media/${file}`;
 
 export class ImageError extends Error {}
 
-/** Valida, corrige la orientación, reduce a 1600 px y guarda en WebP. */
-export async function saveImage(file: File, baseName: string) {
+/** Valida, corrige la orientación, reduce a 1600 px (o maxSide) y guarda en WebP. */
+export async function saveImage(file: File, baseName: string, maxSide = MAX_SIDE) {
   if (!ACCEPTED.includes(file.type)) throw new ImageError(`"${file.name}" no es JPG, PNG ni WebP.`);
   if (file.size > MAX_BYTES) throw new ImageError(`"${file.name}" pesa más de 15 MB.`);
 
   const { data, info } = await sharp(Buffer.from(await file.arrayBuffer()))
     .rotate()
-    .resize({ width: MAX_SIDE, height: MAX_SIDE, fit: "inside", withoutEnlargement: true })
+    .resize({ width: maxSide, height: maxSide, fit: "inside", withoutEnlargement: true })
     .webp({ quality: 82 })
     .toBuffer({ resolveWithObject: true });
 

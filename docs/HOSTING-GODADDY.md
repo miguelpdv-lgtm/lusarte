@@ -11,7 +11,7 @@ Resumen de lo que exige la plataforma (guía oficial de GoDaddy, recibida el 202
 - La app escucha en `process.env.PORT` y en `0.0.0.0`: `next start -H 0.0.0.0`.
 - **MySQL administrado**: GoDaddy inyecta `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASSWORD` (`src/lib/db/client.ts` los usa si no hay `DATABASE_URL`). Preview y producción comparten la misma base. Se puede importar un `.sql` de hasta 100 MB, y eso reemplaza las tablas.
 - **No se sube `.env`**: los secretos (`AUTH_SECRET` y, más adelante, Wompi y Resend) se cargan en la interfaz.
-- **Disco**: solo sobreviven a un redeploy `public/assets` (servida en la web) y `/private` (privada). Las fotos del panel (productos y portada) van a `public/assets/uploads`: en GoDaddy **no** definir `UPLOADS_DIR` (o ponerla en `public/assets/uploads`). El inicio del panel → "Estado de la tienda" → "Fotos del panel" avisa si la carpeta se borraría al publicar o si falta alguna foto en el disco; revisarlo después de cada zip nuevo.
+- **Disco**: solo sobreviven a un redeploy `public/assets` (servida en la web) y `/private` (privada). Las fotos del panel (productos y portada) van a `public/assets/uploads`: en GoDaddy **no** definir `UPLOADS_DIR` (o ponerla en `public/assets/uploads`). Panel → Desarrollo → "Estado de la tienda" → "Fotos del panel" avisa si la carpeta se borraría al publicar o si falta alguna foto en el disco; revisarlo después de cada zip nuevo.
 - **Red de salida**: solo se permiten los puertos 80 y 443, más la base de GoDaddy. Wompi y Resend usan HTTPS, así que no hay problema.
 - Paquetes solo del registro público de npm. No subir un `.npmrc` privado.
 

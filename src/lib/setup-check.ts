@@ -33,7 +33,7 @@ export async function setupProblems() {
 
 export type StatusItem = { label: string; value: string; ok: boolean; hint?: string };
 
-/** Estado de la configuración de la tienda (para el inicio del panel), en lenguaje claro. */
+/** Estado de la configuración de la tienda (para Panel → Desarrollo), en lenguaje claro. */
 export async function storeStatus(): Promise<StatusItem[]> {
   const { wompiConfig } = await import("@/lib/shop/config");
   const { remisionesMode } = await import("@/lib/effi/sales");

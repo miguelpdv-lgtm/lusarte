@@ -39,6 +39,7 @@ export default async function PanelInicio() {
     .flatMap((p) => p.options.filter((o) => !o.hidden && (isLow(o) || o.stock === 0)).map((o) => ({ product: p, option: o })))
     .sort((a, b) => (a.option.stock ?? 0) - (b.option.stock ?? 0))
     .slice(0, 8);
+  const pending = status.filter((i) => !i.ok);
 
   return (
     <div className="grid grid-cols-1 gap-8">
@@ -47,22 +48,11 @@ export default async function PanelInicio() {
         <p className="mt-1 text-carbon-suave">Así va Lusarte. Las ventas son las remisiones registradas en Effi.</p>
       </div>
 
-      <section aria-labelledby="estado" className="toon grid gap-3 rounded-[1.25rem] bg-crema-claro p-5">
-        <h2 id="estado" className="font-display text-lg font-extrabold">
-          Estado de la tienda
-        </h2>
-        <ul className="grid gap-2 text-sm">
-          {status.map((i) => (
-            <li key={i.label} className="grid gap-0.5 sm:grid-cols-[11rem_1fr]">
-              <span className="font-bold">{i.label}</span>
-              <span>
-                <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${i.ok ? "bg-oliva/50" : "bg-miel"}`}>{i.value}</span>
-                {i.hint && <span className="mt-0.5 block text-xs text-carbon-suave">{i.hint}</span>}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {pending.length > 0 && (
+        <Link href="/admin/desarrollo" className="toon block rounded-2xl bg-miel/70 p-4 text-sm font-semibold transition-transform hover:-translate-y-0.5">
+          {pending.length === 1 ? "Hay 1 aviso de configuración" : `Hay ${pending.length} avisos de configuración`} en Desarrollo →
+        </Link>
+      )}
 
       <SyncCard
         statuses={[

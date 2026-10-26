@@ -132,14 +132,21 @@ function remisionBody(o: OrderWithItems, cliente: number) {
           id_caja_medio_pago: [VENTA.caja.id],
           cuenta_medio_pago: [VENTA.cuenta],
           valor_medio_pago: [o.total],
-          observacion_medio_pago: [clip(`Wompi ${o.paymentMethod ?? ""} ${o.wompiTransactionId ?? ""}`.trim(), 255)],
+          observacion_medio_pago: [
+            clip(o.paymentType === "transferencia" ? "Transferencia (pedido del panel)" : `Wompi ${o.paymentMethod ?? ""} ${o.wompiTransactionId ?? ""}`.trim(), 255),
+          ],
         }),
   };
 }
 
 /** Observación de la remisión: código del pedido, cómo se pagó y cómo se entrega. */
 function header(o: OrderWithItems) {
-  const pay = o.paymentType === "contraentrega" ? "CONTRAENTREGA (cobrar al entregar)" : `Wompi ${o.wompiTransactionId ?? ""}`;
+  const pay =
+    o.paymentType === "contraentrega"
+      ? "CONTRAENTREGA (cobrar al entregar)"
+      : o.paymentType === "transferencia"
+        ? "TRANSFERENCIA (pedido del panel)"
+        : `Wompi ${o.wompiTransactionId ?? ""}`;
   const delivery =
     o.shippingZone === "recoger"
       ? `Recoge en punto de entrega${o.scheduledFor ? ` ${o.scheduledFor}` : ""}${o.deliveryWindow ? ` ${o.deliveryWindow}` : ""}`

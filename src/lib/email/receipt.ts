@@ -312,8 +312,15 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
       ]
     : [
         ["Forma de pago", `Contado · ${formatCOP(o.total)}`],
-        ["Medio", `Pago en línea con Wompi${o.paymentMethod ? ` (${paymentMethod(o.paymentMethod)})` : ""}`],
-        ["Transacción", o.wompiTransactionId ?? "—"],
+        ...(o.paymentType === "transferencia"
+          ? [
+              ["Medio", "Transferencia bancaria"],
+              ["Registro", "Pedido registrado por Lusarte"],
+            ]
+          : [
+              ["Medio", `Pago en línea con Wompi${o.paymentMethod ? ` (${paymentMethod(o.paymentMethod)})` : ""}`],
+              ["Transacción", o.wompiTransactionId ?? "—"],
+            ]) as [string, string][],
         ["Impuestos", "No registra impuestos ni retenciones"],
       ];
   pay.forEach(([k, v], i) => {

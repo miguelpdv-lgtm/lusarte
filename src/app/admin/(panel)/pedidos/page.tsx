@@ -43,9 +43,14 @@ export default async function PedidosAdmin({ searchParams }: PageProps<"/admin/p
     <div className="grid grid-cols-1 gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="font-display text-3xl font-extrabold">Pedidos</h1>
-        <Link href="/admin/envios" className="text-sm font-semibold underline-offset-4 hover:underline">
-          Tarifas y horarios de envío
-        </Link>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <Link href="/admin/envios" className="text-sm font-semibold underline-offset-4 hover:underline">
+            Tarifas y horarios de envío
+          </Link>
+          <Link href="/admin/pedidos/nuevo" className="toon toon-press rounded-full bg-estrella px-4 py-2 text-sm font-bold">
+            + Registrar pedido
+          </Link>
+        </div>
       </div>
       <nav aria-label="Filtro de pedidos" className="flex flex-wrap gap-2 text-sm font-bold">
         {tabs.map((t) => (

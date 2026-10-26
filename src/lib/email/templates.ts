@@ -10,9 +10,10 @@ import { box, button, esc, h2, layout, p, rows, siteUrl, textFooter } from "./la
 export type EmailKind = "recibido" | "confirmacion" | "venta" | "despacho" | "pago_fallido";
 export type Rendered = { subject: string; html: string; text: string };
 
-const REASON_CLIENT = "Recibes este correo porque hiciste un pedido en lusarte.net.";
+const REASON_CLIENT = "Recibes este correo porque hiciste un pedido en Lusarte (lusarte.net).";
 const PAYMENT_METHODS: Record<string, string> = {
   CARD: "tarjeta",
+  TRANSFERENCIA: "transferencia",
   PSE: "PSE",
   NEQUI: "Nequi",
   BANCOLOMBIA_TRANSFER: "Bancolombia",
@@ -140,11 +141,15 @@ export function newSaleEmail(o: OrderWithItems): Rendered {
         : o.effiRemisionId
         ? p(`<strong>Remisión de venta en Effi: N.º ${o.effiRemisionId}</strong>. El inventario ya se descontó. Adjuntamos el comprobante en PDF.`)
         : box(`<strong>No se creó la remisión en Effi.</strong> ${esc(o.effiRemisionError ?? "")}<br>Créala desde el panel (botón "Crear remisión") o a mano en Effi.`),
-      p(`Referencia de Wompi: ${esc(o.wompiTransactionId ?? "—")}`, true),
+      o.paymentType === "transferencia"
+        ? p("Pedido registrado en el panel, pagado por transferencia.", true)
+        : o.paymentType === "wompi"
+          ? p(`Referencia de Wompi: ${esc(o.wompiTransactionId ?? "—")}`, true)
+          : "",
       button(panel, "Despachar en el panel"),
     ].join(""),
   });
-  const text = `${title}\n\n${isCod(o) ? `CONTRAENTREGA: cobrar ${formatCOP(o.total)} al entregar.` : `${o.name} pagó ${formatCOP(o.total)}.`}\n${isLocal(o) ? `Entrega local ${deliveryDay(o)}.` : "Envío nacional."}${o.stockAlert ? "\nREVISAR INVENTARIO: se vendió más de lo que había en stock." : ""}\n\nProductos:\n${itemsText(o)}\n\nCliente y envío:\n${addressLines(o).join("\n")}\n${o.email}${o.legalId ? `\nDocumento ${o.legalId}` : ""}\n\n${o.effiRemisionId ? `Remisión de venta en Effi: N.º ${o.effiRemisionId}` : `NO SE CREÓ LA REMISIÓN EN EFFI: ${o.effiRemisionError ?? ""}`}\nWompi: ${o.wompiTransactionId ?? "—"}\nDespachar: ${panel}${textFooter(reason)}`;
+  const text = `${title}\n\n${isCod(o) ? `CONTRAENTREGA: cobrar ${formatCOP(o.total)} al entregar.` : `${o.name} pagó ${formatCOP(o.total)}.`}\n${isLocal(o) ? `Entrega local ${deliveryDay(o)}.` : "Envío nacional."}${o.stockAlert ? "\nREVISAR INVENTARIO: se vendió más de lo que había en stock." : ""}\n\nProductos:\n${itemsText(o)}\n\nCliente y envío:\n${addressLines(o).join("\n")}\n${o.email}${o.legalId ? `\nDocumento ${o.legalId}` : ""}\n\n${o.effiRemisionId ? `Remisión de venta en Effi: N.º ${o.effiRemisionId}` : `NO SE CREÓ LA REMISIÓN EN EFFI: ${o.effiRemisionError ?? ""}`}${o.paymentType === "wompi" ? `\nWompi: ${o.wompiTransactionId ?? "—"}` : o.paymentType === "transferencia" ? "\nPagado por transferencia (registrado en el panel)" : ""}\nDespachar: ${panel}${textFooter(reason)}`;
   const tag = o.status === "por_confirmar" ? " · contraentrega por confirmar" : isCod(o) ? " · contraentrega" : isPickup(o) ? " · recoger" : isLocal(o) ? " · local" : "";
   return { subject: `Nueva venta ${o.code} · ${formatCOP(o.total)}${tag}`, html, text };
 }

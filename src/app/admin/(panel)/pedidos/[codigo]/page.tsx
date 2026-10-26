@@ -240,6 +240,8 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
         {order.paidAt && <p>Pagado: {dateFmt.format(order.paidAt)}</p>}
         {cod ? (
           <p>Contraentrega: {order.status === "entregado" ? "cobrado al entregar" : `cobrar ${formatCOP(order.total)} al entregar`}.</p>
+        ) : order.paymentType === "transferencia" ? (
+          <p>Registrado en el panel: pagado por transferencia.</p>
         ) : (
           <p>
             Wompi: {order.wompiTransactionId ?? "sin transacción"} {order.wompiStatus && `(${order.wompiStatus})`}

@@ -31,7 +31,8 @@ export type OrderStatus =
 /** Entrega en las ciudades locales (domicilio o recoger) */
 export const isLocalOrder = (o: { shippingZone: string }) => o.shippingZone !== "nacional";
 export const isPickup = (o: { shippingZone: string }) => o.shippingZone === "recoger";
-export type PaymentType = "wompi" | "contraentrega";
+/** wompi (en línea) | contraentrega (al recibir) | transferencia (pedido registrado a mano en el panel, ya pagado) */
+export type PaymentType = "wompi" | "contraentrega" | "transferencia";
 
 export const cartRequestSchema = z
   .array(
@@ -143,6 +144,92 @@ export async function createOrder(
   delivery: Delivery = "domicilio",
   barrioId: number | null = null,
 ) {
+  if (paymentType === "transferencia") throw new CartError("Forma de pago no válida.");
+  const { items, subtotal, quote, barrio } = await prepareOrder(customer, lines, delivery, barrioId);
+  if (paymentType === "contraentrega" && !quote.cod) throw new CartError("El pago contraentrega no está disponible para tu ciudad.");
+  const shipping = quote.price;
+  const cod = paymentType === "contraentrega";
+  const fee = cod ? 0 : onlineFee(subtotal + shipping);
+  const total = subtotal + shipping + fee;
+  const token = randomBytes(24).toString("base64url");
+
+  const code = await db.transaction(async (tx) => {
+    const [res] = await tx.insert(schema.orders).values({
+      ...customer,
+      token,
+      subtotal,
+      shipping,
+      fee,
+      total,
+      shippingZone: quote.delivery === "domicilio" ? "local" : quote.delivery,
+      neighborhood: barrio && barrio.city.toLowerCase() === customer.city.toLowerCase() ? barrio.name : null,
+      deliveryZone: quote.zoneName ?? null,
+      paymentType,
+      status: cod ? "por_confirmar" : "pendiente_pago",
+    });
+    const id = res.insertId;
+    const code = `LUS-${String(id).padStart(6, "0")}`;
+    await tx.update(schema.orders).set({ code }).where(eq(schema.orders.id, id));
+    await tx.insert(schema.orderItems).values(items.map((i) => ({ ...i, orderId: id })));
+    return code;
+  });
+
+  // Contraentrega: aviso al cliente (lo contactamos para confirmar) y a Lusarte (confirmar en el panel)
+  if (cod) sendLater(code, ["recibido", "venta"]);
+  return { code, token, total };
+}
+
+/**
+ * Pedido registrado a mano en el panel (ventas por WhatsApp o en persona). Ya está acordado con el cliente:
+ * transferencia = pagado; contraentrega = confirmado, por cobrar al entregar. Sin comisión de pago en línea.
+ * Igual que un pedido de la web: aparta el stock, crea la remisión en Effi y (si notify) le envía al cliente
+ * el correo de confirmación con el comprobante.
+ */
+export async function createManualOrder(
+  customer: Customer,
+  lines: CartRequest,
+  paymentType: "transferencia" | "contraentrega",
+  delivery: Delivery,
+  barrioId: number | null,
+  { notify = true } = {},
+) {
+  const { items, subtotal, quote, barrio } = await prepareOrder(customer, lines, delivery, barrioId);
+  if (paymentType === "contraentrega" && !quote.cod) throw new CartError("Pagar al recibir no está disponible para esta entrega.");
+  const shipping = quote.price;
+  const scheduledFor = quote.zone === "local" ? localDeliveryDate(scheduleOf(await getShippingSettings())) : null;
+  const paid = paymentType === "transferencia";
+
+  const code = await db.transaction(async (tx) => {
+    const [res] = await tx.insert(schema.orders).values({
+      ...customer,
+      token: randomBytes(24).toString("base64url"),
+      subtotal,
+      shipping,
+      fee: 0,
+      total: subtotal + shipping,
+      shippingZone: quote.delivery === "domicilio" ? "local" : quote.delivery,
+      neighborhood: barrio && barrio.city.toLowerCase() === customer.city.toLowerCase() ? barrio.name : null,
+      deliveryZone: quote.zoneName ?? null,
+      paymentType,
+      paymentMethod: paid ? "TRANSFERENCIA" : null,
+      paidAt: paid ? new Date() : null,
+      scheduledFor,
+      status: paid ? "pagado" : "contraentrega",
+    });
+    const id = res.insertId;
+    const code = `LUS-${String(id).padStart(6, "0")}`;
+    await tx.update(schema.orders).set({ code }).where(eq(schema.orders.id, id));
+    await tx.insert(schema.orderItems).values(items.map((i) => ({ ...i, orderId: id })));
+    await reserveStock(tx, id);
+    return code;
+  });
+  refreshCatalog();
+  sendLater(code, notify ? ["confirmacion"] : [], { remision: true });
+  return { code };
+}
+
+/** Valida el carrito (precios y stock leídos ahora, sin caché) y la entrega elegida. Lanza CartError si algo no se puede vender. */
+async function prepareOrder(customer: Customer, lines: CartRequest, delivery: Delivery, barrioId: number | null) {
   if (lines.length === 0) throw new CartError("Tu carrito está vacío.");
   const admin = await loadProducts();
   const index = indexOptions(toPublicCatalog(admin));
@@ -180,37 +267,7 @@ export async function createOrder(
   if (!quote.available)
     throw new CartError(quote.needsBarrio ? quote.estimate : "Esa forma de entrega no está disponible para tu dirección.");
   const barrio = barrioId ? findBarrio(barrioId) : null;
-  if (paymentType === "contraentrega" && !quote.cod) throw new CartError("El pago contraentrega no está disponible para tu ciudad.");
-  const shipping = quote.price;
-  const cod = paymentType === "contraentrega";
-  const fee = cod ? 0 : onlineFee(subtotal + shipping);
-  const total = subtotal + shipping + fee;
-  const token = randomBytes(24).toString("base64url");
-
-  const code = await db.transaction(async (tx) => {
-    const [res] = await tx.insert(schema.orders).values({
-      ...customer,
-      token,
-      subtotal,
-      shipping,
-      fee,
-      total,
-      shippingZone: quote.delivery === "domicilio" ? "local" : quote.delivery,
-      neighborhood: barrio && barrio.city.toLowerCase() === customer.city.toLowerCase() ? barrio.name : null,
-      deliveryZone: quote.zoneName ?? null,
-      paymentType,
-      status: cod ? "por_confirmar" : "pendiente_pago",
-    });
-    const id = res.insertId;
-    const code = `LUS-${String(id).padStart(6, "0")}`;
-    await tx.update(schema.orders).set({ code }).where(eq(schema.orders.id, id));
-    await tx.insert(schema.orderItems).values(items.map((i) => ({ ...i, orderId: id })));
-    return code;
-  });
-
-  // Contraentrega: aviso al cliente (lo contactamos para confirmar) y a Lusarte (confirmar en el panel)
-  if (cod) sendLater(code, ["recibido", "venta"]);
-  return { code, token, total };
+  return { items, subtotal, quote, barrio };
 }
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];

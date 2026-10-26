@@ -123,3 +123,18 @@ export function describeDay(date: Ymd, now = new Date()) {
 
 /** "lunes 20 de octubre" (para el panel y los correos). */
 export const formatDay = (date: Ymd) => dayFmt.format(new Date(`${date}T00:00:00Z`));
+
+/**
+ * Cuándo llega (o se recoge) un pedido local ya despachado, en lenguaje claro: el día del despacho + la franja.
+ * Las franjas se llaman "Mañana (9 a. m. – 12 m.)", "Tarde (…)", "Noche (…)": solas, "Llega: Mañana" se lee como
+ * "llega mañana" (el día siguiente). Por eso se escribe "hoy en la mañana (9 a. m. – 12 m.)".
+ */
+export function describeDelivery(window: string | null, shippedAt: Date | null, now = new Date()) {
+  const day = shippedAt ? describeDay(ymd(bogotaNow(shippedAt)), now) : "hoy";
+  const label = window?.trim();
+  if (!label) return day;
+  if (/^(hoy|el)\s/i.test(label)) return label; // ya trae el día
+  const part = label.match(/^(mañana|tarde|noche)\b\s*(.*)$/i);
+  if (part) return `${day} en la ${part[1].toLowerCase()}${part[2] ? ` ${part[2]}` : ""}`;
+  return `${day}, ${label.charAt(0).toLowerCase()}${label.slice(1)}`;
+}

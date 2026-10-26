@@ -1,6 +1,6 @@
 import { formatCOP } from "@/lib/format";
 import type { OrderWithItems } from "@/lib/shop/orders";
-import { formatDay } from "@/lib/shop/calendar";
+import { formatDay, describeDelivery } from "@/lib/shop/calendar";
 import { site } from "@/lib/site";
 import { box, button, esc, h2, layout, p, rows, siteUrl, textFooter } from "./layout";
 
@@ -180,7 +180,7 @@ function localShippedEmail(o: OrderWithItems): Rendered {
   if (isPickup(o)) return pickupReadyEmail(o);
   const cod = isCod(o);
   const title = "Tu pedido va en camino";
-  const when = o.deliveryWindow ?? "hoy";
+  const when = describeDelivery(o.deliveryWindow, o.shippedAt);
   const html = layout({
     preheader: `Tu pedido ${o.code} llega ${when}.${cod ? ` Ten listos ${formatCOP(o.total)}.` : ""}`,
     title,
@@ -204,7 +204,7 @@ function localShippedEmail(o: OrderWithItems): Rendered {
 function pickupReadyEmail(o: OrderWithItems): Rendered {
   const cod = isCod(o);
   const title = "Tu pedido está listo para recoger";
-  const when = o.deliveryWindow ?? "hoy";
+  const when = describeDelivery(o.deliveryWindow, o.shippedAt);
   const wa = `https://wa.me/${site.whatsapp}?text=${encodeURIComponent(`Hola Lusarte, voy a recoger mi pedido ${o.code}`)}`;
   const html = layout({
     preheader: `Tu pedido ${o.code} ya está listo: ${when}.`,

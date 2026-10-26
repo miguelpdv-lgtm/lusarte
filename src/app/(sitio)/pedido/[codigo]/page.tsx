@@ -7,7 +7,7 @@ import { WhatsAppIcon } from "@/components/ui/icons";
 import { formatCOP } from "@/lib/format";
 import { applyTransaction, getOrder } from "@/lib/shop/orders";
 import { fetchTransaction } from "@/lib/shop/wompi";
-import { describeDay } from "@/lib/shop/calendar";
+import { describeDay, describeDelivery } from "@/lib/shop/calendar";
 import { whatsappUrl } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Tu pedido", robots: { index: false } };
@@ -61,8 +61,8 @@ export default async function PedidoPage({ params, searchParams }: PageProps<"/p
         : `Te lo llevamos ${describeDay(order.scheduledFor)}, según nuestra ruta. Ese día te avisamos el tiempo estimado.`
       : local && status === "despachado"
         ? pickup
-          ? `Listo para recoger: ${order.deliveryWindow ?? "hoy"}. Escríbenos antes de venir.`
-          : `Va en camino con nuestro domiciliario: llega ${order.deliveryWindow ?? "hoy"}.`
+          ? `Listo para recoger: ${describeDelivery(order.deliveryWindow, order.shippedAt)}. Escríbenos antes de venir.`
+          : `Va en camino con nuestro domiciliario: llega ${describeDelivery(order.deliveryWindow, order.shippedAt)}.`
         : !local && (status === "pagado" || status === "despachado")
           ? "El envío es flete al cobro: lo pagas a la transportadora al recibir."
           : null;

@@ -1,0 +1,1 @@
+ALTER TABLE `orders` ADD `fee` int DEFAULT 0 NOT NULL;

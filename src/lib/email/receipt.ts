@@ -1,4 +1,5 @@
 import "server-only";
+import { ONLINE_FEE_LABEL } from "@/lib/shop/fees";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import fontkit from "@pdf-lib/fontkit";
@@ -267,6 +268,7 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
     ...(o.shipping > 0
       ? [{ ref: "", desc: `Domicilio · ${o.city}`, note: "", qty: 1, price: o.shipping }]
       : []),
+    ...(o.fee > 0 ? [{ ref: "", desc: ONLINE_FEE_LABEL, note: "", qty: 1, price: o.fee }] : []),
   ];
   concepts.forEach((c, idx) => {
     const lines = wrap(c.desc, f.regular, 8.5, descW);
@@ -323,8 +325,10 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
   card(tx, y, 200, blockH, { fill: C.blanco });
   const tot: [string, string][] = [
     ["Subtotal productos", formatCOP(o.subtotal)],
-    ["Descuento", formatCOP(0)],
+    // Caben tres filas: con comisión, esta reemplaza al descuento (siempre 0)
+    ...(o.fee > 0 ? [] : [["Descuento", formatCOP(0)] as [string, string]]),
     ["Envío", o.shippingZone === "nacional" ? "Al cobro" : o.shippingZone === "recoger" ? "Recoge" : formatCOP(o.shipping)],
+    ...(o.fee > 0 ? [["Comisión pago en línea", formatCOP(o.fee)] as [string, string]] : []),
   ];
   tot.forEach(([k, v], i) => {
     text(k, tx + 12, y - 18 - i * 14, 8.5, f.regular, C.suave);

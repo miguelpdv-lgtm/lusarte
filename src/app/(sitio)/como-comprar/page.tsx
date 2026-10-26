@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { InfoPage } from "@/components/store/InfoPage";
+import { formatCOP } from "@/lib/format";
+import { ONLINE_FEE, onlineFeeRate } from "@/lib/shop/fees";
 import { getShippingSettings } from "@/lib/shop/shipping";
 import { whatsappUrl } from "@/lib/site";
 
@@ -35,7 +37,8 @@ export default async function ComoComprarPage() {
       </p>
       <h3 className="-mb-3 font-bold">3. Elige tu método de pago</h3>
       <p>
-        Paga en línea con tarjeta, PSE, Nequi o Bancolombia a través de Wompi.
+        Paga en línea con tarjeta, PSE, Nequi o Bancolombia a través de Wompi. Desde {formatCOP(ONLINE_FEE.threshold)}, el pago en línea suma la comisión de Wompi (
+        {onlineFeeRate()}). Si eres de otra ciudad y prefieres pagar por transferencia, escríbenos por WhatsApp.
         {cod && ` En ${cod} también puedes pagar contra entrega, previa coordinación: te escribimos por WhatsApp para confirmar tu pedido.`}
       </p>
       <h3 className="-mb-3 font-bold">4. Recibe tu pedido</h3>

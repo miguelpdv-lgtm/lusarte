@@ -1,3 +1,4 @@
+import { ONLINE_FEE_LABEL } from "@/lib/shop/fees";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -184,6 +185,12 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
             <dt>Envío</dt>
             <dd className="tabular-nums">{!local ? "Al cobro" : pickup ? "Recoge" : formatCOP(order.shipping)}</dd>
           </div>
+          {order.fee > 0 && (
+            <div className="flex justify-between">
+              <dt>{ONLINE_FEE_LABEL}</dt>
+              <dd className="tabular-nums">{formatCOP(order.fee)}</dd>
+            </div>
+          )}
           <div className="flex justify-between text-base font-bold">
             <dt>Total</dt>
             <dd className="tabular-nums">{formatCOP(order.total)}</dd>

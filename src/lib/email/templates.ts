@@ -1,3 +1,4 @@
+import { ONLINE_FEE_LABEL } from "@/lib/shop/fees";
 import { formatCOP } from "@/lib/format";
 import type { OrderWithItems } from "@/lib/shop/orders";
 import { formatDay, describeDelivery } from "@/lib/shop/calendar";
@@ -35,6 +36,7 @@ function itemsHtml(o: OrderWithItems) {
       value: formatCOP(i.unitPrice * i.quantity),
     })),
     { label: "Envío", value: shippingLabel(o) },
+    ...(o.fee > 0 ? [{ label: ONLINE_FEE_LABEL, value: formatCOP(o.fee) }] : []),
     { label: "Total", value: formatCOP(o.total), strong: true },
   ]);
 }
@@ -43,6 +45,7 @@ function itemsText(o: OrderWithItems) {
   return [
     ...o.items.map((i) => `- ${lineName(i)} × ${i.quantity}: ${formatCOP(i.unitPrice * i.quantity)}${i.note ? `\n  Personalización: ${i.note}` : ""}`),
     `Envío: ${shippingLabel(o)}`,
+    ...(o.fee > 0 ? [`${ONLINE_FEE_LABEL}: ${formatCOP(o.fee)}`] : []),
     `Total: ${formatCOP(o.total)}`,
   ].join("\n");
 }

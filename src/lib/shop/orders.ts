@@ -12,6 +12,7 @@ import { createRemision } from "@/lib/effi/sales";
 import { sendOrderEmail } from "@/lib/email/order-emails";
 import type { EmailKind } from "@/lib/email/templates";
 import { findBarrio } from "./barrios";
+import { onlineFee } from "./fees";
 import { findCity, findDepartment } from "./places";
 import { localDeliveryDate } from "./calendar";
 import { deliveryOptions, getShippingSettings, scheduleOf, type Delivery } from "./shipping";
@@ -182,6 +183,8 @@ export async function createOrder(
   if (paymentType === "contraentrega" && !quote.cod) throw new CartError("El pago contraentrega no está disponible para tu ciudad.");
   const shipping = quote.price;
   const cod = paymentType === "contraentrega";
+  const fee = cod ? 0 : onlineFee(subtotal + shipping);
+  const total = subtotal + shipping + fee;
   const token = randomBytes(24).toString("base64url");
 
   const code = await db.transaction(async (tx) => {
@@ -190,7 +193,8 @@ export async function createOrder(
       token,
       subtotal,
       shipping,
-      total: subtotal + shipping,
+      fee,
+      total,
       shippingZone: quote.delivery === "domicilio" ? "local" : quote.delivery,
       neighborhood: barrio && barrio.city.toLowerCase() === customer.city.toLowerCase() ? barrio.name : null,
       deliveryZone: quote.zoneName ?? null,
@@ -206,7 +210,7 @@ export async function createOrder(
 
   // Contraentrega: aviso al cliente (lo contactamos para confirmar) y a Lusarte (confirmar en el panel)
   if (cod) sendLater(code, ["recibido", "venta"]);
-  return { code, token, total: subtotal + shipping };
+  return { code, token, total };
 }
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];

@@ -51,6 +51,8 @@ Cada pedido pagado crea su **remisión de venta** en Effi, igual a las que la cl
 
 **Cuándo se crean:** solo con Wompi en **producción** (llave `pub_prod_…`). Con llaves de prueba no se crean, para que una compra de prueba no registre una venta real; el pedido muestra "Sin remisión" y el motivo. `EFFI_REMISIONES=siempre` las fuerza y `EFFI_REMISIONES=nunca` las apaga.
 
+**Comisión del pago en línea:** desde 150.000 pesos (productos + domicilio), el pago con Wompi suma 3,69% + 700 (`src/lib/shop/fees.ts`). En la remisión va como una línea más, "COMISION PAGO EN LINEA (WOMPI)", para que cuadre con lo cobrado. Usa el artículo de `EFFI_ARTICULO_COMISION`; si está vacío, el del domicilio (492).
+
 **Si falla** (por ejemplo, sin existencias en Effi o la API key vencida): el pago no se afecta, el error queda en el pedido, el aviso de venta lo dice y el panel muestra **Crear remisión en Effi** para reintentar (o se crea a mano).
 
 **Pruebas:** Effi no tiene ambiente de pruebas. Las del 2026-10-19 dejaron las remisiones **931 y 932 anuladas** (autorizadas por el usuario), con el cliente CONSUMIDOR FINAL para no crear clientes.

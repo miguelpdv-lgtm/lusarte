@@ -7,6 +7,8 @@ import type { Delivery, DeliveryOption } from "@/lib/shop/shipping";
 import { cartSubtotal, useCart } from "@/lib/cart/store";
 import { lineKey } from "@/lib/cart/types";
 import { formatCOP } from "@/lib/format";
+import { ONLINE_FEE, ONLINE_FEE_LABEL, onlineFee, onlineFeeRate } from "@/lib/shop/fees";
+import { whatsappUrl } from "@/lib/site";
 import { lineStatus, useQuote } from "./useQuote";
 
 const inputClass =
@@ -60,8 +62,13 @@ export function CheckoutForm({ departments, idTypes }: Props) {
   const [paymentType, setPaymentType] = useState<"wompi" | "contraentrega">(v.paymentType === "contraentrega" ? "contraentrega" : "wompi");
   const quote = options ? (options.find((o) => o.delivery === delivery) ?? options[0]) : null;
   const shipping = quote ? quote.price : null;
-  const total = subtotal + (shipping ?? 0);
   const cod = !!quote?.cod && paymentType === "contraentrega";
+  // Desde 150.000 el pago en línea suma la comisión de Wompi (src/lib/shop/fees.ts)
+  const base = subtotal + (shipping ?? 0);
+  const feeApplies = !!quote && base >= ONLINE_FEE.threshold;
+  const fee = quote && !cod ? onlineFee(base) : 0;
+  const total = base + fee;
+  const national = quote?.delivery === "nacional";
 
   // Tarifa y estimado de entrega al elegir el municipio
   useEffect(() => {
@@ -126,6 +133,15 @@ export function CheckoutForm({ departments, idTypes }: Props) {
       </div>
     );
   }
+
+  const transferMessage = [
+    "¡Hola Lusarte! Quiero hacer este pedido y pagar por transferencia:",
+    ...lines.map((l) => `- ${l.productName}${l.optionName ? ` · ${l.optionName}` : ""} × ${l.quantity}: ${formatCOP(l.price * l.quantity)}`),
+    `Subtotal: ${formatCOP(subtotal)}`,
+    city.trim() ? `Envío a: ${city.trim()}${national ? " (flete al cobro)" : ""}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const cartJson = JSON.stringify(lines.map((l) => ({ optionId: l.optionId, quantity: l.quantity, note: l.note })));
 
@@ -328,6 +344,37 @@ export function CheckoutForm({ departments, idTypes }: Props) {
                   </label>
                 ))}
               </div>
+              {feeApplies && (
+                <p role="note" className="rounded-2xl bg-miel/50 px-4 py-3 text-sm">
+                  <strong>Compras desde {formatCOP(ONLINE_FEE.threshold)}:</strong> el pago en línea suma la comisión de Wompi ({onlineFeeRate()}),{" "}
+                  {formatCOP(onlineFee(base))} en tu pedido.{" "}
+                  {quote.cod
+                    ? "Si no vas a pagar con tarjeta de crédito, elige Pagar al recibir: en efectivo o transferencia, sin comisión."
+                    : !national && "Si prefieres pagar por transferencia sin comisión, escríbenos por WhatsApp."}
+                </p>
+              )}
+              {(national || (feeApplies && !quote.cod)) && (
+                <div role="note" className="grid gap-2 rounded-2xl border-2 border-carbon/20 bg-white px-4 py-3 text-sm">
+                  <p>
+                    {national ? (
+                      <>
+                        <strong>¿Vives en otra ciudad?</strong> Puedes pagar en línea aquí o, si prefieres pagar por transferencia
+                        {feeApplies ? " (sin comisión)" : ""}, escríbenos por WhatsApp y coordinamos el pago y el envío.
+                      </>
+                    ) : (
+                      <>Para pagar por transferencia, escríbenos por WhatsApp y coordinamos el pago y la entrega.</>
+                    )}
+                  </p>
+                  <a
+                    href={whatsappUrl(transferMessage)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="toon toon-press inline-block justify-self-start rounded-full bg-oliva px-4 py-2 text-sm font-bold"
+                  >
+                    Coordinar por WhatsApp
+                  </a>
+                </div>
+              )}
             </>
           )}
         </fieldset>
@@ -363,6 +410,12 @@ export function CheckoutForm({ departments, idTypes }: Props) {
               {!quote ? "Según tu ciudad" : quote.delivery === "nacional" ? "Al cobro" : shipping ? formatCOP(shipping) : "Gratis"}
             </dd>
           </div>
+          {fee > 0 && (
+            <div className="flex justify-between">
+              <dt>{ONLINE_FEE_LABEL}</dt>
+              <dd className="font-bold tabular-nums">{formatCOP(fee)}</dd>
+            </div>
+          )}
           <div className="flex justify-between border-t-2 border-carbon/10 pt-3 text-base">
             <dt className="font-bold">Total</dt>
             <dd className="font-display text-xl font-extrabold tabular-nums">{formatCOP(total)}</dd>
@@ -420,7 +473,7 @@ export function CheckoutForm({ departments, idTypes }: Props) {
         <p className="text-center text-xs text-carbon-suave">
           {cod
             ? "Te escribimos por WhatsApp para confirmar tu pedido. Los pedidos están sujetos a disponibilidad."
-            : "Pago seguro con Wompi: tarjeta, PSE, Nequi o Bancolombia."}
+            : `Pago seguro con Wompi: tarjeta, PSE, Nequi o Bancolombia.${fee > 0 ? " El total incluye la comisión del pago en línea." : ""}`}
         </p>
       </aside>
     </form>

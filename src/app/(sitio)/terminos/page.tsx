@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { InfoPage } from "@/components/store/InfoPage";
+import { formatCOP } from "@/lib/format";
+import { ONLINE_FEE, onlineFeeRate } from "@/lib/shop/fees";
 import { business } from "@/lib/legal";
 import { whatsappUrl } from "@/lib/site";
 
@@ -55,7 +57,9 @@ export default function TerminosPage() {
       <ul>
         <li>
           <strong>Pago en línea:</strong> tu pedido queda confirmado cuando el pago es aprobado. Los pagos los procesa Wompi (tarjeta débito o crédito, PSE, Nequi y
-          Botón Bancolombia); Lusarte no conoce ni almacena los datos de tu tarjeta.
+          Botón Bancolombia); Lusarte no conoce ni almacena los datos de tu tarjeta. En compras desde {formatCOP(ONLINE_FEE.threshold)} (productos más domicilio), el pago
+          en línea suma la comisión de Wompi ({onlineFeeRate()}), que se muestra en el resumen antes de pagar. Pagar contra entrega o por transferencia coordinada por
+          WhatsApp no la lleva.
         </li>
         <li>
           <strong>Pago contra entrega</strong> (solo Barranquilla y Soledad, previa coordinación): al enviarlo, te contactamos por WhatsApp para confirmarlo. El pedido

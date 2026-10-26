@@ -24,6 +24,8 @@ const VENTA = {
   cuenta: 1,
   /** Artículo de servicio para el envío */
   domicilio: 492,
+  /** Artículo de servicio para la comisión del pago en línea (EFFI_ARTICULO_COMISION; si no, el del domicilio) */
+  comision: Number(process.env.EFFI_ARTICULO_COMISION) || 492,
 };
 
 /**
@@ -94,6 +96,7 @@ function remisionBody(o: OrderWithItems, cliente: number) {
     observacion: i.note ? clip(`Personalización: ${i.note}`, 255) : "",
   }));
   if (o.shipping > 0) lines.push({ articulo: VENTA.domicilio, descripcion: "DOMICILIO", cantidad: 1, precio: o.shipping, observacion: "" });
+  if (o.fee > 0) lines.push({ articulo: VENTA.comision, descripcion: "COMISION PAGO EN LINEA (WOMPI)", cantidad: 1, precio: o.fee, observacion: "" });
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/Bogota" });
 
   return {

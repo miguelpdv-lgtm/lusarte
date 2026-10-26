@@ -177,6 +177,8 @@ export const orders = mysqlTable(
     addressNotes: varchar({ length: 200 }),
     subtotal: int().notNull(),
     shipping: int().notNull(),
+    /** Comisión del pago en línea que asume el cliente (desde 150.000, src/lib/shop/fees.ts); 0 si no aplica */
+    fee: int().notNull().default(0),
     /** local (domicilio propio en las ciudades locales) | nacional (transportadora) */
     shippingZone: varchar({ length: 10 }).notNull().default("nacional"),
     /** wompi (pago en línea) | contraentrega (paga al recibir; solo ciudades locales que lo permiten) */

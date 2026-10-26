@@ -1,3 +1,4 @@
+import { ONLINE_FEE_LABEL } from "@/lib/shop/fees";
 import { timingSafeEqual } from "node:crypto";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -118,6 +119,12 @@ export default async function PedidoPage({ params, searchParams }: PageProps<"/p
             <dt>Envío</dt>
             <dd className="font-bold tabular-nums">{!local ? "Al cobro" : pickup ? "Recoges" : formatCOP(order.shipping)}</dd>
           </div>
+          {order.fee > 0 && (
+            <div className="flex justify-between">
+              <dt>{ONLINE_FEE_LABEL}</dt>
+              <dd className="font-bold tabular-nums">{formatCOP(order.fee)}</dd>
+            </div>
+          )}
           <div className="flex justify-between text-base">
             <dt className="font-bold">Total</dt>
             <dd className="font-display text-xl font-extrabold tabular-nums">{formatCOP(order.total)}</dd>

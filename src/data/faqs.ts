@@ -10,7 +10,7 @@ export const faqs = [
   },
   {
     q: "¿Qué métodos de pago aceptan?",
-    a: "En línea: tarjetas débito y crédito, PSE, Nequi y Botón Bancolombia, a través de la pasarela segura de Wompi. En Barranquilla y Soledad también puedes pagar contra entrega, previa coordinación por WhatsApp.",
+    a: "En línea: tarjetas débito y crédito, PSE, Nequi y Botón Bancolombia, a través de la pasarela segura de Wompi. En compras desde $150.000, el pago en línea suma la comisión de Wompi (3,69% + $700). En Barranquilla y Soledad también puedes pagar contra entrega, previa coordinación por WhatsApp; desde otras ciudades puedes escribirnos por WhatsApp para pagar por transferencia.",
   },
   {
     q: "¿Cómo cuido mi vela para que dure más?",

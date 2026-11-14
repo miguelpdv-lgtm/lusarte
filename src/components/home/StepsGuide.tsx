@@ -40,7 +40,9 @@ const steps = [
 export function StepsGuide() {
   return (
     // Franja verde suave a todo el ancho con bordes ondulados, con título manuscrito subrayado y garabato de vela
-    <section aria-labelledby="pasos" className="wave-y bg-oliva/45">
+    // Sube 33 px para que su onda de arriba quede sobre el borde de la sección anterior. Fondo sólido (el mismo
+    // verde suave sobre crema) para que no se mezcle con el lavanda donde se cruzan
+    <section aria-labelledby="pasos" className="wave-y relative z-10 -mt-[33px] bg-[color-mix(in_srgb,var(--color-oliva)_45%,var(--color-crema))]">
       <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 md:py-24 lg:px-8">
         <div className="flex items-start justify-between gap-6">
           <div>

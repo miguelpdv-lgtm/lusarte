@@ -104,9 +104,15 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-3 pt-2 md:mt-16 md:border-t md:border-crema/15 md:pt-6 text-xs text-crema/60 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-10 flex flex-col gap-3 pt-2 md:mt-16 md:border-t md:border-crema/15 md:pt-6 text-xs text-crema/60 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6">
           <p>© {new Date().getFullYear()} Lusarte. Todos los derechos reservados.</p>
           <p>Pagos seguros con Wompi · Tarjetas, PSE, Nequi y Bancolombia</p>
+          <p>
+            Desarrollado por{" "}
+            <a href="https://miguelposada.dev/" target="_blank" rel="noopener" className="font-semibold text-crema/85 underline-offset-4 hover:text-miel hover:underline">
+              Miguel Posada
+            </a>
+          </p>
         </div>
       </div>
     </footer>

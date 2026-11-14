@@ -103,21 +103,12 @@ export async function storeStatus(): Promise<StatusItem[]> {
   return items;
 }
 
-/** Fotos del panel: que la carpeta sobreviva a publicar un zip nuevo y que no falte ninguna en el disco. */
+/** Fotos del panel: que ninguna registrada en la base se haya quedado sin archivo (ni en el disco ni en la copia de la base). */
 async function photosStatus(): Promise<StatusItem> {
-  const { uploadsLocation, missingImages } = await import("@/lib/storage");
+  const { missingImages } = await import("@/lib/storage");
   const { getHeroSettings } = await import("@/lib/home/hero");
   const { schema } = await import("@/lib/db");
   const label = "Fotos del panel";
-  const where = uploadsLocation();
-  if (!where.persistent && process.env.NODE_ENV === "production") {
-    return {
-      label,
-      value: "Se borrarán al publicar",
-      ok: false,
-      hint: `Se guardan en ${where.rel}, que GoDaddy borra con cada zip nuevo. En las variables de GoDaddy deja UPLOADS_DIR vacía o pon public/assets/uploads.`,
-    };
-  }
   try {
     const hero = await getHeroSettings();
     const rows = await db.select({ file: schema.productImages.file }).from(schema.productImages);
@@ -128,9 +119,14 @@ async function photosStatus(): Promise<StatusItem> {
         label,
         value: `Faltan ${missing.length} de ${files.length}`,
         ok: false,
-        hint: `Estas fotos están en la base pero no en el servidor (${where.rel}), así que no se ven: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}. Vuelve a subirlas desde el panel.`,
+        hint: `Estas fotos se registraron pero su archivo no está en el servidor, así que la tienda no las muestra: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}. Vuelve a subirlas desde el panel (Productos marca cuáles).`,
       };
-    return { label, value: files.length === 1 ? "1 guardada" : files.length ? `${files.length} guardadas` : "Ninguna todavía", ok: true, hint: `En ${where.rel}: se conservan al publicar un zip nuevo.` };
+    return {
+      label,
+      value: files.length === 1 ? "1 guardada" : files.length ? `${files.length} guardadas` : "Ninguna todavía",
+      ok: true,
+      hint: "Con copia en la base de datos: se conservan al publicar un zip nuevo.",
+    };
   } catch {
     return { label, value: "Sin revisar", ok: false, hint: "No se pudo leer la base de datos." };
   }

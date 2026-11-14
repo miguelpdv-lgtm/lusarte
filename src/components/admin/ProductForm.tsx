@@ -21,7 +21,7 @@ type OptionRow = {
   stockMinimo: string;
   hidden: boolean;
 };
-type ImageRow = { key: string; id: number | null; file: string; url: string; alt: string; width: number; height: number };
+type ImageRow = { key: string; id: number | null; file: string; url: string; alt: string; width: number; height: number; missing?: boolean };
 type Upload = { key: string; name: string; error?: string };
 
 const DEFAULT_PERSONALIZATION = "Color y mensaje";
@@ -69,7 +69,7 @@ export function ProductForm({ product, effiCategories, moveTargets }: Props) {
     })),
   );
   const [images, setImages] = useState<ImageRow[]>(
-    product.images.map((i) => ({ key: newKey(), id: i.id, file: i.url.split("/").pop()!, url: i.url, alt: i.alt, width: i.width, height: i.height })),
+    product.images.map((i) => ({ key: newKey(), id: i.id, file: i.url.split("/").pop()!, url: i.url, alt: i.alt, width: i.width, height: i.height, missing: i.missing })),
   );
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [dirty, setDirty] = useState(false);
@@ -258,10 +258,19 @@ export function ProductForm({ product, effiCategories, moveTargets }: Props) {
                 {images.map((img, i) => (
                   <li key={img.key} className="flex gap-3 rounded-2xl border-2 border-carbon/20 bg-white/60 p-2">
                     <div className="relative size-20 shrink-0 overflow-hidden rounded-xl border-2 border-carbon/20">
-                      <Image src={img.url} alt="" fill sizes="80px" className="object-cover" />
+                      {img.missing ? (
+                        <span className="grid h-full place-items-center bg-miel/60 p-1 text-center text-[0.6rem] leading-tight font-bold">Falta el archivo</span>
+                      ) : (
+                        <Image src={img.url} alt="" fill sizes="80px" className="object-cover" />
+                      )}
                       {i === 0 && <span className="absolute inset-x-0 bottom-0 bg-carbon/80 text-center text-[0.6rem] font-bold text-crema">Principal</span>}
                     </div>
                     <div className="grid min-w-0 flex-1 gap-2">
+                      {img.missing && (
+                        <p className="text-xs font-semibold text-alerta">
+                          Esta foto se registró pero el archivo no llegó al servidor, así que la tienda no la muestra. Súbela de nuevo y luego quita esta.
+                        </p>
+                      )}
                       <input
                         value={img.alt}
                         onChange={(e) => {

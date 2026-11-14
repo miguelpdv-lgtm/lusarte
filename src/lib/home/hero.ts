@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { cache } from "react";
 import { z } from "zod";
 import { db, schema } from "@/lib/db";
-import { mediaUrl } from "@/lib/storage";
+import { availableImages, mediaUrl } from "@/lib/storage";
 
 // Fotos del hero del inicio, editables desde Panel → Portada y guardadas en settings["hero"].
 // Sin foto propia se usa la panorámica incluida en el sitio (public/hero).
@@ -43,6 +43,8 @@ const toPhoto = (p: z.infer<typeof photoSchema>): HeroPhoto => ({ src: mediaUrl(
 /** Fotos que muestra el hero. En celular: la foto de celular, o si no hay, la de computador recortada. */
 export async function getHeroPhotos() {
   const s = await getHeroSettings();
-  const desktop = s.desktop ? toPhoto(s.desktop) : DEFAULT_HERO;
-  return { desktop, mobile: s.mobile ? toPhoto(s.mobile) : null };
+  // Si el archivo de una foto propia no está, la incluida (mejor que una foto rota)
+  const available = s.desktop || s.mobile ? await availableImages() : new Set<string>();
+  const desktop = s.desktop && available.has(s.desktop.file) ? toPhoto(s.desktop) : DEFAULT_HERO;
+  return { desktop, mobile: s.mobile && available.has(s.mobile.file) ? toPhoto(s.mobile) : null };
 }

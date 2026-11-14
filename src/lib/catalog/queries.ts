@@ -2,7 +2,7 @@ import "server-only";
 import { asc, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db, schema } from "@/lib/db";
-import { mediaUrl } from "@/lib/storage";
+import { availableImages, mediaUrl } from "@/lib/storage";
 import type { AdminProduct, Product } from "./types";
 
 /** Etiqueta de caché del catálogo: se invalida al guardar en el panel y al sincronizar con Effi. */
@@ -13,7 +13,7 @@ export const CATALOG_TAG = "catalogo";
  * Es la vista completa del panel; la tienda filtra sobre ella.
  */
 export async function loadProducts(): Promise<AdminProduct[]> {
-  const [rows, options, images] = await Promise.all([
+  const [rows, options, images, available] = await Promise.all([
     db.select().from(schema.products),
     db
       .select({ option: schema.productOptions, article: schema.effiArticles })
@@ -21,6 +21,7 @@ export async function loadProducts(): Promise<AdminProduct[]> {
       .innerJoin(schema.effiArticles, eq(schema.effiArticles.id, schema.productOptions.effiArticleId))
       .orderBy(asc(schema.productOptions.position), asc(schema.productOptions.id)),
     db.select().from(schema.productImages).orderBy(asc(schema.productImages.position), asc(schema.productImages.id)),
+    availableImages(),
   ]);
 
   const optionsBy = Map.groupBy(options, (o) => o.option.productId);
@@ -66,6 +67,7 @@ export async function loadProducts(): Promise<AdminProduct[]> {
       alt: i.alt,
       width: i.width,
       height: i.height,
+      ...(available.has(i.file) ? {} : { missing: true }),
     })),
   }));
 }
@@ -79,6 +81,8 @@ export function toPublicCatalog(list: AdminProduct[]): Product[] {
       {
         ...p,
         category: p.category,
+        // Una foto sin archivo se vería rota: sin ella el producto muestra el marcador de "sin foto"
+        images: p.images.filter((i) => !i.missing),
         options: options.map(({ id, name, price, compareAtPrice, stock, soldOut }) => ({ id, name, price, compareAtPrice, stock, soldOut })),
       },
     ];

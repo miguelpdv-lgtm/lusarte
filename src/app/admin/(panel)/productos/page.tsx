@@ -118,7 +118,7 @@ export default async function ProductosAdmin({ searchParams }: PageProps<"/admin
                   className="flex items-center gap-3 rounded-2xl border-2 border-carbon/15 bg-crema-claro p-2.5 transition-colors hover:border-carbon"
                 >
                   <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border-2 border-carbon/20 bg-lavanda/50">
-                    {p.images[0] && <Image src={p.images[0].url} alt="" fill sizes="56px" className="object-cover" />}
+                    {p.images[0] && !p.images[0].missing && <Image src={p.images[0].url} alt="" fill sizes="56px" className="object-cover" />}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-bold">{p.name}</p>
@@ -130,6 +130,7 @@ export default async function ProductosAdmin({ searchParams }: PageProps<"/admin
                       {ADMIN_FILTERS.agotados.test(p) && <Tag className="bg-miel">Agotado</Tag>}
                       {ADMIN_FILTERS.pocas.test(p) && <Tag className="bg-estrella">Pocas unidades</Tag>}
                       {p.images.length === 0 && <Tag className="bg-lavanda">Sin foto</Tag>}
+                      {p.images.some((i) => i.missing) && <Tag className="bg-miel">Foto por volver a subir</Tag>}
                       {!p.description.trim() && <Tag className="bg-cielo/60">Sin descripción</Tag>}
                       {!p.category && <Tag className="bg-carbon/20">Sin categoría en Effi</Tag>}
                     </div>

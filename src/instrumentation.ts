@@ -12,5 +12,14 @@ export async function register() {
     await runMigrations();
   } catch (e) {
     console.error("No se pudieron aplicar las migraciones al arrancar:", e);
+    return;
+  }
+  // Fotos del panel que solo están en el disco de este servidor: copia en la base (src/lib/storage.ts)
+  try {
+    const { backfillImages } = await import("./lib/storage");
+    const copied = await backfillImages();
+    if (copied) console.log(`Fotos copiadas a la base: ${copied}`);
+  } catch (e) {
+    console.error("No se pudieron copiar las fotos a la base:", e);
   }
 }

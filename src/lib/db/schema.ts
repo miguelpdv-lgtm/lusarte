@@ -1,4 +1,4 @@
-import { boolean, datetime, index, int, mysqlTable, primaryKey, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, customType, datetime, index, int, mysqlTable, primaryKey, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 // Effi ERP es la fuente de verdad de artículos, precios, stock y ventas.
 // effi_* es una copia local que se sincroniza (src/lib/effi/sync.ts); products/product_options/product_images
@@ -254,3 +254,16 @@ export const emailLog = mysqlTable(
   },
   (t) => [index("email_log_order_idx").on(t.orderId, t.kind)],
 );
+
+const mediumblob = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "mediumblob" });
+
+/**
+ * Copia de cada foto subida desde el panel (WebP). El disco de GoDaddy no es confiable para esto: la vista previa y
+ * el sitio publicado pueden tener discos distintos y un despliegue puede vaciar la carpeta; la base es compartida.
+ * /media/<archivo> lee primero el disco y, si no está, de aquí (src/lib/storage.ts).
+ */
+export const mediaFiles = mysqlTable("media_files", {
+  file: varchar({ length: 100 }).primaryKey(),
+  data: mediumblob().notNull(),
+  createdAt: timestamp().notNull().defaultNow(),
+});

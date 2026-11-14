@@ -31,6 +31,8 @@ export type ProductImage = {
   alt: string;
   width: number;
   height: number;
+  /** El archivo no está ni en el disco ni en la base: la tienda no la muestra y el panel pide volver a subirla */
+  missing?: boolean;
 };
 
 export type Product = {

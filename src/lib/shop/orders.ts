@@ -6,6 +6,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import { lineKey, MAX_QTY, NOTE_MAX, type CartRequest, type QuotedLine } from "@/lib/cart/types";
 import { CATALOG_TAG, loadProducts, toPublicCatalog } from "@/lib/catalog/queries";
+import { unitPrice } from "@/lib/catalog/pricing";
 import { availableUnits, type Product, type ProductOption } from "@/lib/catalog/types";
 import { db, schema } from "@/lib/db";
 import { createRemision } from "@/lib/effi/sales";
@@ -104,6 +105,7 @@ export function quoteLines(catalog: Product[], lines: CartRequest): QuotedLine[]
       key: lineKey(l),
       ok: units > 0,
       price: hit?.option.price ?? 0,
+      bulk: hit?.option.bulk ?? null,
       max: units === Infinity ? null : units,
       productName: hit?.product.name ?? "",
       optionName: hit && hit.product.options.length > 1 ? hit.option.name : null,
@@ -250,13 +252,16 @@ async function prepareOrder(customer: Customer, lines: CartRequest, delivery: De
 
   const items = lines.map((l) => {
     const { product, option } = index.get(l.optionId)!;
+    // Precio por cantidad: cuenta todas las unidades de la presentación en el pedido
+    const price = unitPrice(option, totals.get(option.id) ?? l.quantity);
     return {
       productId: product.id,
       optionId: option.id,
       effiArticleId: effiIdBy.get(option.id)!,
       productName: product.name,
       optionName: product.options.length > 1 ? option.name : "",
-      unitPrice: option.price,
+      unitPrice: price,
+      listPrice: price < option.price ? option.price : null,
       quantity: l.quantity,
       note: l.note.trim() || null,
     };

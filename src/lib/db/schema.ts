@@ -112,6 +112,9 @@ export const productOptions = mysqlTable(
     label: varchar({ length: 80 }).notNull(),
     /** Precio anterior (tachado). Solo existe en la web */
     compareAtPrice: int(),
+    /** Precio por cantidad (solo web): desde bulkMinQty unidades de esta presentación, cada una a bulkPrice */
+    bulkMinQty: int(),
+    bulkPrice: int(),
     /** Ocultar esta presentación en la web sin tocar Effi */
     hidden: boolean().notNull().default(false),
     position: int().notNull().default(0),
@@ -227,6 +230,8 @@ export const orderItems = mysqlTable(
     productName: varchar({ length: 160 }).notNull(),
     optionName: varchar({ length: 80 }).notNull(),
     unitPrice: int().notNull(),
+    /** Precio de lista cuando se cobró un precio por cantidad (unitPrice es el rebajado); null si no hubo */
+    listPrice: int(),
     quantity: int().notNull(),
     /** Respuesta a la pregunta de personalización */
     note: varchar({ length: 300 }),

@@ -24,6 +24,9 @@ export const paymentMethod = (m: string) => PAYMENT_METHODS[m] ?? m.toLowerCase(
 const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? name;
 const orderLink = (o: OrderWithItems) => siteUrl(`/pedido/${o.code}?t=${o.token}`);
 const lineName = (i: OrderWithItems["items"][number]) => `${i.productName}${i.optionName ? ` · ${i.optionName}` : ""}`;
+/** "Precio por cantidad: $ 3.000 c/u (antes $ 3.200)" si la línea se cobró con descuento por cantidad */
+const bulkNote = (i: OrderWithItems["items"][number]) =>
+  i.listPrice ? `Precio por cantidad: ${formatCOP(i.unitPrice)} c/u (antes ${formatCOP(i.listPrice)})` : "";
 
 /** Envío: valor del domicilio, "Recoges" o "Al cobro" (nacional) */
 const shippingLabel = (o: OrderWithItems) =>
@@ -33,7 +36,7 @@ function itemsHtml(o: OrderWithItems) {
   return rows([
     ...o.items.map((i) => ({
       label: `${esc(lineName(i))} <span class="mu" style="color:#5b5c5b;">× ${i.quantity}</span>`,
-      sub: i.note ? `Personalización: ${esc(i.note)}` : undefined,
+      sub: [i.note ? `Personalización: ${esc(i.note)}` : "", bulkNote(i)].filter(Boolean).join("<br>") || undefined,
       value: formatCOP(i.unitPrice * i.quantity),
     })),
     { label: "Envío", value: shippingLabel(o) },
@@ -44,7 +47,7 @@ function itemsHtml(o: OrderWithItems) {
 
 function itemsText(o: OrderWithItems) {
   return [
-    ...o.items.map((i) => `- ${lineName(i)} × ${i.quantity}: ${formatCOP(i.unitPrice * i.quantity)}${i.note ? `\n  Personalización: ${i.note}` : ""}`),
+    ...o.items.map((i) => `- ${lineName(i)} × ${i.quantity}: ${formatCOP(i.unitPrice * i.quantity)}${i.note ? `\n  Personalización: ${i.note}` : ""}${i.listPrice ? `\n  ${bulkNote(i)}` : ""}`),
     `Envío: ${shippingLabel(o)}`,
     ...(o.fee > 0 ? [`${ONLINE_FEE_LABEL}: ${formatCOP(o.fee)}`] : []),
     `Total: ${formatCOP(o.total)}`,

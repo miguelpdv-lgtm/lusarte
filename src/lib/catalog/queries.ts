@@ -3,6 +3,7 @@ import { asc, eq } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db, schema } from "@/lib/db";
 import { availableImages, mediaUrl } from "@/lib/storage";
+import { validBulk } from "./pricing";
 import type { AdminProduct, Product } from "./types";
 
 /** Etiqueta de caché del catálogo: se invalida al guardar en el panel y al sincronizar con Effi. */
@@ -47,6 +48,7 @@ export async function loadProducts(): Promise<AdminProduct[]> {
       name: o.label,
       price: a.precio,
       compareAtPrice: o.compareAtPrice,
+      bulk: o.bulkMinQty && o.bulkPrice ? { minQty: o.bulkMinQty, price: o.bulkPrice } : null,
       // Sin trazabilidad o sin control de stock: se vende sin límite
       stock: a.gestionStock <= 1 ? null : Math.max(0, a.stock),
       soldOut: !a.vigente,
@@ -83,7 +85,15 @@ export function toPublicCatalog(list: AdminProduct[]): Product[] {
         category: p.category,
         // Una foto sin archivo se vería rota: sin ella el producto muestra el marcador de "sin foto"
         images: p.images.filter((i) => !i.missing),
-        options: options.map(({ id, name, price, compareAtPrice, stock, soldOut }) => ({ id, name, price, compareAtPrice, stock, soldOut })),
+        options: options.map(({ id, name, price, compareAtPrice, bulk, stock, soldOut }) => ({
+          id,
+          name,
+          price,
+          compareAtPrice,
+          bulk: validBulk({ price, bulk }),
+          stock,
+          soldOut,
+        })),
       },
     ];
   });

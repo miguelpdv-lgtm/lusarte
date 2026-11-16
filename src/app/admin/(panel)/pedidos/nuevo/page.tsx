@@ -21,6 +21,7 @@ export default async function NuevoPedido() {
           optionId: o.id,
           name: p.options.length > 1 ? `${p.name} · ${o.name}` : p.name,
           price: o.price,
+          bulk: o.bulk,
           units: units === Infinity ? null : units,
         };
       }),

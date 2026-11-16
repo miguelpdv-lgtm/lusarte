@@ -64,6 +64,13 @@
       "when": 1794616842962,
       "tag": "0008_media_files",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1794864453552,
+      "tag": "0009_bulk_pricing",
+      "breakpoints": true
     }
   ]
 }

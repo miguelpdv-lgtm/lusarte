@@ -171,6 +171,11 @@ export default async function PedidoAdmin({ params }: PageProps<"/admin/pedidos/
                 <strong>{i.quantity} ×</strong> {i.productName}
                 {i.optionName && ` · ${i.optionName}`}
                 {i.note && <span className="block text-xs text-carbon-suave">Personalización: {i.note}</span>}
+                {i.listPrice && (
+                  <span className="block text-xs text-carbon-suave">
+                    Precio por cantidad: {formatCOP(i.unitPrice)} c/u (normal {formatCOP(i.listPrice)})
+                  </span>
+                )}
               </span>
               <span className="shrink-0 font-bold tabular-nums">{formatCOP(i.unitPrice * i.quantity)}</span>
             </li>

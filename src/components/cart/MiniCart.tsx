@@ -65,7 +65,7 @@ export function MiniCart({ checkoutEnabled }: { checkoutEnabled: boolean }) {
           <>
             <ul className="flex-1 divide-y-2 divide-carbon/10 overflow-y-auto px-5">
               {lines.map((l) => (
-                <CartLineItem key={lineKey(l)} line={l} compact onNavigate={drawer.close} />
+                <CartLineItem key={lineKey(l)} line={l} lines={lines} compact onNavigate={drawer.close} />
               ))}
             </ul>
             <div className="grid gap-3 border-t-2 border-carbon/10 px-5 py-4">

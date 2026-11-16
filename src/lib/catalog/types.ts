@@ -1,4 +1,5 @@
 // Tipos del catálogo compartidos por la tienda, el panel y los componentes cliente.
+import type { Bulk } from "./pricing";
 
 export type ProductOption = {
   id: number;
@@ -6,6 +7,8 @@ export type ProductOption = {
   /** De Effi (tarifa normal) */
   price: number;
   compareAtPrice: number | null;
+  /** Precio por cantidad (p. ej. por docena), solo web */
+  bulk: Bulk | null;
   /** De Effi. null = el artículo no lleva control de stock */
   stock: number | null;
   soldOut: boolean;

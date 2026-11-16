@@ -93,7 +93,10 @@ function remisionBody(o: OrderWithItems, cliente: number) {
     descripcion: clip(`${i.productName}${i.optionName ? ` ${i.optionName}` : ""}`, 255),
     cantidad: i.quantity,
     precio: i.unitPrice,
-    observacion: i.note ? clip(`Personalización: ${i.note}`, 255) : "",
+    observacion: clip(
+      [i.note ? `Personalización: ${i.note}` : "", i.listPrice ? `Precio por cantidad (precio normal ${i.listPrice})` : ""].filter(Boolean).join(" · "),
+      255,
+    ),
   }));
   if (o.shipping > 0) lines.push({ articulo: VENTA.domicilio, descripcion: "DOMICILIO", cantidad: 1, precio: o.shipping, observacion: "" });
   if (o.fee > 0) lines.push({ articulo: VENTA.comision, descripcion: "COMISION PAGO EN LINEA (WOMPI)", cantidad: 1, precio: o.fee, observacion: "" });

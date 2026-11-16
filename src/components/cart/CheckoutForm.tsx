@@ -5,7 +5,7 @@ import { useActionState, useEffect, useState, type ReactNode } from "react";
 import { barriosFor, citiesFor, nearestBarrioTo, placeOrder, shippingFor, type CheckoutState } from "@/app/(sitio)/checkout-actions";
 import type { Delivery, DeliveryOption } from "@/lib/shop/shipping";
 import { cartSubtotal, useCart } from "@/lib/cart/store";
-import { lineKey } from "@/lib/cart/types";
+import { lineKey, linePrice, lineTotal } from "@/lib/cart/types";
 import { formatCOP } from "@/lib/format";
 import { ONLINE_FEE, ONLINE_FEE_LABEL, onlineFee, onlineFeeRate } from "@/lib/shop/fees";
 import { whatsappUrl } from "@/lib/site";
@@ -136,7 +136,7 @@ export function CheckoutForm({ departments, idTypes }: Props) {
 
   const transferMessage = [
     "¡Hola Lusarte! Quiero hacer este pedido y pagar por transferencia:",
-    ...lines.map((l) => `- ${l.productName}${l.optionName ? ` · ${l.optionName}` : ""} × ${l.quantity}: ${formatCOP(l.price * l.quantity)}`),
+    ...lines.map((l) => `- ${l.productName}${l.optionName ? ` · ${l.optionName}` : ""} × ${l.quantity}: ${formatCOP(lineTotal(l, lines))}`),
     `Subtotal: ${formatCOP(subtotal)}`,
     city.trim() ? `Envío a: ${city.trim()}${national ? " (flete al cobro)" : ""}` : "",
   ]
@@ -394,7 +394,10 @@ export function CheckoutForm({ departments, idTypes }: Props) {
                   <span className="text-carbon-suave"> × {l.quantity}</span>
                   {s.blocked && <span className="block text-xs font-bold text-alerta">{s.unavailable ? "Ya no está disponible" : `Solo quedan ${s.max}`}</span>}
                 </span>
-                <span className="shrink-0 font-bold tabular-nums">{formatCOP(l.price * l.quantity)}</span>
+                <span className="shrink-0 text-right font-bold tabular-nums">
+                  {formatCOP(lineTotal(l, lines))}
+                  {linePrice(l, lines) < l.price && <span className="block text-xs font-semibold text-carbon-suave">{formatCOP(linePrice(l, lines))} c/u</span>}
+                </span>
               </li>
             );
           })}

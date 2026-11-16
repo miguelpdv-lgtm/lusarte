@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { lineKey, MAX_QTY, type CartLine } from "./types";
+import { lineKey, lineTotal, MAX_QTY, type CartLine } from "./types";
 
 // Estado del carrito en localStorage, compartido entre pestañas (evento "storage").
 
@@ -55,7 +55,7 @@ export function useCart() {
 }
 
 export const cartCount = (lines: CartLine[]) => lines.reduce((n, l) => n + l.quantity, 0);
-export const cartSubtotal = (lines: CartLine[]) => lines.reduce((n, l) => n + l.price * l.quantity, 0);
+export const cartSubtotal = (lines: CartLine[]) => lines.reduce((n, l) => n + lineTotal(l, lines), 0);
 
 export const cart = {
   add(line: CartLine, max: number | null) {

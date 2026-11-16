@@ -28,7 +28,7 @@ export function useQuote(lines: CartLine[], enabled = true) {
         const map = new Map(res.map((q) => [q.key, q]));
         setQuote(map);
         const updates = new Map(
-          res.filter((q) => q.ok).map((q) => [q.key, { price: q.price, productName: q.productName, optionName: q.optionName, slug: q.slug, image: q.image }]),
+          res.filter((q) => q.ok).map((q) => [q.key, { price: q.price, bulk: q.bulk, productName: q.productName, optionName: q.optionName, slug: q.slug, image: q.image }]),
         );
         cart.patch(updates);
       })

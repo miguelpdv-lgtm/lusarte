@@ -5,6 +5,7 @@ import { useActionState, useEffect, useId, useRef, useState, type ReactNode } fr
 import { uploadProductImage } from "@/app/admin/actions";
 import { saveProduct, type ProductInput, type SaveState } from "@/app/admin/product-actions";
 import type { AdminProduct } from "@/lib/catalog/types";
+import { formatCOP } from "@/lib/format";
 import { Field, inputClass } from "./Field";
 import { PresentationTools } from "./PresentationTools";
 import { shrink } from "./shrink";
@@ -18,6 +19,8 @@ type OptionRow = {
   price: string;
   precioEspecial: string;
   compareAtPrice: string;
+  bulkMinQty: string;
+  bulkPrice: string;
   stockMinimo: string;
   hidden: boolean;
 };
@@ -64,6 +67,8 @@ export function ProductForm({ product, effiCategories, moveTargets }: Props) {
       price: String(o.price),
       precioEspecial: String(o.precioEspecial),
       compareAtPrice: o.compareAtPrice === null ? "" : String(o.compareAtPrice),
+      bulkMinQty: o.bulk ? String(o.bulk.minQty) : "",
+      bulkPrice: o.bulk ? String(o.bulk.price) : "",
       stockMinimo: String(o.stockMinimo),
       hidden: o.hidden,
     })),
@@ -107,6 +112,8 @@ export function ProductForm({ product, effiCategories, moveTargets }: Props) {
       price: toInt(o.price) ?? 0,
       precioEspecial: toInt(o.precioEspecial) ?? 0,
       compareAtPrice: toInt(o.compareAtPrice),
+      bulkMinQty: toInt(o.bulkMinQty),
+      bulkPrice: toInt(o.bulkPrice),
       stockMinimo: toInt(o.stockMinimo) ?? 0,
       hidden: o.hidden,
     })),
@@ -218,6 +225,38 @@ export function ProductForm({ product, effiCategories, moveTargets }: Props) {
                       <Field label="Precio anterior" hint="Solo web, tachado.">
                         <input value={o.compareAtPrice} onChange={(e) => setOption(o.key, { compareAtPrice: e.target.value })} inputMode="numeric" className={inputClass} />
                       </Field>
+                    </div>
+                    <div className="mt-3 grid gap-3 rounded-xl bg-lavanda/25 p-3 sm:grid-cols-[1fr_1fr_1.4fr] sm:items-start">
+                      <Field label="Precio por cantidad · desde" hint="Unidades de esta presentación. 12 = docena.">
+                        <input
+                          value={o.bulkMinQty}
+                          onChange={(e) => setOption(o.key, { bulkMinQty: e.target.value })}
+                          inputMode="numeric"
+                          placeholder="12"
+                          className={inputClass}
+                        />
+                      </Field>
+                      <Field label="Precio por unidad" hint="Solo web. Vacío = sin descuento.">
+                        <input
+                          value={o.bulkPrice}
+                          onChange={(e) => setOption(o.key, { bulkPrice: e.target.value })}
+                          inputMode="numeric"
+                          placeholder="3000"
+                          className={inputClass}
+                        />
+                      </Field>
+                      {(() => {
+                        const min = toInt(o.bulkMinQty);
+                        const bulk = toInt(o.bulkPrice);
+                        const base = toInt(o.price) ?? 0;
+                        if (!min || !bulk) return <p className="text-xs text-carbon-suave sm:pt-7">Ej.: docena a $36.000 → desde 12, a 3000 c/u.</p>;
+                        if (min < 2 || bulk >= base) return <p className="text-xs font-bold text-alerta sm:pt-7">Debe ser desde 2 unidades y más barato que el precio normal.</p>;
+                        return (
+                          <p className="text-xs sm:pt-7">
+                            {min} unidades: <strong>{formatCOP(bulk * min)}</strong> (ahorra {formatCOP((base - bulk) * min)}).
+                          </p>
+                        );
+                      })()}
                     </div>
                     {effi.gestionStock > 1 && (
                       <div className="mt-3 max-w-48">

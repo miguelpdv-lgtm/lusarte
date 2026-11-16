@@ -261,14 +261,16 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
     ...o.items.map((i) => ({
       ref: refs.get(i.effiArticleId) ?? "",
       desc: `${i.productName}${i.optionName ? ` · ${i.optionName}` : ""}`,
-      note: i.note ? `Personalización: ${i.note}` : "",
+      note: [i.note ? `Personalización: ${i.note}` : "", i.listPrice ? `Precio por cantidad: ${formatCOP(i.unitPrice)} c/u` : ""].filter(Boolean).join(" · "),
       qty: i.quantity,
-      price: i.unitPrice,
+      // Con precio por cantidad: precio de lista y el descuento en su columna
+      price: i.listPrice ?? i.unitPrice,
+      disc: i.listPrice ? (i.listPrice - i.unitPrice) * i.quantity : 0,
     })),
     ...(o.shipping > 0
-      ? [{ ref: "", desc: `Domicilio · ${o.city}`, note: "", qty: 1, price: o.shipping }]
+      ? [{ ref: "", desc: `Domicilio · ${o.city}`, note: "", qty: 1, price: o.shipping, disc: 0 }]
       : []),
-    ...(o.fee > 0 ? [{ ref: "", desc: ONLINE_FEE_LABEL, note: "", qty: 1, price: o.fee }] : []),
+    ...(o.fee > 0 ? [{ ref: "", desc: ONLINE_FEE_LABEL, note: "", qty: 1, price: o.fee, disc: 0 }] : []),
   ];
   concepts.forEach((c, idx) => {
     const lines = wrap(c.desc, f.regular, 8.5, descW);
@@ -286,8 +288,8 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
     notes.forEach((l, k) => text(l, cols.desc, ry - lines.length * 11 - k * 9.5 + 1, 7.5, f.regular, C.suave));
     textRight(String(c.qty), cols.qty, ry, 8.5);
     textRight(formatCOP(c.price), cols.price, ry, 8.5);
-    textRight(formatCOP(0), cols.disc, ry, 8.5, f.regular, C.suave);
-    textRight(formatCOP(c.price * c.qty), cols.total, ry, 8.5, f.bold);
+    textRight(c.disc ? `-${formatCOP(c.disc)}` : formatCOP(0), cols.disc, ry, 8.5, f.regular, C.suave);
+    textRight(formatCOP(c.price * c.qty - c.disc), cols.total, ry, 8.5, f.bold);
     y -= rowH;
   });
   page.drawLine({ start: { x: M, y: y + 2 }, end: { x: W - M, y: y + 2 }, thickness: 1, color: C.carbon });
@@ -330,10 +332,15 @@ export async function receiptPdf(o: OrderWithItems): Promise<Buffer> {
 
   const tx = W - M - 200;
   card(tx, y, 200, blockH, { fill: C.blanco });
+  const discount = concepts.reduce((n, c) => n + c.disc, 0);
   const tot: [string, string][] = [
-    ["Subtotal productos", formatCOP(o.subtotal)],
-    // Caben tres filas: con comisión, esta reemplaza al descuento (siempre 0)
-    ...(o.fee > 0 ? [] : [["Descuento", formatCOP(0)] as [string, string]]),
+    // Caben tres filas: con comisión, el descuento ya va dentro del subtotal de productos
+    ...(o.fee > 0
+      ? [[discount ? "Productos con descuento" : "Subtotal productos", formatCOP(o.subtotal)] as [string, string]]
+      : [
+          ["Subtotal productos", formatCOP(o.subtotal + discount)] as [string, string],
+          ["Descuento", discount ? `-${formatCOP(discount)}` : formatCOP(0)] as [string, string],
+        ]),
     ["Envío", o.shippingZone === "nacional" ? "Al cobro" : o.shippingZone === "recoger" ? "Recoge" : formatCOP(o.shipping)],
     ...(o.fee > 0 ? [["Comisión pago en línea", formatCOP(o.fee)] as [string, string]] : []),
   ];

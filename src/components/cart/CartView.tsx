@@ -35,7 +35,7 @@ export function CartView({ localNames, checkoutEnabled }: Props) {
       <ul className="toon divide-y-2 divide-carbon/10 rounded-[1.75rem] bg-crema-claro px-4 sm:px-6">
         {lines.map((l) => {
           const s = lineStatus(quote, l);
-          return <CartLineItem key={lineKey(l)} line={l} max={s.max} unavailable={s.unavailable} />;
+          return <CartLineItem key={lineKey(l)} line={l} lines={lines} max={s.max} unavailable={s.unavailable} />;
         })}
       </ul>
 

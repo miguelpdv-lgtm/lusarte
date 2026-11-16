@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState, type ReactNode } from "react";
 import { createManualOrderAction, type ManualOrderState } from "@/app/admin/manual-order-actions";
 import { barriosFor, citiesFor, shippingFor } from "@/app/(sitio)/checkout-actions";
+import { bulkText, unitPrice, type Bulk } from "@/lib/catalog/pricing";
 import { formatCOP } from "@/lib/format";
 import type { Delivery, DeliveryOption } from "@/lib/shop/shipping";
 
@@ -19,7 +20,7 @@ function Field({ label, error, hint, className = "", children }: { label: string
   );
 }
 
-type ProductChoice = { optionId: number; name: string; price: number; units: number | null };
+type ProductChoice = { optionId: number; name: string; price: number; bulk: Bulk | null; units: number | null };
 type Line = { optionId: number; quantity: number };
 type Props = { products: ProductChoice[]; departments: { id: number; name: string }[]; idTypes: Record<string, string> };
 
@@ -57,7 +58,12 @@ export function ManualOrderForm({ products, departments, idTypes }: Props) {
     setSearch("");
     setQty(1);
   }
-  const subtotal = lines.reduce((s, l) => s + (byId.get(l.optionId)?.price ?? 0) * l.quantity, 0);
+  // Cada línea es una presentación distinta: el precio por cantidad depende solo de su cantidad
+  const priceOf = (l: Line) => {
+    const p = byId.get(l.optionId);
+    return p ? unitPrice(p, l.quantity) : 0;
+  };
+  const subtotal = lines.reduce((s, l) => s + priceOf(l) * l.quantity, 0);
 
   // Dirección y entrega (las mismas reglas del checkout)
   const [departmentId, setDepartmentId] = useState(v.departmentId ?? "");
@@ -153,7 +159,11 @@ export function ManualOrderForm({ products, departments, idTypes }: Props) {
                   >
                     <span className="min-w-0">
                       <span className="font-semibold">{p.name}</span>
-                      {p.units !== null && <span className="block text-xs text-carbon-suave">{p.units} disponibles</span>}
+                      {(p.units !== null || p.bulk) && (
+                        <span className="block text-xs text-carbon-suave">
+                          {[p.units !== null ? `${p.units} disponibles` : "", p.bulk ? bulkText(p.bulk) : ""].filter(Boolean).join(" · ")}
+                        </span>
+                      )}
                     </span>
                     <span className="shrink-0 font-bold tabular-nums">+ {formatCOP(p.price)}</span>
                   </button>
@@ -173,7 +183,8 @@ export function ManualOrderForm({ products, departments, idTypes }: Props) {
                     <span className="min-w-0 basis-full sm:basis-0 sm:flex-1">
                       <span className="font-semibold">{p.name}</span>
                       <span className="block text-xs text-carbon-suave">
-                        {formatCOP(p.price)} c/u{p.units !== null && ` · ${p.units} disponibles`}
+                        {formatCOP(priceOf(l))} c/u{priceOf(l) < p.price && ` (precio por cantidad, normal ${formatCOP(p.price)})`}
+                        {p.units !== null && ` · ${p.units} disponibles`}
                       </span>
                       {over && <span className="block text-xs font-bold text-alerta">Solo hay {p.units} en el inventario.</span>}
                     </span>
@@ -188,7 +199,7 @@ export function ManualOrderForm({ products, departments, idTypes }: Props) {
                       }}
                       className="w-16 rounded-lg border-2 border-carbon/60 bg-white px-2 py-1"
                     />
-                    <span className="ml-auto w-24 text-right font-bold tabular-nums sm:ml-0">{formatCOP(p.price * l.quantity)}</span>
+                    <span className="ml-auto w-24 text-right font-bold tabular-nums sm:ml-0">{formatCOP(priceOf(l) * l.quantity)}</span>
                     <button
                       type="button"
                       onClick={() => setLines((ls) => ls.filter((x) => x.optionId !== l.optionId))}

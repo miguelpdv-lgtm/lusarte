@@ -61,6 +61,8 @@ const productInput = z
         price: money.min(100, "Cada presentación necesita un precio."),
         precioEspecial: money,
         compareAtPrice: money.nullable(),
+        bulkMinQty: z.number().int().min(2, "La cantidad del precio por cantidad debe ser 2 o más.").max(999).nullable(),
+        bulkPrice: money.nullable(),
         stockMinimo: z.number().int().min(0).max(999_999),
         hidden: z.boolean(),
       }),
@@ -81,6 +83,11 @@ const productInput = z
     p.options.forEach((o, i) => {
       if (o.compareAtPrice !== null && o.compareAtPrice <= o.price) {
         ctx.addIssue({ code: "custom", message: `"${o.label}": el precio anterior debe ser mayor que el precio actual.`, path: ["options", i] });
+      }
+      if ((o.bulkMinQty === null) !== (o.bulkPrice === null)) {
+        ctx.addIssue({ code: "custom", message: `"${o.label}": para el precio por cantidad llena la cantidad y el precio (o deja los dos vacíos).`, path: ["options", i] });
+      } else if (o.bulkPrice !== null && o.bulkPrice >= o.price) {
+        ctx.addIssue({ code: "custom", message: `"${o.label}": el precio por cantidad debe ser menor que el precio normal.`, path: ["options", i] });
       }
     });
   });
@@ -149,7 +156,7 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
     for (const [position, o] of p.options.entries()) {
       await tx
         .update(schema.productOptions)
-        .set({ label: o.label, compareAtPrice: o.compareAtPrice, hidden: o.hidden, position })
+        .set({ label: o.label, compareAtPrice: o.compareAtPrice, bulkMinQty: o.bulkMinQty, bulkPrice: o.bulkPrice, hidden: o.hidden, position })
         .where(and(eq(schema.productOptions.id, o.id), eq(schema.productOptions.productId, p.id)));
     }
 

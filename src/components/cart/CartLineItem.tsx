@@ -5,11 +5,14 @@ import Link from "next/link";
 import { BrandIcon } from "@/components/ui/BrandIcon";
 import { MinusIcon, PlusIcon } from "@/components/ui/icons";
 import { cart } from "@/lib/cart/store";
-import { lineKey, MAX_QTY, type CartLine } from "@/lib/cart/types";
+import { lineKey, linePrice, MAX_QTY, optionQty, type CartLine } from "@/lib/cart/types";
+import { bulkLabel, validBulk } from "@/lib/catalog/pricing";
 import { formatCOP } from "@/lib/format";
 
 type Props = {
   line: CartLine;
+  /** Todo el carrito: el precio por cantidad cuenta las unidades de la presentación en todas las líneas */
+  lines: CartLine[];
   /** Unidades disponibles según el servidor (null = sin límite, undefined = aún no se sabe) */
   max?: number | null;
   /** El producto ya no se puede comprar */
@@ -18,11 +21,14 @@ type Props = {
   onNavigate?: () => void;
 };
 
-export function CartLineItem({ line, max, unavailable = false, compact = false, onNavigate }: Props) {
+export function CartLineItem({ line, lines, max, unavailable = false, compact = false, onNavigate }: Props) {
   const key = lineKey(line);
   const limit = Math.min(MAX_QTY, max ?? MAX_QTY);
   const over = !unavailable && max != null && line.quantity > max;
   const href = `/producto/${line.slug}`;
+  const price = linePrice(line, lines);
+  const bulk = validBulk(line);
+  const missing = bulk ? bulk.minQty - optionQty(lines, line.optionId) : 0;
 
   return (
     <li className={`flex gap-3 ${compact ? "py-3" : "py-4"}`}>
@@ -49,8 +55,19 @@ export function CartLineItem({ line, max, unavailable = false, compact = false, 
             {line.optionName && <p className="text-sm text-carbon-suave">{line.optionName}</p>}
             {line.note && <p className="mt-0.5 line-clamp-2 text-xs text-carbon-suave italic">“{line.note}”</p>}
           </div>
-          <p className="shrink-0 font-bold tabular-nums">{formatCOP(line.price * line.quantity)}</p>
+          <p className="shrink-0 text-right font-bold tabular-nums">
+            {formatCOP(price * line.quantity)}
+            {price < line.price && <span className="block text-xs font-semibold text-carbon-suave line-through">{formatCOP(line.price * line.quantity)}</span>}
+          </p>
         </div>
+
+        {bulk && !unavailable && (
+          <p className={`text-xs font-semibold ${missing <= 0 ? "text-carbon" : "text-carbon-suave"}`}>
+            {missing <= 0
+              ? `${bulkLabel(bulk.minQty)}: ${formatCOP(bulk.price)} c/u`
+              : `Lleva ${missing} más y pagas ${formatCOP(bulk.price)} c/u (${bulkLabel(bulk.minQty).toLowerCase()})`}
+          </p>
+        )}
 
         {unavailable ? (
           <p className="text-sm font-bold text-alerta">Ya no está disponible</p>

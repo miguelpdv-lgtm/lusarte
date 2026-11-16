@@ -4,6 +4,7 @@ import { BrandIcon } from "@/components/ui/BrandIcon";
 import { ArrowIcon } from "@/components/ui/icons";
 import { findCategory, findSubcategory } from "@/data/catalog";
 import { cheapestOption, isProductAvailable, type Product } from "@/lib/catalog/types";
+import { bulkLabel } from "@/lib/catalog/pricing";
 import { formatCOP } from "@/lib/format";
 
 /** Foto principal o, si aún no tiene, el ícono de su categoría sobre el color de la marca. */
@@ -48,6 +49,10 @@ export function ProductCard({ product }: { product: Product }) {
           </Link>
         </h3>
         {product.warning && <p className="mt-1.5 text-xs font-semibold text-carbon-suave">{product.warning}</p>}
+        {(() => {
+          const bulk = product.options.find((o) => o.bulk)?.bulk;
+          return bulk ? <p className="mt-1.5 text-xs font-bold">{bulkLabel(bulk.minQty)}, más barato</p> : null;
+        })()}
 
         <div className="mt-auto flex items-end justify-between gap-2 pt-4">
           {cheapest && (

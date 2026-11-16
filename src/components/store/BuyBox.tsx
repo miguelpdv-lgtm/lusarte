@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BagIcon, MinusIcon, PlusIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { cart, drawer } from "@/lib/cart/store";
 import { availableUnits, isOptionAvailable, type ProductOption } from "@/lib/catalog/types";
+import { bulkText } from "@/lib/catalog/pricing";
 import { formatCOP } from "@/lib/format";
 import { whatsappUrl } from "@/lib/site";
 
@@ -45,6 +46,19 @@ export function BuyBox({ name, slug, image, options, personalization }: Props) {
             </s>
           )}
         </p>
+        {option.bulk && (
+          <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl bg-oliva/35 px-3 py-2 text-sm">
+            <span>
+              <strong>{bulkText(option.bulk)}</strong> · {option.bulk.minQty} por {formatCOP(option.bulk.price * option.bulk.minQty)} (ahorras{" "}
+              {formatCOP((option.price - option.bulk.price) * option.bulk.minQty)})
+            </span>
+            {available && max >= option.bulk.minQty && qty < option.bulk.minQty && (
+              <button type="button" onClick={() => setQty(option.bulk!.minQty)} className="cursor-pointer font-bold underline underline-offset-2">
+                Llevar {option.bulk.minQty}
+              </button>
+            )}
+          </p>
+        )}
         <p className="mt-1 text-sm font-semibold" aria-live="polite">
           {!available ? (
             <span className="text-carbon-suave">Agotado por ahora</span>
@@ -134,7 +148,7 @@ export function BuyBox({ name, slug, image, options, personalization }: Props) {
             type="button"
             onClick={() => {
               cart.add(
-                { optionId: option.id, quantity: qty, note: personalization ? note : "", slug, productName: name, optionName: showSelector ? option.name : null, price: option.price, image },
+                { optionId: option.id, quantity: qty, note: personalization ? note : "", slug, productName: name, optionName: showSelector ? option.name : null, price: option.price, bulk: option.bulk, image },
                 units === Infinity ? null : units,
               );
               setQty(1);
